@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>Because Success Factors Doesn't Work and Corporate Doesn't Want To Fix It</title>
+
+</head>
+<body>
+<h1>Self Review Competency Generator</h1>
+<form>
+
+<table border="1" cellpadding="10">
+
+<tr>
+	<td><b>Core Competency</b></td>
+	<td><b>Rating</b></td>
+	<td><b>Justification</b></td>
+</tr>
+
+<!-- Communication -->
+<tr>
+	<td>communication</td>
+	<td>
+		<select id="communication_rating" name="communication_rating">
+		  <option value="below">Below</option>
+		  <option value="average">Average</option>
+		  <option value="above">Above</option>
+		</select>
+	</td>
+	
+	<td>
+		<textarea id="communication_text" name="communication_text" rows="10" cols="40"></textarea>
+	</td>
+</tr>
+
+
+<!-- professionalism -->
+<tr>
+	<td>professionalism</td>
+	<td>
+		<select id="professionalism_rating" name="professionalism_rating">
+		  <option value="below">Below</option>
+		  <option value="average">Average</option>
+		  <option value="above">Above</option>
+		</select>
+	</td>
+	
+	<td>
+		<textarea id="professionalism_text" name="professionalism_text" rows="10" cols="40"></textarea>
+	</td>
+</tr>
+
+</table>
+<button type="button" onclick="generateOutput()">Generate Text</button>
+
+<hr>
+<h3>Auto Generated Result</h3>
+<textarea id="outputBox" name="outputBox" rows="100" cols="120"> </textarea>
+
+
+
+</form>
+
+<script>
+function generateOutput() {
+
+// Define each of the competency base names
+var compNames = [	"communication", 
+					"professionalism"];
+				
+var outputString = "";
+				
+// Loop over the names and concatenate into our output string.
+
+compNames.forEach(function(element) {
+  outputString += element;
+  outputString += " - ";
+  outputString += document.getElementById(element+"_rating").value;
+  outputString += " - ";
+  outputString += document.getElementById(element+"_text").value;
+  outputString += "\n";
+});
+
+    document.getElementById("outputBox").value = outputString;
+}
+</script>
+
+
+</body>
+</html>

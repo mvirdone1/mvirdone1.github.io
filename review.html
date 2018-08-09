@@ -20,7 +20,7 @@
 
 <!-- Communication -->
 <tr>
-	<td>communication</td>
+	<td id="communication_name">communication</td>
 	<td>
 		<select id="communication_rating" name="communication_rating">
 		  <option value="below">Below</option>
@@ -37,7 +37,7 @@
 
 <!-- professionalism -->
 <tr>
-	<td>professionalism</td>
+	<td id="professionalism_name">professionalism</td>
 	<td>
 		<select id="professionalism_rating" name="professionalism_rating">
 		  <option value="below">Below</option>
@@ -78,7 +78,7 @@ var outputString = "";
 // Loop over the names and concatenate into our output string.
 
 compNames.forEach(function(element) {
-  outputString += element;
+  outputString += document.getElementById(element+"_name").value;;
   outputString += " - ";
   outputString += document.getElementById(element+"_rating").value;
   outputString += " - ";

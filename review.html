@@ -253,12 +253,13 @@ var outputString = "";
 // Loop over the names and concatenate into our output string.
 
 compNames.forEach(function(element) {
-  outputString += document.getElementById(element+"_name").innerText;
-  outputString += " - ";
-  outputString += document.getElementById(element+"_rating").value;
-  outputString += " - ";
-  outputString += document.getElementById(element+"_text").value;
-  outputString += "\n";
+    outputString += document.getElementById(element+"_name").innerText;
+    outputString += " - ";
+    outputString += document.getElementById(element+"_rating").value;
+    outputString += " - ";
+    outputString += document.getElementById(element+"_text").value;
+    outputString += "\n";
+    outputString += "\n";
 });
 
     document.getElementById("outputBox").value = outputString;

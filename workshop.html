@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <title>Tanzu Labs Workshop Prompts</title>
+        <script src="workshop.js"></script>
+    </head>
+    <body onLoad="popOptions()">
+
+        <form action="getRandom(); return false;" id="selectForm" class="fixed">
+            <table border="1">
+                <col width="400px" />
+                <col width="400px" />
+
+                <tr>
+                    <td>Select a Workshop or click Random to get assigned one</td>
+                    <td><select id="selectNumber" onChange="updateWorkshop()"></select>
+                        <br>
+                        <br>
+                        <h3 onClick="getRandom()">Click Me to Get Random</h3></td>
+                    
+                </tr>
+
+                <tr>
+                    <td>Select visibility of prompts</td>
+                    <td><select id="selectVis" default="3">
+                        <option value="1">Partner</option>
+                        <option value="2">Coach</option>
+                        <option selected="selected" value="3">Both</option>
+                    </select></td>
+                </tr>
+
+                <tr>
+                    <td><h3>Partner Information</h3></td>
+                    <td><h3>Coach Information</h3></td>
+                </tr>
+                <tr>
+                    <td id="partnerPrompt">Placeholder 1</td>
+                    <td id="coachPrompt">Placeholder 2</td>
+                </tr>
+                
+            </table>
+            
+        </form>
+
+    </body>
+</html>

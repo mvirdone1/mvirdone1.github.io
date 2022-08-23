@@ -2,23 +2,40 @@
     <head>
         <title>Tanzu Labs Workshop Prompts</title>
         <script src="workshop.js"></script>
+
+        <style>
+            body {font-family: Sans-Serif;
+                padding: 25px;
+                background-color: rgb(31, 30, 30);
+                color: white;
+                }
+
+                table, th, td {
+
+  border-collapse: collapse;
+}
+th, td {
+  padding: 15px;
+}
+
+        </style>
     </head>
     <body onLoad="popOptions()">
 
         <h1>Tanzu Labs Coaching Workshop Tool</h1>
 
-        This tool contains a collection of coaching prompt for the workshop.
+        This tool contains a collection of coaching prompts for the workshop.
 
         How to use:
         <ul>
-            <li>All three teammates access the site concurrently</li>
+            <li>Each teammate should open the site in their own local browser window (concurrently)</li>
             <li>The coach changes the visibility to "Coach" and then selects a prompt (or uses <a onClick="getRandom()">a random prompt</a></li>
-            <li>The coach shares the prompt id with the other teammate so they can see the prompt (set visibility to "Both")</li>
+            <li>The coach shares the prompt id with the other teammates and each teammate pulls up that prompt ID so everyone can work on the same scenario (set visibility to "Both")</li>
         </ul>
 
         <h2>Workshop Configuration</h2>
         <form action="getRandom(); return false;" id="selectForm" class="fixed">
-            <table border="1">
+            <table>
 
                 <tr>
                     <td>Select a Workshop or <b><u><a onClick="getRandom()">click HERE</a></u></b> to randomly select one</td>
@@ -40,9 +57,9 @@
         </form>
         
         <h2>Coaching Workshop Prompts</h2>
-        <table border="1">
-                <col width="200px" />
-                <col width="400px" />
+        <table>
+                <col width="100px" />
+                <col width="600px" />
 
             <tr>
                 <td><h3>Partner Information</h3></td>

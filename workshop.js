@@ -15,7 +15,7 @@ let coaching = [
     
     ["Perceived Favoritism",
     "Partner - You are frustrated because your tech lead/manager on your product team always picks another teammate for tasks you would like to be assigned. (Unspoken subtext, this other person is actually the most qualified, but you're struggling with how to grow technically)",
-    "Coach - You are having a chat with a teammate/peer and they seem unhappy, ask an opening question and see where the conversation takes you !!! ADD OUTLINE OF COACHING PROCESS !!! "],
+    "Coach - You are having a chat with a teammate/peer and they seem unhappy, ask an open ended question about how work is going, help them explore their underlying challenge, and then come up with a plan for how to move forward."],
 
     ["Divergence from Practices",
     "Partner - You are working with a challenging client and are feeling some pressure to deliver. This has caused you to take some shortcuts that might not align with labs practices (e.g. sustainable pace, not pairing, etc...). If possible, use an example from your professional realm to make the dialog more realistic!",

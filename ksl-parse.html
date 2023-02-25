@@ -58,7 +58,7 @@ a {
   color: #ffb800;
 }
 
-h3 {
+h1 {
     color: #fff;
 }
 
@@ -168,10 +168,7 @@ h3 {
                 url: 'https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96',
                 method: 'GET',
                 success: function(data) {
-
                     console.log("Got a response")
-
-                    
                     displayKSLData(data,"#295-container");
                 }
             });
@@ -180,10 +177,7 @@ h3 {
                 url: 'https://classifieds.ksl.com/search/Winter-Sports/keyword/dynafit/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96',
                 method: 'GET',
                 success: function(data) {
-
                     console.log("Got a response")
-
-                    
                     displayKSLData(data,"#dynafit-container");
                 }
             });
@@ -193,10 +187,10 @@ h3 {
     <body>
         <h3> Test </h3>
         <div id="weather"></div>
-        <h3> 29.5</h3>
+        <h1> 29.5</h1>
         <div id='295-container' class="classifieds-container"></div>        
         
-        <h3> Dynafit</h3>
+        <h1> Dynafit</h1>
         <div id='dynafit-container' class="classifieds-container"></div>        
         
 

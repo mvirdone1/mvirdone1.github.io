@@ -1,106 +1,99 @@
 <html>
+  <head>
+    <title>KSL Ski Shopping</title>
+    <style>
+      /* Set the background color of the page */
+      body {
+        background-color: #1f2943;
+      }
 
-    <head>
-        <title>Drive Weather Experiment</title>
-        <style>
-/* Set the background color of the page */
-body {
-  background-color: #1f2943;
-}
+      /* Set the font family for the page */
+      body {
+        font-family: "Open Sans", sans-serif;
+      }
 
-/* Set the font family for the page */
-body {
-  font-family: 'Open Sans', sans-serif;
-}
+      /* Style the classified ad container */
+      .classifieds-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin: 0 -10px;
+      }
 
-/* Style the classified ad container */
-.classifieds-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  margin: 0 -10px;
-}
+      .classified-ad {
+        width: calc(15% - 20px);
+        margin: 0 10px 20px;
+        position: relative;
+        overflow: hidden;
+        background-color: #2a3a5c;
+        border-radius: 10px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      }
 
-.classified-ad {
-  width: calc(15% - 20px);
-  margin: 0 10px 20px;
-  position: relative;
-  overflow: hidden;
-  background-color: #2a3a5c;
-  border-radius: 10px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
-}
+      .classified-ad.clear-row {
+        margin-right: 0;
+      }
 
-.classified-ad.clear-row {
-  margin-right: 0;
-}
+      /* Style the ad image */
+      .ad-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        position: relative;
+        z-index: 1;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+      }
 
-/* Style the ad image */
-.ad-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  position: relative;
-  z-index: 1;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
+      /* Style the ad content */
+      .ad-content {
+        position: relative;
+        z-index: 2;
+        padding: 10px;
+        color: #fff;
+      }
 
-/* Style the ad content */
-.ad-content {
-  position: relative;
-  z-index: 2;
-  padding: 10px;
-  color: #fff;
-}
+      a {
+        color: #ffb800;
+      }
 
-a {
-  color: #ffb800;
-}
+      h1 {
+        color: #fff;
+      }
 
-h1 {
-    color: #fff;
-}
+      .ad-title {
+        color: #fff;
+        font-size: 1.1rem;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
 
-.ad-title {
-  color: #fff;
-  font-size: 1.1em;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
+      .ad-price {
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: #ffb800;
+        margin-bottom: 10px;
+      }
 
-.ad-price {
-  font-weight: bold;
-  /* font-size: 1.2em; */
-  color: #ffb800;
-  margin-bottom: 10px;
-}
+      .ad-description {
+        color: #fff;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
 
-.ad-description {
-    color: #fff;
-    margin-top: 10px;
-    font-size: 0.9em;
-}
+      /* Media queries for smaller screens */
+      @media (max-width: 768px) {
+        .classified-ad {
+          width: calc(50% - 15px);
+        }
+        .classified-ad:nth-child(2n + 1) {
+          margin-right: 15px;
+        }
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
-/* Media queries for smaller screens */
-@media (max-width: 768px) {
-  .classified-ad {
-    width: calc(50% - 15px);
-  }
-  .classified-ad:nth-child(2n+1) {
-    margin-right: 15px;
-  }
-}
-
-
-
-
-        </style>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-        
-
-
-                <!-- 
+    <!-- 
         <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-3.2.0.min.css">
         <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-theme-3.2.0.min.css">
         <link rel="stylesheet" href="http://forecast.weather.gov/css/font-awesome-4.3.0.min.css">
@@ -108,64 +101,148 @@ h1 {
         <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/mapclick.css" />
 
         CSS -->
-        <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/bootstrap-ie7.css" /><![endif]-->
-        <!--[if lte IE 9]><link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/mapclick-ie.css" /><![endif]-->
-        
-        <!--
+    <!--[if lte IE 7
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/bootstrap-ie7.css"
+    /><![endif]-->
+    <!--[if lte IE 9
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/mapclick-ie.css"
+    /><![endif]-->
+
+    <!--
         <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/print.css" />
         <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/search.css" />
         -->
-        <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
-        <script>
-            function displayKSLData(data,divName){
-                    // Convert the response data to a jQuery object
-                    var $html = $(data);
-                    
-                    // Find all of the classified ad elements on the page
-                    var $ads = $html.find('.listing-item');
+    <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
+    <script>
+      function displayKSLData(data, divName) {
+        // Convert the response data to a jQuery object
+        var $html = $(data);
 
-                    console.log("Starting the loop")
+        // Find all of the classified ad elements on the page
+        var $ads = $html.find(".listing-item");
 
-                    // console.log($ads)
-                    
-                    // Loop through the ad elements and display them on the page
-                    $ads.each(function(index) {
-                        //console.log("In the loop")
-                        // Get the title, price, image, and description of the ad
-                        var title = $(this).find('.item-info-title').text();
-                        var url = $(this).find('.item-info-title a').attr('href');
-                        var price = $(this).find('.item-info-price').text();
-                        var imgSrc = $(this).find('.img-wrapper img').attr('src');
-                        var description = $(this).find('.item-description').text();
-                        console.log(imgSrc)
-                   
-                        
-                        // Create a new element to display the ad
-                        var $ad = $('<div class="classified-ad"></div>');
-                        $ad.append('<h2 class="ad-title"><a href="https://classifieds.ksl.com/' + url + '"">' + title + '</a></h2>');
-                        $ad.append('<p class="ad-price">' + price + '</p>');
-                        $ad.append('<img class="ad-image" src="' + imgSrc + '">');
-                        $ad.append('<p class="ad-description">' + description + '</p>');
-                        
-                        // Append the ad element to the page
-                        $(divName).append($ad);
+        console.log("Display Data: " + divName);
+        console.log("Starting the loop");
 
-                        // Add a class to every third ad to clear the row
-                        if ((index + 1) % 6 === 0) {
-                        $ad.addClass('clear-row');
-                        }
+        // console.log($ads)
 
-                        if(index >= 11)
-                        {
-                            return false;
-                        }
-                    });
-            }
+        // Loop through the ad elements and display them on the page
+        $ads.each(function (index) {
+          //console.log("In the loop")
+          // Get the title, price, image, and description of the ad
+          var title = $(this).find(".item-info-title").text();
+          var url = $(this).find(".item-info-title a").attr("href");
+          var price = $(this).find(".item-info-price").text();
+          var imgSrc = $(this).find(".img-wrapper img").attr("src");
+          var description = $(this).find(".item-description").text();
+          console.log(imgSrc);
 
-            $(document).ready(function() {
+          // Create a new element to display the ad
+          var $ad = $('<div class="classified-ad"></div>');
+          $ad.append(
+            '<h2 class="ad-title"><a href="https://classifieds.ksl.com/' +
+              url +
+              '"">' +
+              title +
+              "</a></h2>"
+          );
+          $ad.append('<p class="ad-price">' + price + "</p>");
+          $ad.append('<img class="ad-image" src="' + imgSrc + '">');
+          $ad.append('<p class="ad-description">' + description + "</p>");
+
+          // Append the ad element to the page
+          $(divName).append($ad);
+
+          // Add a class to every third ad to clear the row
+          if ((index + 1) % 6 === 0) {
+            $ad.addClass("clear-row");
+          }
+
+          if (index >= 11) {
+            return false;
+          }
+        });
+      }
+
+      var parseArray = [
+        {
+          name: "29-5",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+        {
+          name: "Dynafit",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/keyword/dynafit/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+        {
+          name: "Bent",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/Downhill-Skis/keyword/bent/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+        {
+          name: "QST",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/Downhill-Skis/keyword/qst/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+      ];
+
+      function getData(url, callback) {
+        $.ajax({
+          url: url,
+          success: function (data) {
+            callback(data);
+          },
+        });
+      }
+
+      $(document).ready(function () {
+        // Loop through the array and create a div for each element
+        for (var i = 0; i < parseArray.length; i++) {
+          (function (idx) {
+            var divName = parseArray[idx].name;
+            var divContent = parseArray[idx].content;
+
+            var newHeading = document.createElement("h1");
+            newHeading.innerHTML = divName;
+            document.body.appendChild(newHeading);
+
+            var newDiv = document.createElement("div");
+            var containerName = divName + "-container";
+            console.log(divName);
+            console.log(containerName);
+            newDiv.setAttribute("id", containerName);
+            newDiv.setAttribute("class", "classifieds-container");
+
+            document.body.appendChild(newDiv);
+            console.log(containerName);
+            getData(divContent, function (data) {
+              console.log("Got a response for " + containerName);
+              displayKSLData(data, "#" + containerName);
+            });
+          })(i);
+
+          /*
+          $.ajax({
+            url: divContent,
+            method: "GET",
+            success: function (data) {
+              console.log("Got a response for " + containerName);
+              displayKSLData(data, "#" + containerName);
+            },
+          }); */
+        }
+
+        /*
             // Make an AJAX request to get the HTML of the search results page
             $.ajax({
-                url: 'https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96',
+                url: '',
                 method: 'GET',
                 success: function(data) {
                     console.log("Got a response")
@@ -181,18 +258,19 @@ h1 {
                     displayKSLData(data,"#dynafit-container");
                 }
             });
-            });
-        </script>
-    </head>
-    <body>
-        <h3> Test </h3>
-        <div id="weather"></div>
-        <h1> 29.5</h1>
-        <div id='295-container' class="classifieds-container"></div>        
-        
-        <h1> Dynafit</h1>
-        <div id='dynafit-container' class="classifieds-container"></div>        
-        
+            */
+      });
+    </script>
+  </head>
+  <body>
+    <h3>Test</h3>
+    <!--
+    <div id="weather"></div>
+    <h1>29.5</h1>
+    <div id="295-container" class="classifieds-container"></div>
 
-    </body>
+    <h1>Dynafit</h1>
+    <div id="dynafit-container" class="classifieds-container"></div>
+    -->
+  </body>
 </html>

@@ -70,7 +70,7 @@
 
       .ad-price {
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 0.9em;
         color: #ffb800;
         margin-bottom: 10px;
       }
@@ -152,9 +152,9 @@
               title +
               "</a></h2>"
           );
-          $ad.append('<p class="ad-price">' + price + "</p>");
           $ad.append('<img class="ad-image" src="' + imgSrc + '">');
           $ad.append('<p class="ad-description">' + description + "</p>");
+          $ad.append('<p class="ad-price">' + price + "</p>");
 
           // Append the ad element to the page
           $(divName).append($ad);

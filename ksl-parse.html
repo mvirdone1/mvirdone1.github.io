@@ -166,6 +166,8 @@
           var price = $(this).find(".item-info-price").text();
           var imgSrc = $(this).find(".img-wrapper img").attr("src");
           var description = $(this).find(".item-description").text();
+          // var description = $(".item-description").find("span").text();
+
           console.log(imgSrc);
 
           // Create a new element to display the ad
@@ -282,50 +284,11 @@
               displayKSLData(data, "#" + containerName);
             });
           })(i);
-
-          /*
-          $.ajax({
-            url: divContent,
-            method: "GET",
-            success: function (data) {
-              console.log("Got a response for " + containerName);
-              displayKSLData(data, "#" + containerName);
-            },
-          }); */
         }
-
-        /*
-            // Make an AJAX request to get the HTML of the search results page
-            $.ajax({
-                url: '',
-                method: 'GET',
-                success: function(data) {
-                    console.log("Got a response")
-                    displayKSLData(data,"#295-container");
-                }
-            });
-
-            $.ajax({
-                url: 'https://classifieds.ksl.com/search/Winter-Sports/keyword/dynafit/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96',
-                method: 'GET',
-                success: function(data) {
-                    console.log("Got a response")
-                    displayKSLData(data,"#dynafit-container");
-                }
-            });
-            */
       });
     </script>
   </head>
   <body>
-    <h3>Test</h3>
-    <!--
-    <div id="weather"></div>
-    <h1>29.5</h1>
-    <div id="295-container" class="classifieds-container"></div>
-
-    <h1>Dynafit</h1>
-    <div id="dynafit-container" class="classifieds-container"></div>
-    -->
+    <!-- Auto populated later -->
   </body>
 </html>

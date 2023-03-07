@@ -180,8 +180,8 @@
               "</a></h2>"
           );
           /*$ad.append(
-            '<img class="ad-image" height="100px" src="' + imgSrc + '">'
-          );*/
+                  '<img class="ad-image" height="100px" src="' + imgSrc + '">'
+                );*/
 
           $ad.append(
             '<a href="https://classifieds.ksl.com/' +
@@ -191,9 +191,9 @@
               '"></a>'
           );
           /*
-          $ad.append('<p class="ad-description">' + description + "</p>");
-          $ad.append('<p class="ad-price">' + price + "</p>");
-*/
+                $ad.append('<p class="ad-description">' + description + "</p>");
+                $ad.append('<p class="ad-price">' + price + "</p>");
+      */
 
           $ad.append("<p>" + description + "</p>");
           $ad.append("<p>" + price + "</p>");
@@ -206,7 +206,7 @@
             $ad.addClass("clear-row");
           }
 
-          if (index >= 11) {
+          if (index >= 17) {
             return false;
           }
         });
@@ -249,6 +249,16 @@
             "https://classifieds.ksl.com/search/Winter-Sports/Downhill-Skis/keyword/stella/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
         },
         {
+          name: "backland",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/keyword/backland/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+        {
+          name: "helio",
+          content:
+            "https://classifieds.ksl.com/search/Winter-Sports/keyword/helio/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+        },
+        {
           name: "kamber",
           content:
             "https://classifieds.ksl.com/search/keyword/kamber/expandSearch/1",
@@ -271,8 +281,12 @@
       ];
 
       function getData(url, callback) {
+        // var fullURL = "https://cors-proxy.htmldriven.com/?url=" + url;
+        var fullURL = url;
+        console.log(fullURL);
         $.ajax({
-          url: url,
+          crossDomain: true,
+          url: fullURL,
           success: function (data) {
             callback(data);
           },
@@ -287,7 +301,11 @@
             var divContent = parseArray[idx].content;
 
             var newHeading = document.createElement("h1");
-            newHeading.innerHTML = divName;
+            var link = document.createElement("a");
+
+            link.textContent = divName;
+            link.setAttribute("href", divContent);
+            newHeading.append(link);
             document.body.appendChild(newHeading);
 
             var newDiv = document.createElement("div");

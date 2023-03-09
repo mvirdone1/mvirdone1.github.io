@@ -115,45 +115,75 @@ function displayWeatherData2(
 
       //console.log(data.STATION[0].OBSERVATIONS.date_time);
 
-      // Create line graph using Chart.js
-      const canvas = document.getElementById(canvasId);
-      // canvas.style.width = "80%";
-      canvas.style.height = "50vh";
-      const ctx = canvas.getContext("2d");
-
       var dates = data.STATION[0].OBSERVATIONS.date_time.map((str) =>
         new Date(str).toLocaleTimeString()
       );
 
       dates = data.STATION[0].OBSERVATIONS.date_time;
 
+      const numTicks = Math.max(12, Math.floor(numHours / 12));
+
+      // Create line graph using Chart.js
+      const canvas = document.getElementById(canvasId);
+      // canvas.style.width = "80%";
+      canvas.style.height = "50vh";
+      const ctx = canvas.getContext("2d");
+
+      var data2 = [];
+
+      for (var idx = 0; idx < dataSet.length; idx++) {
+        data2[idx] = dataSet[idx] + 5;
+      }
+
+      var dates2 = dates;
+
+      /*
+      for (var idx = 0; idx < dates.length; idx++) {
+        dates2[idx] = new Date(new Date(dates).getTime() + 5 * 60 * 60 * 1000);
+      }
+      */
+
+      var dataSetNew = [];
+
+      dataSetNew[0] = {
+        //x: dates,
+        //y: dataSet,
+        label: plotType + " at " + locTitle + " (" + stid + ")",
+        data: dataSet,
+        fill: false,
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+      };
+      // dataSetNew[1] = { x: dates2, y: data2 };
+
+      const plotData = {
+        label: plotType + " at " + locTitle + " (" + stid + ")",
+        data: dataSet,
+        fill: false,
+        borderColor: "rgb(75, 192, 192)",
+        tension: 0.1,
+      };
+
+      const plotData2 = {
+        label: plotType + " at " + locTitle + " (" + stid + " two )",
+        data: data2,
+        fill: false,
+        tension: 0.1,
+      };
+
       new Chart(ctx, {
         type: "line",
         data: {
+          // dataSets: dataSetNew[0],
+
           labels: dates,
 
           /*[
             ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
           ],*/
-          datasets: [
-            {
-              label: plotType + " at " + locTitle + " (" + stid + ")",
-              data: dataSet,
-              fill: false,
-              borderColor: "rgb(75, 192, 192)",
-              tension: 0.1,
-            },
-          ],
+          datasets: [plotData, plotData2],
         },
-        xAxes: [
-          {
-            ticks: {
-              display: true,
-              autoSkip: true,
-              maxTicksLimit: 4,
-            },
-          },
-        ],
+
         options: {
           responsive: false,
           scales: {
@@ -161,159 +191,13 @@ function displayWeatherData2(
               {
                 type: "time",
                 ticks: {
-                  maxTicksLimit: 12,
+                  maxTicksLimit: numTicks,
                 },
-                displayFormats: {
-                  hour: "MMM D, h:mm",
-                },
-              },
-            ],
-          },
-        },
-      });
-    })
-    .catch((error) => console.error(error));
-}
-
-function displayWeatherData(
-  stid,
-  canvasId,
-  locTitle,
-  numHours = 24,
-  stationType = 0,
-  displayOffset = false
-) {
-  // Retrieve Mesonet temperature data using Mesonet API
-  const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
-  const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
-
-  var varName = "";
-  var plotType = "";
-  var changeString = "";
-
-  if (displayOffset) {
-    changeString = " Change";
-    console.log("Show Change!");
-  }
-
-  switch (stationType) {
-    case 1:
-      varName = "snow_depth";
-      plotType = "Snow Depth" + changeString;
-      break;
-
-    case 0:
-    default:
-      varName = "air_temp";
-      plotType = "Temperature" + changeString;
-  }
-
-  const params = {
-    token: token,
-    stid: stid,
-    vars: varName,
-    units: "english",
-    recent: numHours * 60, // Minutes
-  };
-  const queryString = Object.keys(params)
-    .map(
-      (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
-    )
-    .join("&");
-
-  const apiUrlWithParams = `${apiURL}?${queryString}`;
-  console.log(apiUrlWithParams);
-  fetch(apiUrlWithParams)
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Inside Fetch: " + stid);
-
-      //console.log(data);
-      var dataSet = [];
-      switch (stationType) {
-        case 1: // Snow Depth
-          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
-
-          break;
-
-        case 0: // Air Temp
-        default: // Default to air temp
-          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
-      }
-
-      //console.log(dataSet);
-      fixZeroAndNull(dataSet);
-
-      if (displayOffset) {
-        var offset = dataSet[0];
-
-        for (var idx = 0; idx < dataSet.length; idx++) {
-          dataSet[idx] = dataSet[idx] - offset;
-        }
-      }
-
-      // dataSet = setErroneousValuesToAverage(dataSet, 10, 3);
-
-      // Extract temperature data from API response
-
-      const chartData = dataSet.map((value) => parseFloat(value.value));
-      const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
-        new Date(value.valid_time).getTime()
-      );
-
-      //console.log(data.STATION[0].OBSERVATIONS.date_time);
-
-      // console.log("Test 2");
-      // Create line graph using Chart.js
-      const canvas = document.getElementById(canvasId);
-      // canvas.style.width = "80%";
-      canvas.style.height = "50vh";
-      const ctx = canvas.getContext("2d");
-
-      var dates = data.STATION[0].OBSERVATIONS.date_time.map((str) =>
-        new Date(str).toLocaleTimeString()
-      );
-
-      dates = data.STATION[0].OBSERVATIONS.date_time;
-
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: dates,
-
-          /*[
-            ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
-          ],*/
-          datasets: [
-            {
-              label: "Temperature at " + locTitle + " (" + stid + ")",
-              data: dataSet,
-              fill: false,
-              borderColor: "rgb(75, 192, 192)",
-              tension: 0.1,
-            },
-          ],
-        },
-        xAxes: [
-          {
-            ticks: {
-              display: true,
-              autoSkip: true,
-              maxTicksLimit: 4,
-            },
-          },
-        ],
-        options: {
-          responsive: false,
-          scales: {
-            xAxes: [
-              {
-                type: "time",
-                ticks: {
-                  maxTicksLimit: 12,
-                },
-                displayFormats: {
-                  hour: "MMM D, h:mm",
+                time: {
+                  displayFormats: {
+                    // https://momentjs.com/docs/#/displaying/format/
+                    hour: "M/d HH:mm",
+                  },
                 },
               },
             ],
@@ -376,6 +260,6 @@ window.onload = function () {
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData2(divName, divName, divTitle, 7 * 24, 1, true);
+    displayWeatherData2(divName, divName, divTitle, 2 * 24, 1, true);
   }
 };

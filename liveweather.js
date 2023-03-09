@@ -1,12 +1,64 @@
-function displayWeatherData(stid = KLGU, canvasId, locTitle, numHours = 24) {
+function setErroneousValuesToAverage(data, windowSize, threshold) {
+  for (let i = 0; i < data.length; i++) {
+    // Check if current index is within the window size
+    if (i >= windowSize - 1) {
+      // Get the sliding window average
+      const windowStart = i - windowSize + 1;
+      const windowEnd = i + 1;
+      const windowValues = data.slice(windowStart, windowEnd);
+      const windowAverage =
+        windowValues.reduce((a, b) => a + b, 0) / windowSize;
+
+      // Check if current value is too far from the sliding window average
+      const currentValue = data[i];
+      if (Math.abs(currentValue - windowAverage) > threshold) {
+        // Set the current value to the sliding window average
+        data[i] = windowAverage;
+      }
+    }
+  }
+
+  return data;
+}
+
+function fixZeros(data) {
+  for (let i = 1; i < data.length; i++) {
+    if (data[i] === 0 || data[i] === null) {
+      data[i] = data[i - 1];
+    }
+  }
+}
+
+function displayWeatherData(
+  stid,
+  canvasId,
+  locTitle,
+  numHours = 24,
+  stationType = 0,
+  displayOffset = false
+) {
   // Retrieve Mesonet temperature data using Mesonet API
   const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
   const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
 
+  var varName = "";
+  var plotType = "";
+  switch (stationType) {
+    case 1:
+      varName = "snow_depth";
+      varname = "Snow Depth";
+      break;
+
+    case 0:
+    default:
+      varName = "air_temp";
+      plotType = "Temperature";
+  }
+
   const params = {
     token: token,
     stid: stid,
-    vars: "air_temp",
+    vars: varName,
     units: "english",
     recent: numHours * 60, // Minutes
   };
@@ -21,14 +73,37 @@ function displayWeatherData(stid = KLGU, canvasId, locTitle, numHours = 24) {
   fetch(apiUrlWithParams)
     .then((response) => response.json())
     .then((data) => {
-      console.log("Inside Fetch");
+      console.log("Inside Fetch: " + stid);
 
-      console.log(data.STATION[0].OBSERVATIONS.air_temp_set_1);
+      console.log(data);
+      var dataSet = [];
+      switch (stationType) {
+        case 1: // Snow Depth
+          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
+
+          break;
+
+        case 0: // Air Temp
+        default: // Default to air temp
+          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
+      }
+
+      console.log(dataSet);
+      fixZeros(dataSet);
+
+      if (displayOffset) {
+        var offset = dataSet[0];
+
+        for (var idx = 0; idx < dataSet.length; idx++) {
+          dataSet[idx] = dataSet[idx] - offset;
+        }
+      }
+
+      // dataSet = setErroneousValuesToAverage(dataSet, 10, 3);
+
       // Extract temperature data from API response
 
-      const temperatureData = data.STATION[0].OBSERVATIONS.air_temp_set_1.map(
-        (value) => parseFloat(value.value)
-      );
+      const chartData = dataSet.map((value) => parseFloat(value.value));
       const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
         new Date(value.valid_time).getTime()
       );
@@ -46,6 +121,8 @@ function displayWeatherData(stid = KLGU, canvasId, locTitle, numHours = 24) {
         new Date(str).toLocaleTimeString()
       );
 
+      dates = data.STATION[0].OBSERVATIONS.date_time;
+
       new Chart(ctx, {
         type: "line",
         data: {
@@ -57,7 +134,7 @@ function displayWeatherData(stid = KLGU, canvasId, locTitle, numHours = 24) {
           datasets: [
             {
               label: "Temperature at " + locTitle + " (" + stid + ")",
-              data: data.STATION[0].OBSERVATIONS.air_temp_set_1,
+              data: dataSet,
               fill: false,
               borderColor: "rgb(75, 192, 192)",
               tension: 0.1,
@@ -78,8 +155,12 @@ function displayWeatherData(stid = KLGU, canvasId, locTitle, numHours = 24) {
           scales: {
             xAxes: [
               {
+                type: "time",
                 ticks: {
                   maxTicksLimit: 12,
+                },
+                displayFormats: {
+                  hour: "MMM D, h:mm",
                 },
                 //type: "time",
 
@@ -145,8 +226,12 @@ window.onload = function () {
       stid: "TGLU1",
     },
     {
+      locTitle: "Tony Grove Upper",
+      stid: "TGSU1",
+    },
+    {
       locTitle: "Swan Flats",
-      stid: "C8914",
+      stid: "LGS",
     },
   ];
 
@@ -169,6 +254,6 @@ window.onload = function () {
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData(divName, divName, divTitle);
+    displayWeatherData(divName, divName, divTitle, 5 * 24, 1, false);
   }
 };

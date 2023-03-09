@@ -29,85 +29,6 @@ function fixZeroAndNull(data) {
   }
 }
 
-function getStationData(
-  stid,
-  numHours = 24,
-  stationType = 0,
-  displayOffset = false
-) {
-  // Retrieve Mesonet temperature data using Mesonet API
-  const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
-  const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
-
-  var varName = "";
-  var plotType = "";
-  switch (stationType) {
-    case 1:
-      varName = "snow_depth";
-      varname = "Snow Depth";
-      break;
-
-    case 0:
-    default:
-      varName = "air_temp";
-      plotType = "Temperature";
-  }
-
-  const params = {
-    token: token,
-    stid: stid,
-    vars: varName,
-    units: "english",
-    recent: numHours * 60, // Minutes
-  };
-  const queryString = Object.keys(params)
-    .map(
-      (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
-    )
-    .join("&");
-
-  const apiUrlWithParams = `${apiURL}?${queryString}`;
-  console.log(apiUrlWithParams);
-  fetch(apiUrlWithParams)
-    .then((response) => response.json())
-    .then((data) => {
-      var dataSet = [];
-      switch (stationType) {
-        case 1: // Snow Depth
-          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
-
-          break;
-
-        case 0: // Air Temp
-        default: // Default to air temp
-          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
-      }
-
-      /*
-      const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
-        new Date(value.valid_time).getTime()
-      );
-      */
-
-      var timeData = data.STATION[0].OBSERVATIONS.date_time;
-
-      fixZeroAndNull(dataSet);
-
-      if (displayOffset) {
-        var offset = dataSet[0];
-
-        for (var idx = 0; idx < dataSet.length; idx++) {
-          dataSet[idx] = dataSet[idx] - offset;
-        }
-      }
-
-      const returnVar = { data: dataSet, time: timeData };
-
-      console.log(returnVar);
-      return returnVar;
-    });
-}
-
 function displayWeatherData2(
   stid,
   canvasId,
@@ -116,100 +37,27 @@ function displayWeatherData2(
   stationType = 0,
   displayOffset = false
 ) {
-  //var dataSet = [];
-  //var timeData = [];
-
-  let foo = getStationData(stid, numHours, stationType, displayOffset);
-  console.log(foo);
-
-  let dataSet = foo.data;
-  let timeData = foo.time;
-
-  const chartData = dataSet.map((value) => parseFloat(value.value));
-
-  console.log(dataSet);
-
-  console.log("Test 2");
-  // Create line graph using Chart.js
-  const canvas = document.getElementById(canvasId);
-  // canvas.style.width = "80%";
-  canvas.style.height = "50vh";
-  const ctx = canvas.getContext("2d");
-
-  var dates = timeData.map((str) => new Date(str).toLocaleTimeString());
-
-  dates = timeData;
-
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: dates,
-
-      /*[
-            ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
-          ],*/
-      datasets: [
-        {
-          label: "Temperature at " + locTitle + " (" + stid + ")",
-          data: dataSet,
-          fill: false,
-          borderColor: "rgb(75, 192, 192)",
-          tension: 0.1,
-        },
-      ],
-    },
-    xAxes: [
-      {
-        ticks: {
-          display: true,
-          autoSkip: true,
-          maxTicksLimit: 4,
-        },
-      },
-    ],
-    options: {
-      responsive: false,
-      scales: {
-        xAxes: [
-          {
-            type: "time",
-            ticks: {
-              maxTicksLimit: 12,
-            },
-            displayFormats: {
-              hour: "MMM D, h:mm",
-            },
-          },
-        ],
-      },
-    },
-  });
-}
-
-function displayWeatherData(
-  stid,
-  canvasId,
-  locTitle,
-  numHours = 24,
-  stationType = 0,
-  displayOffset = false
-) {
   // Retrieve Mesonet temperature data using Mesonet API
   const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
   const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
 
   var varName = "";
   var plotType = "";
+  if (displayOffset) {
+    changeString = " Change";
+    console.log("Show Change!");
+  }
+
   switch (stationType) {
     case 1:
       varName = "snow_depth";
-      varname = "Snow Depth";
+      plotType = "Snow Depth" + changeString;
       break;
 
     case 0:
     default:
       varName = "air_temp";
-      plotType = "Temperature";
+      plotType = "Temperature" + changeString;
   }
 
   const params = {
@@ -232,7 +80,7 @@ function displayWeatherData(
     .then((data) => {
       console.log("Inside Fetch: " + stid);
 
-      console.log(data);
+      //console.log(data);
       var dataSet = [];
       switch (stationType) {
         case 1: // Snow Depth
@@ -245,7 +93,7 @@ function displayWeatherData(
           dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
       }
 
-      console.log(dataSet);
+      //console.log(dataSet);
       fixZeroAndNull(dataSet);
 
       if (displayOffset) {
@@ -265,9 +113,157 @@ function displayWeatherData(
         new Date(value.valid_time).getTime()
       );
 
-      console.log(data.STATION[0].OBSERVATIONS.date_time);
+      //console.log(data.STATION[0].OBSERVATIONS.date_time);
 
-      console.log("Test 2");
+      // Create line graph using Chart.js
+      const canvas = document.getElementById(canvasId);
+      // canvas.style.width = "80%";
+      canvas.style.height = "50vh";
+      const ctx = canvas.getContext("2d");
+
+      var dates = data.STATION[0].OBSERVATIONS.date_time.map((str) =>
+        new Date(str).toLocaleTimeString()
+      );
+
+      dates = data.STATION[0].OBSERVATIONS.date_time;
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: dates,
+
+          /*[
+            ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
+          ],*/
+          datasets: [
+            {
+              label: plotType + " at " + locTitle + " (" + stid + ")",
+              data: dataSet,
+              fill: false,
+              borderColor: "rgb(75, 192, 192)",
+              tension: 0.1,
+            },
+          ],
+        },
+        xAxes: [
+          {
+            ticks: {
+              display: true,
+              autoSkip: true,
+              maxTicksLimit: 4,
+            },
+          },
+        ],
+        options: {
+          responsive: false,
+          scales: {
+            xAxes: [
+              {
+                type: "time",
+                ticks: {
+                  maxTicksLimit: 12,
+                },
+                displayFormats: {
+                  hour: "MMM D, h:mm",
+                },
+              },
+            ],
+          },
+        },
+      });
+    })
+    .catch((error) => console.error(error));
+}
+
+function displayWeatherData(
+  stid,
+  canvasId,
+  locTitle,
+  numHours = 24,
+  stationType = 0,
+  displayOffset = false
+) {
+  // Retrieve Mesonet temperature data using Mesonet API
+  const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
+  const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
+
+  var varName = "";
+  var plotType = "";
+  var changeString = "";
+
+  if (displayOffset) {
+    changeString = " Change";
+    console.log("Show Change!");
+  }
+
+  switch (stationType) {
+    case 1:
+      varName = "snow_depth";
+      plotType = "Snow Depth" + changeString;
+      break;
+
+    case 0:
+    default:
+      varName = "air_temp";
+      plotType = "Temperature" + changeString;
+  }
+
+  const params = {
+    token: token,
+    stid: stid,
+    vars: varName,
+    units: "english",
+    recent: numHours * 60, // Minutes
+  };
+  const queryString = Object.keys(params)
+    .map(
+      (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
+    )
+    .join("&");
+
+  const apiUrlWithParams = `${apiURL}?${queryString}`;
+  console.log(apiUrlWithParams);
+  fetch(apiUrlWithParams)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("Inside Fetch: " + stid);
+
+      //console.log(data);
+      var dataSet = [];
+      switch (stationType) {
+        case 1: // Snow Depth
+          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
+
+          break;
+
+        case 0: // Air Temp
+        default: // Default to air temp
+          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
+      }
+
+      //console.log(dataSet);
+      fixZeroAndNull(dataSet);
+
+      if (displayOffset) {
+        var offset = dataSet[0];
+
+        for (var idx = 0; idx < dataSet.length; idx++) {
+          dataSet[idx] = dataSet[idx] - offset;
+        }
+      }
+
+      // dataSet = setErroneousValuesToAverage(dataSet, 10, 3);
+
+      // Extract temperature data from API response
+
+      const chartData = dataSet.map((value) => parseFloat(value.value));
+      const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
+        new Date(value.valid_time).getTime()
+      );
+
+      //console.log(data.STATION[0].OBSERVATIONS.date_time);
+
+      // console.log("Test 2");
       // Create line graph using Chart.js
       const canvas = document.getElementById(canvasId);
       // canvas.style.width = "80%";
@@ -380,6 +376,6 @@ window.onload = function () {
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData2(divName, divName, divTitle, 7 * 24, 0, true);
+    displayWeatherData2(divName, divName, divTitle, 7 * 24, 1, true);
   }
 };

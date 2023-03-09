@@ -21,12 +21,169 @@ function setErroneousValuesToAverage(data, windowSize, threshold) {
   return data;
 }
 
-function fixZeros(data) {
+function fixZeroAndNull(data) {
   for (let i = 1; i < data.length; i++) {
     if (data[i] === 0 || data[i] === null) {
       data[i] = data[i - 1];
     }
   }
+}
+
+function getStationData(
+  stid,
+  numHours = 24,
+  stationType = 0,
+  displayOffset = false
+) {
+  // Retrieve Mesonet temperature data using Mesonet API
+  const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
+  const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
+
+  var varName = "";
+  var plotType = "";
+  switch (stationType) {
+    case 1:
+      varName = "snow_depth";
+      varname = "Snow Depth";
+      break;
+
+    case 0:
+    default:
+      varName = "air_temp";
+      plotType = "Temperature";
+  }
+
+  const params = {
+    token: token,
+    stid: stid,
+    vars: varName,
+    units: "english",
+    recent: numHours * 60, // Minutes
+  };
+  const queryString = Object.keys(params)
+    .map(
+      (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
+    )
+    .join("&");
+
+  const apiUrlWithParams = `${apiURL}?${queryString}`;
+  console.log(apiUrlWithParams);
+  fetch(apiUrlWithParams)
+    .then((response) => response.json())
+    .then((data) => {
+      var dataSet = [];
+      switch (stationType) {
+        case 1: // Snow Depth
+          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
+
+          break;
+
+        case 0: // Air Temp
+        default: // Default to air temp
+          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
+      }
+
+      /*
+      const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
+        new Date(value.valid_time).getTime()
+      );
+      */
+
+      var timeData = data.STATION[0].OBSERVATIONS.date_time;
+
+      fixZeroAndNull(dataSet);
+
+      if (displayOffset) {
+        var offset = dataSet[0];
+
+        for (var idx = 0; idx < dataSet.length; idx++) {
+          dataSet[idx] = dataSet[idx] - offset;
+        }
+      }
+
+      const returnVar = { data: dataSet, time: timeData };
+
+      console.log(returnVar);
+      return returnVar;
+    });
+}
+
+function displayWeatherData2(
+  stid,
+  canvasId,
+  locTitle,
+  numHours = 24,
+  stationType = 0,
+  displayOffset = false
+) {
+  //var dataSet = [];
+  //var timeData = [];
+
+  let foo = getStationData(stid, numHours, stationType, displayOffset);
+  console.log(foo);
+
+  let dataSet = foo.data;
+  let timeData = foo.time;
+
+  const chartData = dataSet.map((value) => parseFloat(value.value));
+
+  console.log(dataSet);
+
+  console.log("Test 2");
+  // Create line graph using Chart.js
+  const canvas = document.getElementById(canvasId);
+  // canvas.style.width = "80%";
+  canvas.style.height = "50vh";
+  const ctx = canvas.getContext("2d");
+
+  var dates = timeData.map((str) => new Date(str).toLocaleTimeString());
+
+  dates = timeData;
+
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dates,
+
+      /*[
+            ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
+          ],*/
+      datasets: [
+        {
+          label: "Temperature at " + locTitle + " (" + stid + ")",
+          data: dataSet,
+          fill: false,
+          borderColor: "rgb(75, 192, 192)",
+          tension: 0.1,
+        },
+      ],
+    },
+    xAxes: [
+      {
+        ticks: {
+          display: true,
+          autoSkip: true,
+          maxTicksLimit: 4,
+        },
+      },
+    ],
+    options: {
+      responsive: false,
+      scales: {
+        xAxes: [
+          {
+            type: "time",
+            ticks: {
+              maxTicksLimit: 12,
+            },
+            displayFormats: {
+              hour: "MMM D, h:mm",
+            },
+          },
+        ],
+      },
+    },
+  });
 }
 
 function displayWeatherData(
@@ -89,7 +246,7 @@ function displayWeatherData(
       }
 
       console.log(dataSet);
-      fixZeros(dataSet);
+      fixZeroAndNull(dataSet);
 
       if (displayOffset) {
         var offset = dataSet[0];
@@ -162,40 +319,9 @@ function displayWeatherData(
                 displayFormats: {
                   hour: "MMM D, h:mm",
                 },
-                //type: "time",
-
-                /*
-                time: {
-                  unit: "hour",
-                  displayFormats: {
-                    hour: "MMM D, h:mm",
-                  },
-                },
-                */
               },
             ],
           },
-
-          /*
-          scales: {
-            x: {
-              type: "time",
-
-              /*x: {
-              type: "time",
-              time: {
-                unit: "hour",
-                displayFormats: {
-                  hour: "MMM D, h:mm",
-                },
-              },
-              ticks: {
-                source: "data",
-                count: 5,
-              },
-             
-            },
-          },*/
         },
       });
     })
@@ -254,6 +380,6 @@ window.onload = function () {
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData(divName, divName, divTitle, 5 * 24, 1, false);
+    displayWeatherData2(divName, divName, divTitle, 7 * 24, 0, true);
   }
 };

@@ -95,10 +95,6 @@ function displayWeatherData2(
       console.log("Inside Fetch: " + stid);
       console.log("Stations " + data.STATION.length);
 
-      //console.log(data);
-
-      // chartDataSet2[idx] = { x: dates[idx], y: dataSet[idx] };
-
       var dataSets = [];
 
       const colors = [
@@ -157,27 +153,6 @@ function displayWeatherData2(
         });
       }
 
-      //console.log(dataSet);
-
-      // dataSet = setErroneousValuesToAverage(dataSet, 10, 3);
-
-      // Extract temperature data from API response
-
-      const chartData = dataSet.map((value) => parseFloat(value.value));
-      const timeData = data.STATION[0].OBSERVATIONS.date_time.map((value) =>
-        new Date(value.valid_time).getTime()
-      );
-
-      //console.log(data.STATION[0].OBSERVATIONS.date_time);
-
-      /*
-      var dates = data.STATION[0].OBSERVATIONS.date_time.map((str) =>
-        new Date(str).toLocaleTimeString()
-      );
-
-      dates = data.STATION[0].OBSERVATIONS.date_time;
-      */
-
       const numTicks = Math.max(12, Math.floor(numHours / 12));
 
       // Create line graph using Chart.js
@@ -186,78 +161,9 @@ function displayWeatherData2(
       canvas.style.height = "50vh";
       const ctx = canvas.getContext("2d");
 
-      var data2 = [];
-      var data3 = [];
-
-      var chartDataSet2 = [];
-      var chartDataSet3 = [];
-
-      for (var idx = 0; idx < dataSet.length; idx++) {
-        data2[idx] = dataSet[idx] + 5;
-        chartDataSet2[idx] = { x: dates[idx], y: dataSet[idx] };
-        chartDataSet3[idx] = {
-          x: new Date(new Date(dates[idx]).getTime() + 5 * 60 * 60 * 1000),
-          y: dataSet[idx] + 3,
-        };
-        data3[idx] = dataSet[idx] + 3;
-      }
-
-      var dates2 = dates;
-
-      /*
-      for (var idx = 0; idx < dates.length; idx++) {
-        dates2[idx] = new Date(new Date(dates).getTime() + 5 * 60 * 60 * 1000);
-      }
-      */
-
-      var dataSetNew = [];
-
-      dataSetNew[0] = {
-        //x: dates,
-        //y: dataSet,
-        label: plotType + " at " + locTitle + " (" + stid + ")",
-        data: chartDataSet3,
-        fill: false,
-        borderColor: "rgb(255, 0, 0)",
-        tension: 0.1,
-      };
-      // dataSetNew[1] = { x: dates2, y: data2 };
-
-      const plotData = {
-        label: plotType + " at " + locTitle + " (" + stid + ")",
-        data: dataSet,
-        fill: false,
-        borderColor: "rgb(75, 192, 192)",
-        tension: 0.1,
-      };
-
-      const plotData2 = {
-        label: plotType + " at " + locTitle + " (" + stid + " two )",
-        data: data2,
-        fill: false,
-        tension: 0.1,
-      };
-
       new Chart(ctx, {
         type: "line",
         data: {
-          //dataSets: [dataSetNew],
-          /*
-          dataSets: [
-            {
-              data: [dataSetNew[0]],
-            },
-            {
-              data: [dataSetNew[1]],
-            },
-          ],
-
-          
-          /*[
-            ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
-          ],*/
-          labels: dates,
-
           datasets: dataSets,
         },
 

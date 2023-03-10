@@ -281,8 +281,10 @@
       ];
 
       function getData(url, callback) {
-        // var fullURL = "https://cors-proxy.htmldriven.com/?url=" + url;
-        var fullURL = url;
+        var proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+        // var proxyAddress = "https://crossorigin.me/"
+        var fullURL = proxyAddress + url;
+        // var fullURL = url;
         console.log(fullURL);
         $.ajax({
           crossDomain: true,

@@ -147,7 +147,7 @@ function displayWeatherData2(
         dataSets.push({
           //x: dates,
           //y: dataSet,
-          label: plotType + " at " + stationName + " (" + stationID + ")",
+          label: stationName + " (" + stationID + ")",
           data: dataSet,
           fill: false,
           borderColor: colors[dataSetIdx],

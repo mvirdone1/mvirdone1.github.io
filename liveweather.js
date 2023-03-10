@@ -263,7 +263,7 @@ window.onload = function () {
 
   tempChartObject = {
     charts: charts2,
-    title: "Change in Snow Up Canyon - 3 Day",
+    title: "Change in Snow Up Canyon - 1 Day",
     divName: "up-snow-change-24",
     numHours: 24 * 1,
     offset: true,

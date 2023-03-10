@@ -100,7 +100,7 @@ function displayWeatherData2(
       const colors = [
         "rgb(255, 99, 132)", // Red
         "rgb(54, 162, 235)", // Blue
-        "rgb(19, 236, 181)", // Bright green
+        "rgb(0, 236, 100)", // Bright green
         "rgb(75, 192, 192)", // Teal
         "rgb(153, 102, 255)", // Purple
       ];
@@ -152,6 +152,7 @@ function displayWeatherData2(
           fill: false,
           borderColor: colors[dataSetIdx],
           tension: 0.1,
+          pointRadius: 0,
         });
       }
 

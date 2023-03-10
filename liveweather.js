@@ -238,7 +238,7 @@ window.onload = function () {
     charts: charts,
     title: "Logan Local Weather (Green Canyon) - 24 Hour",
     divName: "logan-weather",
-    numHours: 24,
+    numHours: 24 * 1,
     offset: false,
     dataType: 0, // 0 = Temperature, 1 = Snow Depth
   };
@@ -253,8 +253,19 @@ window.onload = function () {
   tempChartObject = {
     charts: charts2,
     title: "Change in Snow Up Canyon - 3 Day",
-    divName: "up-snow-change",
-    numHours: 72,
+    divName: "up-snow-change-72",
+    numHours: 24 * 3,
+    offset: true,
+    dataType: 1, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
+  tempChartObject = {
+    charts: charts2,
+    title: "Change in Snow Up Canyon - 3 Day",
+    divName: "up-snow-change-24",
+    numHours: 24 * 1,
     offset: true,
     dataType: 1, // 0 = Temperature, 1 = Snow Depth
   };
@@ -265,7 +276,7 @@ window.onload = function () {
     charts: charts2,
     title: "Temperature Up Canyon - 24 Hour",
     divName: "up-temp",
-    numHours: 24,
+    numHours: 24 * 1,
     offset: false,
     dataType: 0, // 0 = Temperature, 1 = Snow Depth
   };
@@ -276,7 +287,7 @@ window.onload = function () {
     charts: charts2,
     title: "Total Snow Up Canyon - 3 Day",
     divName: "up-snow-total",
-    numHours: 72,
+    numHours: 24 * 3,
     offset: false,
     dataType: 1, // 0 = Temperature, 1 = Snow Depth
   };

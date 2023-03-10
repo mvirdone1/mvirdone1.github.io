@@ -32,7 +32,6 @@ function fixZeroAndNull(data) {
 function displayWeatherData2(
   stid,
   canvasId,
-  locTitle,
   numHours = 24,
   stationType = 0,
   displayOffset = false
@@ -43,6 +42,7 @@ function displayWeatherData2(
 
   var varName = "";
   var plotType = "";
+  var changeString = "";
   if (displayOffset) {
     changeString = " Change";
     console.log("Show Change!");
@@ -100,7 +100,7 @@ function displayWeatherData2(
       const colors = [
         "rgb(255, 99, 132)", // Red
         "rgb(54, 162, 235)", // Blue
-        "rgb(255, 205, 86)", // Yellow
+        "rgb(19, 236, 181)", // Bright green
         "rgb(75, 192, 192)", // Teal
         "rgb(153, 102, 255)", // Purple
       ];
@@ -110,6 +110,8 @@ function displayWeatherData2(
         var dataSet = [];
         var tempData = [];
         var dates = [];
+        var stationName = data.STATION[dataSetIdx].NAME;
+        var stationID = data.STATION[dataSetIdx].STID;
 
         // Get the data based on what type of request we've sent
         switch (stationType) {
@@ -123,13 +125,13 @@ function displayWeatherData2(
         }
 
         // Clean up the data removing null and doing the offsets if needed
-        fixZeroAndNull(dataSet);
+        fixZeroAndNull(tempData);
 
         if (displayOffset) {
-          var offset = dataSet[0];
+          var offset = tempData[0];
 
-          for (var idx = 0; idx < dataSet.length; idx++) {
-            dataSet[idx] = dataSet[idx] - offset;
+          for (var idx = 0; idx < tempData.length; idx++) {
+            tempData[idx] = tempData[idx] - offset;
           }
         }
 
@@ -145,7 +147,7 @@ function displayWeatherData2(
         dataSets.push({
           //x: dates,
           //y: dataSet,
-          label: plotType + " at " + locTitle + " (" + stid[dataSetIdx] + ")",
+          label: plotType + " at " + stationName + " (" + stationID + ")",
           data: dataSet,
           fill: false,
           borderColor: colors[dataSetIdx],
@@ -193,7 +195,7 @@ function displayWeatherData2(
 
 // Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
 window.onload = function () {
-  const parseArray = [
+  const stationArray = [
     {
       locTitle: "Logan Airport",
       stid: "KLGU",
@@ -224,31 +226,79 @@ window.onload = function () {
     },
   ];
 
-  const parseObject = {};
+  var chartObjects = [];
 
-  for (const item of parseArray) {
-    parseObject[item.stid] = item;
-  }
+  var charts = [];
+  charts.push("KLGU");
+  charts.push("TS303");
+  charts.push("PC114");
 
-  for (var idx = 0; idx < parseArray.length; idx++) {
-    var divName = parseArray[idx].stid;
-    var divTitle = parseArray[idx].locTitle;
+  var tempChartObject = {
+    charts: charts,
+    title: "Logan Local Weather (Green Canyon) - 24 Hour",
+    divName: "logan-weather",
+    numHours: 24,
+    offset: false,
+    dataType: 0, // 0 = Temperature, 1 = Snow Depth
+  };
 
+  chartObjects.push(tempChartObject);
+
+  var charts2 = [];
+  charts2.push("TGLU1");
+  charts2.push("TGSU1");
+  charts2.push("LGS");
+
+  tempChartObject = {
+    charts: charts2,
+    title: "Change in Snow Up Canyon - 3 Day",
+    divName: "up-snow-change",
+    numHours: 72,
+    offset: true,
+    dataType: 1, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
+  tempChartObject = {
+    charts: charts2,
+    title: "Temperature Up Canyon - 24 Hour",
+    divName: "up-temp",
+    numHours: 24,
+    offset: false,
+    dataType: 0, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
+  tempChartObject = {
+    charts: charts2,
+    title: "Total Snow Up Canyon - 3 Day",
+    divName: "up-snow-total",
+    numHours: 72,
+    offset: false,
+    dataType: 1, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
+  for (const chartObject of chartObjects) {
     var newHeading = document.createElement("h2");
-    var link = document.createElement("a");
-
-    link.textContent = divTitle + " (" + divName + ")";
-    link.setAttribute("href", " ");
-    newHeading.append(link);
+    newHeading.textContent = chartObject.title;
     document.body.appendChild(newHeading);
 
     var newCanvas = document.createElement("canvas");
-    var containerName = divName;
 
-    newCanvas.setAttribute("id", containerName);
+    newCanvas.setAttribute("id", chartObject.divName);
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData2([divName, "TGSU1"], divName, divTitle, 2 * 24, 0, true);
+    displayWeatherData2(
+      chartObject.charts,
+      chartObject.divName,
+      chartObject.numHours,
+      chartObject.dataType,
+      chartObject.offset
+    );
   }
 };

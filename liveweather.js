@@ -60,18 +60,32 @@ function displayWeatherData2(
       plotType = "Temperature" + changeString;
   }
 
+  // Make it so this function can handle an array of strings as an argument
+  var stidStr = stid;
+
+  if (Array.isArray(stid)) {
+    stidStr = stid.join(",");
+  }
+
+  console.log(stidStr);
+
   const params = {
     token: token,
-    stid: stid,
+    //stid: stidStr,
     vars: varName,
-    units: "english",
+    //start: 202204010000,
+    //end: 202204080000,
     recent: numHours * 60, // Minutes
+    units: "english",
   };
-  const queryString = Object.keys(params)
+  var queryString = Object.keys(params)
     .map(
       (key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
     )
     .join("&");
+
+  // Append the comma separated list of station IDs
+  queryString += "&stid=" + stidStr;
 
   const apiUrlWithParams = `${apiURL}?${queryString}`;
   console.log(apiUrlWithParams);
@@ -79,30 +93,71 @@ function displayWeatherData2(
     .then((response) => response.json())
     .then((data) => {
       console.log("Inside Fetch: " + stid);
+      console.log("Stations " + data.STATION.length);
 
       //console.log(data);
-      var dataSet = [];
-      switch (stationType) {
-        case 1: // Snow Depth
-          dataSet = data.STATION[0].OBSERVATIONS.snow_depth_set_1;
 
-          break;
+      // chartDataSet2[idx] = { x: dates[idx], y: dataSet[idx] };
 
-        case 0: // Air Temp
-        default: // Default to air temp
-          dataSet = data.STATION[0].OBSERVATIONS.air_temp_set_1;
+      var dataSets = [];
+
+      const colors = [
+        "rgb(255, 99, 132)", // Red
+        "rgb(54, 162, 235)", // Blue
+        "rgb(255, 205, 86)", // Yellow
+        "rgb(75, 192, 192)", // Teal
+        "rgb(153, 102, 255)", // Purple
+      ];
+
+      // Iterate over the data sets
+      for (var dataSetIdx = 0; dataSetIdx < data.STATION.length; dataSetIdx++) {
+        var dataSet = [];
+        var tempData = [];
+        var dates = [];
+
+        // Get the data based on what type of request we've sent
+        switch (stationType) {
+          case 1: // Snow Depth
+            tempData = data.STATION[dataSetIdx].OBSERVATIONS.snow_depth_set_1;
+            break;
+
+          case 0: // Air Temp
+          default: // Default to air temp
+            tempData = data.STATION[dataSetIdx].OBSERVATIONS.air_temp_set_1;
+        }
+
+        // Clean up the data removing null and doing the offsets if needed
+        fixZeroAndNull(dataSet);
+
+        if (displayOffset) {
+          var offset = dataSet[0];
+
+          for (var idx = 0; idx < dataSet.length; idx++) {
+            dataSet[idx] = dataSet[idx] - offset;
+          }
+        }
+
+        // Get the timestamps
+        dates = data.STATION[dataSetIdx].OBSERVATIONS.date_time;
+
+        // Map the two arrays into an array of x/y objects
+        for (var dataIdx = 0; dataIdx < tempData.length; dataIdx++) {
+          dataSet.push({ x: dates[dataIdx], y: tempData[dataIdx] });
+        }
+
+        // Add the array of objects to the array of arrays
+        dataSets.push({
+          //x: dates,
+          //y: dataSet,
+          label: plotType + " at " + locTitle + " (" + stid[dataSetIdx] + ")",
+          data: dataSet,
+          fill: false,
+          borderColor: colors[dataSetIdx],
+          tension: 0.1,
+        });
       }
 
       //console.log(dataSet);
-      fixZeroAndNull(dataSet);
-
-      if (displayOffset) {
-        var offset = dataSet[0];
-
-        for (var idx = 0; idx < dataSet.length; idx++) {
-          dataSet[idx] = dataSet[idx] - offset;
-        }
-      }
 
       // dataSet = setErroneousValuesToAverage(dataSet, 10, 3);
 
@@ -115,11 +170,13 @@ function displayWeatherData2(
 
       //console.log(data.STATION[0].OBSERVATIONS.date_time);
 
+      /*
       var dates = data.STATION[0].OBSERVATIONS.date_time.map((str) =>
         new Date(str).toLocaleTimeString()
       );
 
       dates = data.STATION[0].OBSERVATIONS.date_time;
+      */
 
       const numTicks = Math.max(12, Math.floor(numHours / 12));
 
@@ -130,9 +187,19 @@ function displayWeatherData2(
       const ctx = canvas.getContext("2d");
 
       var data2 = [];
+      var data3 = [];
+
+      var chartDataSet2 = [];
+      var chartDataSet3 = [];
 
       for (var idx = 0; idx < dataSet.length; idx++) {
         data2[idx] = dataSet[idx] + 5;
+        chartDataSet2[idx] = { x: dates[idx], y: dataSet[idx] };
+        chartDataSet3[idx] = {
+          x: new Date(new Date(dates[idx]).getTime() + 5 * 60 * 60 * 1000),
+          y: dataSet[idx] + 3,
+        };
+        data3[idx] = dataSet[idx] + 3;
       }
 
       var dates2 = dates;
@@ -149,9 +216,9 @@ function displayWeatherData2(
         //x: dates,
         //y: dataSet,
         label: plotType + " at " + locTitle + " (" + stid + ")",
-        data: dataSet,
+        data: chartDataSet3,
         fill: false,
-        borderColor: "rgb(75, 192, 192)",
+        borderColor: "rgb(255, 0, 0)",
         tension: 0.1,
       };
       // dataSetNew[1] = { x: dates2, y: data2 };
@@ -174,14 +241,24 @@ function displayWeatherData2(
       new Chart(ctx, {
         type: "line",
         data: {
-          // dataSets: dataSetNew[0],
+          //dataSets: [dataSetNew],
+          /*
+          dataSets: [
+            {
+              data: [dataSetNew[0]],
+            },
+            {
+              data: [dataSetNew[1]],
+            },
+          ],
 
-          labels: dates,
-
+          
           /*[
             ...Array(data.STATION[0].OBSERVATIONS.air_temp_set_1.length).keys(),
           ],*/
-          datasets: [plotData, plotData2],
+          labels: dates,
+
+          datasets: dataSets,
         },
 
         options: {
@@ -232,7 +309,7 @@ window.onload = function () {
       stid: "TGLU1",
     },
     {
-      locTitle: "Tony Grove Upper",
+      locTitle: "Tony Grove Upper Snotel",
       stid: "TGSU1",
     },
     {
@@ -240,6 +317,12 @@ window.onload = function () {
       stid: "LGS",
     },
   ];
+
+  const parseObject = {};
+
+  for (const item of parseArray) {
+    parseObject[item.stid] = item;
+  }
 
   for (var idx = 0; idx < parseArray.length; idx++) {
     var divName = parseArray[idx].stid;
@@ -260,6 +343,6 @@ window.onload = function () {
 
     document.body.appendChild(newCanvas);
 
-    displayWeatherData2(divName, divName, divTitle, 2 * 24, 1, true);
+    displayWeatherData2([divName, "TGSU1"], divName, divTitle, 2 * 24, 0, true);
   }
 };

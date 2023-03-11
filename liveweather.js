@@ -29,6 +29,43 @@ function fixZeroAndNull(data) {
   }
 }
 
+function displayAvyForecast() {
+  console.log("Avy Forecast");
+  // make API request to get forecast data
+  const proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+  const forecastAddress = "https://utahavalanchecenter.org/forecast/logan/json";
+  fetch(proxyAddress + forecastAddress)
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      // parse data and display in HTML
+      const forecastElement = document.getElementById("forecast");
+      forecastElement.innerHTML = `
+
+      <table style="width:50%">
+      <tr>
+
+      <td>
+      <img height="400px" src="${
+        "https://utahavalanchecenter.org/" +
+        data.advisories[0].advisory.overall_danger_rose_image
+      }" alt="Overall Danger Rose Image">
+      </td>
+
+      <td>
+      <h1><a href="https://utahavalanchecenter.org/forecast/logan">Logan Avy Forecast </a></h1  >
+      <h4>${data.advisories[0].advisory.date_issued}</h4>
+      <p> 
+        ${data.advisories[0].advisory.bottom_line} 
+      </p>
+      </td>
+      </tr>
+      </table>
+    `;
+    })
+    .catch((error) => console.error(error));
+}
+
 function displayWeatherData2(
   stid,
   canvasId,
@@ -294,6 +331,9 @@ window.onload = function () {
 
   chartObjects.push(tempChartObject);
 
+  displayAvyForecast();
+
+  // Iterate over the charts
   for (const chartObject of chartObjects) {
     var newHeading = document.createElement("h2");
     newHeading.textContent = chartObject.title;

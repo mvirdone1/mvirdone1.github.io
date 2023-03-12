@@ -91,6 +91,11 @@ function displayWeatherData2(
       plotType = "Snow Depth" + changeString;
       break;
 
+    case 2:
+      varName = "wind_speed,wind_gust";
+      plotType = "Wind Speed and Gust" + changeString;
+      break;
+
     case 0:
     default:
       varName = "air_temp";
@@ -154,6 +159,10 @@ function displayWeatherData2(
         switch (stationType) {
           case 1: // Snow Depth
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.snow_depth_set_1;
+            break;
+
+          case 2:
+            tempData = data.STATION[dataSetIdx].OBSERVATIONS.wind_speed_set_1;
             break;
 
           case 0: // Air Temp
@@ -282,6 +291,17 @@ window.onload = function () {
 
   chartObjects.push(tempChartObject);
 
+  var tempChartObject = {
+    charts: charts,
+    title: "Logan Local Wind (Green Canyon) - 24 Hour",
+    divName: "logan-wind",
+    numHours: 24 * 1,
+    offset: false,
+    dataType: 2, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
   var charts2 = [];
   charts2.push("TGLU1");
   charts2.push("TGSU1");
@@ -316,6 +336,17 @@ window.onload = function () {
     numHours: 24 * 1,
     offset: false,
     dataType: 0, // 0 = Temperature, 1 = Snow Depth
+  };
+
+  chartObjects.push(tempChartObject);
+
+  tempChartObject = {
+    charts: charts2,
+    title: "Wind Up Canyon - 24 Hour",
+    divName: "up-wind",
+    numHours: 24 * 1,
+    offset: false,
+    dataType: 2, // 0 = Temperature, 1 = Snow Depth
   };
 
   chartObjects.push(tempChartObject);

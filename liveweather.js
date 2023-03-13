@@ -1,3 +1,126 @@
+// https://jraviles.com/weather-gov-meteograms.html
+const GraphTypes = Object.freeze({
+  Temperature: 0,
+  Dewpoint: 1,
+  HeatIndex: 2,
+  WindChill: 3,
+  SurfaceWind: 4,
+  SkyCover: 5,
+  PrecipitationPotential: 6,
+  RelativeHumidity: 7,
+  Rain: 8,
+  Thunder: 9,
+  Snow: 10,
+  FreezingRain: 11,
+  Sleet: 12,
+  FreezingSpray: 13,
+  Fog: 14,
+  CeilingHeight: 15,
+  Visibility: 16,
+  SignificantWaveHeight: 17,
+  WavePeriod: 18,
+  EmptyGraph: 19,
+  MixingHeight: 20,
+  HainesIndex: 21,
+  LightningActivityLevel: 22,
+  TransportWind: 23,
+  TwentyFootWind: 24,
+  VentilationRate: 25,
+  SwellHeight: 26,
+  SwellPeriod: 27,
+  Swell2Height: 28,
+  Swell2Period: 29,
+  WindWaveHeight: 30,
+  DispersionIndex: 31,
+  Pressure: 32,
+  ProbWind15mph: 33,
+  ProbWind25mph: 34,
+  ProbWind35mph: 35,
+  ProbWind45mph: 36,
+  ProbWindGust20mph: 37,
+  ProbWindGust30mph: 38,
+  ProbWindGust40mph: 39,
+  ProbWindGust50mph: 40,
+  ProbWindGust60mph: 41,
+  ProbQPF01: 42,
+  ProbQPF025: 43,
+  ProbQPF05: 44,
+  ProbQPF1: 45,
+  ProbQPF2: 46,
+  ProbSnow01: 47,
+  ProbSnow1: 48,
+  ProbSnow3: 49,
+  ProbSnow6: 50,
+  ProbSnow12: 51,
+  GrasslandFireDangerIndex: 52,
+  ThunderPotential: 53,
+  DavisStabilityIndex: 54,
+  AtmosphericDispersionIndex: 55,
+  LowVisibilityOccurrenceRiskIndex: 56,
+  TurnerStabilityIndex: 57,
+  RedFlagThreatIndex: 58,
+});
+
+String.prototype.replaceAt = function (index, replacement) {
+  return (
+    this.substring(0, index) +
+    replacement +
+    this.substring(index + replacement.length)
+  );
+};
+
+function loganWeatherPlot() {}
+
+class WeatherPlotter {
+  constructor() {
+    this.baseURL = "https://forecast.weather.gov/";
+    this.plotterPath = "meteograms/Plotter.php";
+  }
+
+  getPCMD(pcmdArray) {
+    var pcmdString =
+      "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+    for (var idx = 0; idx < pcmdArray.length; idx++) {
+      // pcmdString.replaceAt(pcmdArray[idx], "1");
+
+      pcmdString =
+        pcmdString.substring(0, pcmdArray[idx]) +
+        "1" +
+        pcmdString.substring(pcmdArray[idx] + 1);
+      console.log(pcmdArray[idx]);
+    }
+
+    console.log(pcmdString);
+    return pcmdString;
+  }
+
+  createUrl(options) {
+    const queryParams = new URLSearchParams({
+      lat: options.lat,
+      lon: options.lon,
+      wfo: "SLC",
+      zcode: "UTZ110",
+      gset: "30",
+      gdiff: "10",
+      unit: "0",
+      tinfo: "MY7",
+      ahour: "0",
+      pcmd: this.getPCMD(options.pmcdArray),
+      lg: "en",
+      indu: "1!1!1!",
+      dd: "",
+      bw: "",
+      hrspan: options.hours.toString(),
+      pqpfhr: "3",
+      psnwhr: "3",
+    });
+
+    return `${this.baseURL}${this.plotterPath}?${queryParams.toString()}`;
+    return url;
+  }
+}
+
 function setErroneousValuesToAverage(data, windowSize, threshold) {
   for (let i = 0; i < data.length; i++) {
     // Check if current index is within the window size
@@ -363,6 +486,60 @@ window.onload = function () {
   chartObjects.push(tempChartObject);
 
   displayAvyForecast();
+
+  console.log("Trying to do the weather URL");
+  // Example usage:
+  const plotter = new WeatherPlotter();
+
+  var weatherPlotParamObject = {
+    lat: "41.76760",
+    lon: "-111.77928",
+    hours: 24,
+    pmcdArray: [
+      GraphTypes.Temperature,
+      GraphTypes.WindChill,
+      GraphTypes.Snow,
+      GraphTypes.Rain,
+      GraphTypes.ProbQPF01,
+      GraphTypes.ProbQPF025,
+      GraphTypes.ProbQPF05,
+      GraphTypes.ProbQPF1,
+      GraphTypes.ProbQPF2,
+      GraphTypes.ProbSnow01,
+      GraphTypes.ProbSnow1,
+      GraphTypes.ProbSnow3,
+      GraphTypes.ProbSnow6,
+      GraphTypes.ProbSnow12,
+      GraphTypes.SkyCover,
+      GraphTypes.PrecipitationPotential,
+    ],
+  };
+
+  const loganURL = plotter.createUrl(weatherPlotParamObject);
+
+  weatherPlotParamObject.lat = "41.95216";
+  weatherPlotParamObject.lon = "-111.49158";
+  const summitURL = plotter.createUrl(weatherPlotParamObject);
+
+  const forecastElement = document.getElementById("wPlot");
+  forecastElement.innerHTML = `
+  <table>
+  <tr>
+    <td>
+      <h3>Green Canyon Forecast </h3>
+
+      <img  src="${loganURL}" alt="Weather Plot">
+
+    </td>
+    <td>
+  
+      <h3>Logan Summit (Swan Flats) </h3>
+      <img  src="${summitURL}" alt="Weather Plot">
+    </td>
+  </tr>
+  </table>
+
+  `;
 
   // Iterate over the charts
   for (const chartObject of chartObjects) {

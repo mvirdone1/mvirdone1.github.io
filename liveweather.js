@@ -494,12 +494,13 @@ window.onload = function () {
   var weatherPlotParamObject = {
     lat: "41.76760",
     lon: "-111.77928",
-    hours: 24,
+    hours: 36,
     pmcdArray: [
       GraphTypes.Temperature,
       GraphTypes.WindChill,
       GraphTypes.Snow,
       GraphTypes.Rain,
+      GraphTypes.SurfaceWind,
       GraphTypes.ProbQPF01,
       GraphTypes.ProbQPF025,
       GraphTypes.ProbQPF05,

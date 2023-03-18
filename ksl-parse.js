@@ -12,34 +12,44 @@ function getKSLVarData(url, callback) {
   });
 }
 
-function parseArgumentsFromFunction(data, functionName) {
-  var scriptContent = $(data)
-    .find('script:contains("' + functionName + '(")')
-    .html();
+function adAge(adISODate) {
+  // Convert ISO 8601 time string to Date object
+  // console.log(adISODate);
+  var date = new Date(adISODate);
 
-  // console.log(scriptContent);
+  // console.group(date);
+  // Calculate time difference in milliseconds
+  var now = new Date();
+  var diff = now.getTime() - date.getTime();
 
-  // Extract the argument passed to the function using a regular expression
-  var regex = new RegExp(functionName + "\\((.*?)\\);");
-  var match = regex.exec(scriptContent);
-  // console.log(match[1]);
-  var arg = match[1];
+  // Convert milliseconds to minutes, hours, or days
+  var minutes = Math.floor(diff / 1000 / 60);
+  var hours = Math.floor(diff / 1000 / 60 / 60);
+  var days = Math.floor(diff / 1000 / 60 / 60 / 24);
 
-  // Use eval() to evaluate the argument as JavaScript code
-  var myVar;
-  eval("myVar = " + arg);
-
-  // Access the variable values using Object.values()
-  var values = Object.values(myVar);
-
-  // console.log(values); // Output: ["value", "otherValue"]
-  return values;
+  // Output time difference
+  if (days > 0) {
+    return days + " days ago";
+  } else if (hours > 0) {
+    return hours + " hours ago";
+  } else {
+    return minutes + " minutes ago";
+  }
 }
 
-function handleKSLVariableData(data, functionName, searchObject) {
-  values = parseArgumentsFromFunction(data, functionName);
-  var itemArray = values[0];
+function truncateDescription(str, n, useWordBoundary) {
+  if (str.length <= n) {
+    return str;
+  }
+  const subString = str.slice(0, n - 1); // the original check
+  return (
+    (useWordBoundary
+      ? subString.slice(0, subString.lastIndexOf(" "))
+      : subString) + "&hellip;"
+  );
+}
 
+function displayKSLItemsFromObject(searchObject) {
   // Example Item
   /*
 
@@ -80,9 +90,13 @@ function handleKSLVariableData(data, functionName, searchObject) {
  
         }
    */
+  console.log(searchObject);
 
-  for (var idx = 0; idx < itemArray.length; idx++) {
-    var item = itemArray[idx];
+  // Since the search object array contains all the items, we need to clear the div first:
+  $("#" + searchObject.divName).empty();
+
+  for (var idx = 0; idx < searchObject.items.length; idx++) {
+    var item = searchObject.items[idx];
     //console.log("In the loop")
     // Get the title, price, image, and description of the ad
     var title = item.title;
@@ -109,11 +123,11 @@ function handleKSLVariableData(data, functionName, searchObject) {
     // Create a new element to display the ad
     var $ad = $('<div class="classified-ad"></div>');
     $ad.append(
-      '<h2><a href="https://classifieds.ksl.com/' +
+      '<h3><a href="https://classifieds.ksl.com/' +
         url +
         '">' +
         title +
-        "</a></h2>"
+        "</a></h3>"
     );
     /*$ad.append(
                               '<img class="ad-image" height="100px" src="' + imgSrc + '">'
@@ -131,26 +145,99 @@ function handleKSLVariableData(data, functionName, searchObject) {
                             $ad.append('<p class="ad-price">' + price + "</p>");
                   */
 
-    $ad.append("<p>" + description + "</p>");
-    $ad.append("<p>" + price + "</p>");
-    $ad.append("<p> Time:" + timeOnSite + "</p>");
-    $ad.append("<p>" + location + "</p>");
+    $ad.append(
+      "<p> <b> $" +
+        price +
+        "</b>" +
+        " (" +
+        adAge(timeOnSite) +
+        "): " +
+        location +
+        ") </p>"
+    );
+    $ad.append("<p>" + truncateDescription(description, 250, true) + "</p>");
+
+    // $ad.append("<p> Time:" + timeOnSite + "</p>");
+    // $ad.append("<p>" + location + "</p>");
 
     // Append the ad element to the page
     console.log("Append " + searchObject.divName + " " + title);
     $("#" + searchObject.divName).append($ad);
 
     // Add a class to every third ad to clear the row
-    if ((idx + 1) % 6 === 0) {
+    if ((idx + 1) % 5 === 0) {
       $ad.addClass("clear-row");
       console.log("New Row");
     }
 
-    if (idx >= 17) {
+    if (idx >= 19) {
       return false;
     }
     console.groupEnd();
   }
+}
+
+function parseArgumentsFromFunction(data, functionName) {
+  var scriptContent = $(data)
+    .find('script:contains("' + functionName + '(")')
+    .html();
+
+  // console.log(scriptContent);
+
+  // Extract the argument passed to the function using a regular expression
+  var regex = new RegExp(functionName + "\\((.*?)\\);");
+  var match = regex.exec(scriptContent);
+  // console.log(match[1]);
+  var arg = match[1];
+
+  // Use eval() to evaluate the argument as JavaScript code
+  var myVar;
+  eval("myVar = " + arg);
+
+  // Access the variable values using Object.values()
+  var values = Object.values(myVar);
+
+  // console.log(values); // Output: ["value", "otherValue"]
+  return values;
+}
+
+function handleKSLVariableData(data, functionName, searchObject) {
+  values = parseArgumentsFromFunction(data, functionName);
+  var itemArray = values[0];
+
+  // *************************************
+  // GPT Code for remove duplicates and sort by time
+  // *************************************
+
+  // Combine the two arrays
+  const combinedArray = [...searchObject.items, ...values[0]];
+
+  console.log(combinedArray.length);
+
+  // Remove duplicates based on the "id" property
+  const uniqueArray = Array.from(
+    new Set(combinedArray.map((item) => item.id))
+  ).map((id) => {
+    return combinedArray.find((item) => item.id === id);
+  });
+
+  // Sort the resulting array by the "displayTime" property
+  uniqueArray.sort((a, b) => {
+    if (a.displayTime > b.displayTime) {
+      return -1;
+    }
+    if (a.displayTime < b.displayTime) {
+      return 1;
+    }
+    return 0;
+  });
+
+  // *************************************
+  // GPT Code for remove duplicates and sort by time
+  // *************************************
+
+  searchObject.items = uniqueArray;
+  displayKSLItemsFromObject(searchObject);
 }
 
 function buildKSLSearchURL(searchParams) {
@@ -184,6 +271,7 @@ function getKSLItemsFromRenderSearchSection(url) {
   searchObject.title = "Skis for Mike";
   searchObject.divName = "mike-skis";
   searchObject.searchParams = [];
+  searchObject.items = [];
 
   var searchParams = {
     search: "Winter-Sports/Downhill-Skis",

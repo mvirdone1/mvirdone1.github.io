@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>KSL Ski Shopping</title>
+    <script src="ksl-parse.js"></script>
     <style>
       /* Set the background color of the page */
       body {
@@ -162,13 +163,24 @@
           //console.log("In the loop")
           // Get the title, price, image, and description of the ad
           var title = $(this).find(".item-info-title").text();
+          console.group(title);
           var url = $(this).find(".item-info-title a").attr("href");
           var price = $(this).find(".item-info-price").text();
           var imgSrc = $(this).find(".img-wrapper img").attr("src");
           var description = $(this).find(".item-description").text();
+          var timeOnSite = $(this).find(".item-detail").text();
+          // timeOnSite = $(this).("span.timeOnSite");
+          var location = $(this).find(".item-address").text();
+
+          $(this)
+            .find("*")
+            .each(function () {
+              console.log(this);
+            });
+
           // var description = $(".item-description").find("span").text();
 
-          console.log(imgSrc);
+          //console.log(imgSrc);
 
           // Create a new element to display the ad
           var $ad = $('<div class="classified-ad"></div>');
@@ -180,8 +192,8 @@
               "</a></h2>"
           );
           /*$ad.append(
-                  '<img class="ad-image" height="100px" src="' + imgSrc + '">'
-                );*/
+                              '<img class="ad-image" height="100px" src="' + imgSrc + '">'
+                            );*/
 
           $ad.append(
             '<a href="https://classifieds.ksl.com/' +
@@ -191,12 +203,14 @@
               '"></a>'
           );
           /*
-                $ad.append('<p class="ad-description">' + description + "</p>");
-                $ad.append('<p class="ad-price">' + price + "</p>");
-      */
+                            $ad.append('<p class="ad-description">' + description + "</p>");
+                            $ad.append('<p class="ad-price">' + price + "</p>");
+                  */
 
           $ad.append("<p>" + description + "</p>");
           $ad.append("<p>" + price + "</p>");
+          $ad.append("<p> Time:" + timeOnSite + "</p>");
+          $ad.append("<p>" + location + "</p>");
 
           // Append the ad element to the page
           $(divName).append($ad);
@@ -209,6 +223,7 @@
           if (index >= 17) {
             return false;
           }
+          console.groupEnd();
         });
       }
 
@@ -294,13 +309,18 @@
         $.ajax({
           crossDomain: true,
           url: fullURL,
+          dataType: "text",
+
+          // Tried this to get time on site, and it takes way too long to load
+          // It also didn't fix the problem
+          // async: false,
           success: function (data) {
             callback(data);
           },
         });
       }
 
-      $(document).ready(function () {
+      function iterateOverParseArray(parseArray) {
         // Loop through the array and create a div for each element
         for (var i = 0; i < parseArray.length; i++) {
           (function (idx) {
@@ -330,6 +350,12 @@
             });
           })(i);
         }
+      }
+
+      $(document).ready(function () {
+        getKSLItemsFromRenderSearchSection(
+          "https://classifieds.ksl.com/search/Winter-Sports/keyword/helio/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96"
+        );
       });
     </script>
   </head>

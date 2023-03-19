@@ -12,6 +12,12 @@ function getKSLVarData(url, callback) {
   });
 }
 
+function addS(count) {
+  if (count > 1) {
+    return "s";
+  }
+  return "";
+}
 function adAge(adISODate) {
   // Convert ISO 8601 time string to Date object
   // console.log(adISODate);
@@ -29,14 +35,15 @@ function adAge(adISODate) {
 
   // Output time difference
   if (days > 0) {
-    return days + " days ago";
+    return days + " day" + addS(days) + " ago";
   } else if (hours > 0) {
-    return hours + " hours ago";
+    return hours + " hour" + addS(hours) + " ago";
   } else {
-    return minutes + " minutes ago";
+    return minutes + " minute" + addS(minutes) + " ago";
   }
 }
 
+// From Stack Overflow
 function truncateDescription(str, n, useWordBoundary) {
   if (str.length <= n) {
     return str;
@@ -100,8 +107,8 @@ function displayKSLItemsFromObject(searchObject) {
     //console.log("In the loop")
     // Get the title, price, image, and description of the ad
     var title = item.title;
-    console.group(title);
-    var url = "https://classifieds.ksl.com/" + item.id;
+    //console.group(title);
+    var url = "https://classifieds.ksl.com/listing/" + item.id;
     var price = item.price;
     var imgSrc = item.photo;
 
@@ -110,35 +117,19 @@ function displayKSLItemsFromObject(searchObject) {
     // timeOnSite = $(this).("span.timeOnSite");
     var location = item.city + ", " + item.state;
 
-    $(this)
-      .find("*")
-      .each(function () {
-        console.log(this);
-      });
-
     // var description = $(".item-description").find("span").text();
 
     //console.log(imgSrc);
 
     // Create a new element to display the ad
     var $ad = $('<div class="classified-ad"></div>');
-    $ad.append(
-      '<h3><a href="https://classifieds.ksl.com/' +
-        url +
-        '">' +
-        title +
-        "</a></h3>"
-    );
+    $ad.append('<h3><a href="' + url + '">' + title + "</a></h3>");
     /*$ad.append(
                               '<img class="ad-image" height="100px" src="' + imgSrc + '">'
                             );*/
 
     $ad.append(
-      '<a href="https://classifieds.ksl.com/' +
-        url +
-        '"><img height="175px" src="' +
-        imgSrc +
-        '"></a>'
+      '<a href="' + url + '"><img width="100%" src="' + imgSrc + '"></a>'
     );
     /*
                             $ad.append('<p class="ad-description">' + description + "</p>");
@@ -151,9 +142,9 @@ function displayKSLItemsFromObject(searchObject) {
         "</b>" +
         " (" +
         adAge(timeOnSite) +
-        "): " +
+        "): </br> " +
         location +
-        ") </p>"
+        "</p>"
     );
     $ad.append("<p>" + truncateDescription(description, 250, true) + "</p>");
 
@@ -161,7 +152,7 @@ function displayKSLItemsFromObject(searchObject) {
     // $ad.append("<p>" + location + "</p>");
 
     // Append the ad element to the page
-    console.log("Append " + searchObject.divName + " " + title);
+    //console.log("Append " + searchObject.divName + " " + title);
     $("#" + searchObject.divName).append($ad);
 
     // Add a class to every third ad to clear the row
@@ -173,7 +164,7 @@ function displayKSLItemsFromObject(searchObject) {
     if (idx >= 19) {
       return false;
     }
-    console.groupEnd();
+    // console.groupEnd();
   }
 }
 
@@ -202,6 +193,7 @@ function parseArgumentsFromFunction(data, functionName) {
 }
 
 function handleKSLVariableData(data, functionName, searchObject) {
+  console.log(searchObject);
   values = parseArgumentsFromFunction(data, functionName);
   var itemArray = values[0];
 
@@ -215,7 +207,7 @@ function handleKSLVariableData(data, functionName, searchObject) {
   console.log(combinedArray.length);
 
   // Remove duplicates based on the "id" property
-  const uniqueArray = Array.from(
+  var uniqueArray = Array.from(
     new Set(combinedArray.map((item) => item.id))
   ).map((id) => {
     return combinedArray.find((item) => item.id === id);
@@ -236,7 +228,7 @@ function handleKSLVariableData(data, functionName, searchObject) {
   // GPT Code for remove duplicates and sort by time
   // *************************************
 
-  searchObject.items = uniqueArray;
+  searchObject.items = [...uniqueArray];
   displayKSLItemsFromObject(searchObject);
 }
 
@@ -263,12 +255,34 @@ function buildKSLSearchURL(searchParams) {
   for (const key in searchParams) {
     url = url + "/" + key + "/" + searchParams[key];
   }
+  // url = url + "/expandSearch/1/";
   return url;
 }
 
-function getKSLItemsFromRenderSearchSection(url) {
+function createSearchObject(
+  searchObject,
+  searchParams,
+  searchWords,
+  baseSearchString
+) {
+  searchCategories = Array(searchWords.length).fill(baseSearchString);
+
+  for (wordIdx = 0; wordIdx < searchWords.length; wordIdx++) {
+    searchParams.keyword = searchWords[wordIdx];
+    searchParams.search = searchCategories[wordIdx];
+    // Push each item as a new object
+    searchObject.searchParams.push({ ...searchParams });
+  }
+
+  // Return a completely new object
+  return { ...searchObject };
+}
+
+function getKSLItemsFromRenderSearchSection() {
+  var searchObjectArray = [];
   var searchObject = {};
-  searchObject.title = "Skis for Mike";
+
+  searchObject.title = "Resort Skis for Mike";
   searchObject.divName = "mike-skis";
   searchObject.searchParams = [];
   searchObject.items = [];
@@ -282,10 +296,76 @@ function getKSLItemsFromRenderSearchSection(url) {
     priceTo: "550",
     Private: "Sale",
     perPage: "24",
+    expandSearch: "1",
   };
 
-  searchObject.searchParams.push(searchParams);
+  console.log("Test 123");
+  // Create an array of search items to combine under the same umbrella
+  var searchWords = [];
+  searchWords.push("qst");
+  searchWords.push("bent");
+  searchWords.push("chetler");
+  searchWords.push("bacon");
 
+  searchObjectArray.push(
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      "Winter-Sports/Downhill-Skis"
+    )
+  );
+
+  /*
+  searchCategories = Array(searchWords.length).fill(
+    "Winter-Sports/Downhill-Skis"
+  );
+
+  for (wordIdx = 0; wordIdx < searchWords.length; wordIdx++) {
+    searchParams.keyword = searchWords[wordIdx];
+    searchParams.search = searchCategories[wordIdx];
+    searchObject.searchParams.push({ ...searchParams });
+  }
+  */
+
+  // Create an array of search items to combine under the same umbrella
+  var searchObject2 = {};
+
+  console.log("Test 123");
+
+  searchObject.title = "Boots for Mike";
+  searchObject.divName = "mike-boots";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+
+  searchWords = [];
+  searchWords.push("29");
+  searchWords.push("29.0");
+  searchWords.push("29.5");
+
+  searchObjectArray.push(
+    createSearchObject(searchObject, searchParams, searchWords, "Winter-Sports")
+  );
+
+  searchObject.title = "Backcountry Gear";
+  searchObject.divName = "mike-bc";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+
+  searchWords = [];
+  searchWords.push("dynafit");
+  searchWords.push("helio");
+  searchWords.push("backland");
+  searchWords.push("voile");
+
+  searchObjectArray.push(
+    createSearchObject(searchObject, searchParams, searchWords, "Winter-Sports")
+  );
+
+  //searchParams.keyword = "bent";
+  //searchObject.searchParams.push({ ...searchParams });
+
+  /*
   var searchParams2 = {
     search: "Winter-Sports/Downhill-Skis",
     keyword: "bent",
@@ -297,26 +377,50 @@ function getKSLItemsFromRenderSearchSection(url) {
     perPage: "24",
   };
   searchObject.searchParams.push(searchParams2);
+  */
 
-  // Create a div and heading
-  var newHeading = document.createElement("h1");
-  newHeading.innerHTML = searchObject.title;
-  document.body.appendChild(newHeading);
+  console.log("Test 123");
+  console.log("Length: " + searchObjectArray.length);
 
-  var newDiv = document.createElement("div");
-  var containerName = searchObject.divName;
-  newDiv.setAttribute("id", containerName);
-  newDiv.setAttribute("class", "classifieds-container");
+  for (searchIdx = 0; searchIdx < searchObjectArray.length; searchIdx++) {
+    (function (searchIdxLocal) {
+      var thisSearchObject = searchObjectArray[searchIdxLocal];
 
-  document.body.appendChild(newDiv);
+      console.log(" Search Object Index: " + searchIdxLocal);
+      console.log(thisSearchObject);
 
-  for (idx = 0; idx < searchObject.searchParams.length; idx++) {
-    var localURL = buildKSLSearchURL(searchObject.searchParams[idx]);
-    const searchFunctionName = "renderSearchSection";
+      // Create a div and heading
+      var newHeading = document.createElement("h1");
+      newHeading.innerHTML = thisSearchObject.title;
+      document.body.appendChild(newHeading);
 
-    getKSLVarData(localURL, function (data) {
-      console.log("Got a response for " + localURL);
-      handleKSLVariableData(data, searchFunctionName, searchObject);
-    });
+      for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
+        var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
+        newHeading = document.createElement("h3");
+        var link = document.createElement("a");
+
+        link.textContent =
+          "Search for " + thisSearchObject.searchParams[idx].keyword;
+        link.setAttribute("href", localURL);
+        newHeading.append(link);
+        document.body.appendChild(newHeading);
+        const searchFunctionName = "renderSearchSection";
+
+        getKSLVarData(localURL, function (data) {
+          console.log("Got a response for " + localURL);
+          handleKSLVariableData(data, searchFunctionName, thisSearchObject);
+        });
+      }
+
+      var newDiv = document.createElement("div");
+      var containerName = thisSearchObject.divName;
+      newDiv.setAttribute("id", containerName);
+      newDiv.setAttribute("class", "classifieds-container");
+
+      document.body.appendChild(newDiv);
+
+      console.log("Created Div");
+      console.log("Done With Search Params");
+    })(searchIdx);
   }
 }

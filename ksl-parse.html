@@ -27,7 +27,7 @@
       }
 
       .classified-ad {
-        width: calc(20% - 20px);
+        width: calc(20% - 50px);
         margin: 0 10px 20px;
         position: relative;
         overflow: hidden;
@@ -41,15 +41,6 @@
       }
 
       /* Style the ad image */
-
-      .ad-image {
-        width: 100%;
-        height: auto;
-        display: block;
-        position: relative;
-        z-index: 1;
-        border-radius: 10px;
-      }
 
       /* Style the ad content */
       /*
@@ -78,8 +69,38 @@
         font-weight: bold;
       }
 
+      .heading-div {
+        display: inline-block;
+        width: auto;
+        height: 100px;
+        overflow: hidden; /* Hide any overflowing content */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content vertically */
+      }
+
       p {
         color: #fff;
+      }
+
+      /* Define the styles for the parent div */
+      .image-parent {
+        display: inline-block;
+        width: auto;
+        height: 300px;
+        overflow: hidden; /* Hide any overflowing content */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content vertically */
+      }
+
+      .ad-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        position: relative;
+        z-index: 1;
+        border-radius: 10px;
+        object-fit: cover; /* Scale the image to cover the container */
+        object-position: center; /* Center the image within the container */
       }
 
       /*

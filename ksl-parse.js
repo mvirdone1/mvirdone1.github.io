@@ -123,13 +123,26 @@ function displayKSLItemsFromObject(searchObject) {
 
     // Create a new element to display the ad
     var $ad = $('<div class="classified-ad"></div>');
-    $ad.append('<h3><a href="' + url + '">' + title + "</a></h3>");
+    $ad.append(
+      '<div class="heading-div">' +
+        '<h3><a href="' +
+        url +
+        '">' +
+        title +
+        "</a></h3>" +
+        "</div>"
+    );
     /*$ad.append(
                               '<img class="ad-image" height="100px" src="' + imgSrc + '">'
                             );*/
 
     $ad.append(
-      '<a href="' + url + '"><img width="100%" src="' + imgSrc + '"></a>'
+      '<div class="image-parent">' +
+        '<a href="' +
+        url +
+        '"><img class="ad-image" src="' +
+        imgSrc +
+        '"></a></div>'
     );
     /*
                             $ad.append('<p class="ad-description">' + description + "</p>");
@@ -155,13 +168,16 @@ function displayKSLItemsFromObject(searchObject) {
     //console.log("Append " + searchObject.divName + " " + title);
     $("#" + searchObject.divName).append($ad);
 
+    const itemsPerLine = 5;
+    const numLinesPerSearch = 5;
+
     // Add a class to every third ad to clear the row
-    if ((idx + 1) % 5 === 0) {
+    if ((idx + 1) % itemsPerLine === 0) {
       $ad.addClass("clear-row");
       console.log("New Row");
     }
 
-    if (idx >= 19) {
+    if (idx >= itemsPerLine * numLinesPerSearch - 1) {
       return false;
     }
     // console.groupEnd();
@@ -279,6 +295,12 @@ function createSearchObject(
 }
 
 function getKSLItemsFromRenderSearchSection() {
+  // Get the browser width in pixels
+  var browserWidth = window.innerWidth;
+
+  // Print the browser width to the console
+  console.log("Browser width: " + browserWidth + " pixels");
+
   var searchObjectArray = [];
   var searchObject = {};
 
@@ -291,7 +313,7 @@ function getKSLItemsFromRenderSearchSection() {
     search: "Winter-Sports/Downhill-Skis",
     keyword: "qst",
     zip: "84341",
-    miles: "150",
+    miles: "100",
     priceFrom: "10",
     priceTo: "550",
     Private: "Sale",
@@ -360,6 +382,28 @@ function getKSLItemsFromRenderSearchSection() {
 
   searchObjectArray.push(
     createSearchObject(searchObject, searchParams, searchWords, "Winter-Sports")
+  );
+
+  searchObject.title = "SRAM Drivetrain";
+  searchObject.divName = "bike-drivetrain";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+
+  searchParams.priceTo = "200";
+
+  searchWords = [];
+  searchWords.push("sx");
+  searchWords.push("nx");
+  searchWords.push("gx");
+  searchWords.push("x01");
+
+  searchObjectArray.push(
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      "Cycling/Mountain-Bike-Parts"
+    )
   );
 
   //searchParams.keyword = "bent";

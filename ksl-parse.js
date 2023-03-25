@@ -313,7 +313,7 @@ function getKSLItemsFromRenderSearchSection() {
     search: "Winter-Sports/Downhill-Skis",
     keyword: "qst",
     zip: "84341",
-    miles: "100",
+    miles: "150",
     priceFrom: "10",
     priceTo: "550",
     Private: "Sale",
@@ -403,6 +403,52 @@ function getKSLItemsFromRenderSearchSection() {
       searchParams,
       searchWords,
       "Cycling/Mountain-Bike-Parts"
+    )
+  );
+
+  searchObject.title = "Outdoor Stuff";
+  searchObject.divName = "outdoor-stuff";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+
+  searchParams.priceTo = "300";
+
+  searchWords = [];
+  searchWords.push("mammut");
+  searchWords.push("osprey");
+  searchWords.push("kamber");
+  searchWords.push("dawn patrol");
+  searchWords.push("crampons");
+
+  searchObjectArray.push(
+    createSearchObject(searchObject, searchParams, searchWords, "")
+  );
+
+  searchObject.title = "XC Bikes";
+  searchObject.divName = "xc-bikes";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+  searchParams.priceFrom = "1500";
+  searchParams.priceTo = "3000";
+
+  searchWords = [];
+  searchWords.push("epic");
+  searchWords.push("superfly");
+  searchWords.push("blur");
+  searchWords.push("anthem");
+  searchWords.push("scalpel");
+  searchWords.push("sb100");
+  searchWords.push("ripley");
+  searchWords.push("spark");
+  searchWords.push("nica");
+  searchWords.push("spectral");
+
+  searchObjectArray.push(
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      "Cycling/Mountain-Bikes"
     )
   );
 

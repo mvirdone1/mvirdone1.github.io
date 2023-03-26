@@ -174,7 +174,7 @@ function displayKSLItemsFromObject(searchObject) {
     // Add a class to every third ad to clear the row
     if ((idx + 1) % itemsPerLine === 0) {
       $ad.addClass("clear-row");
-      console.log("New Row");
+      // console.log("New Row");
     }
 
     if (idx >= itemsPerLine * numLinesPerSearch - 1) {
@@ -480,9 +480,9 @@ function getKSLItemsFromRenderSearchSection() {
       console.log(thisSearchObject);
 
       // Create a div and heading
-      var newHeading = document.createElement("h1");
-      newHeading.innerHTML = thisSearchObject.title;
-      document.body.appendChild(newHeading);
+      const myFragment = document.createDocumentFragment();
+
+      //document.body.appendChild(newHeading);
 
       for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
         var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
@@ -493,7 +493,8 @@ function getKSLItemsFromRenderSearchSection() {
           "Search for " + thisSearchObject.searchParams[idx].keyword;
         link.setAttribute("href", localURL);
         newHeading.append(link);
-        document.body.appendChild(newHeading);
+        // document.body.appendChild(newHeading);
+        myFragment.append(newHeading);
         const searchFunctionName = "renderSearchSection";
 
         getKSLVarData(localURL, function (data) {
@@ -506,9 +507,37 @@ function getKSLItemsFromRenderSearchSection() {
       var containerName = thisSearchObject.divName;
       newDiv.setAttribute("id", containerName);
       newDiv.setAttribute("class", "classifieds-container");
+      // document.body.appendChild(newDiv);
+      myFragment.append(newDiv);
 
-      document.body.appendChild(newDiv);
+      var newHeading = document.createElement("h1");
+      // newHeading.setAttribute("id", containerName + "-hdr");
+      newHeading.innerHTML = thisSearchObject.title;
 
+      /*
+      var divString = "#" + containerName;
+
+      $(divString + "-hdr").click(function () {
+        $(divString).toggle();
+      });
+
+      // document.querySelector("#mike-skis");
+      /*
+      var divString = "#" + containerName;
+      console.log(divString);
+      var myDiv = myFragment.querySelector(divString);
+      console.log(myDiv);
+      newHeading.addEventListener("click", function () {
+        if (myDiv.style.display === "none") {
+          myDiv.style.display = "block";
+        } else {
+          myDiv.style.display = "none";
+        }
+      });
+      */
+      myFragment.prepend(newHeading);
+
+      document.body.appendChild(myFragment);
       console.log("Created Div");
       console.log("Done With Search Params");
     })(searchIdx);

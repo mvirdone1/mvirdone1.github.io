@@ -91,7 +91,7 @@ function displayKSLItemsFromObject(searchObject, divOverride = false) {
     var $ad = $('<div class="classified-ad"></div>');
     $ad.append(
       '<div class="heading-div">' +
-        '<h3><a href="' +
+        '<h3><a target="_blank" href="' +
         url +
         '">' +
         title +
@@ -104,7 +104,7 @@ function displayKSLItemsFromObject(searchObject, divOverride = false) {
 
     $ad.append(
       '<div class="image-parent">' +
-        '<a href="' +
+        '<a target="_blank" href="' +
         url +
         '"><img class="ad-image" src="' +
         imgSrc +
@@ -455,6 +455,12 @@ function getKSLItemsFromRenderSearchSection() {
       // Create a div and heading
       const myFragment = document.createDocumentFragment();
 
+      var newHeading = document.createElement("h1");
+      // newHeading.setAttribute("id", containerName + "-hdr");
+      newHeading.innerHTML = thisSearchObject.title;
+
+      myFragment.prepend(newHeading);
+
       //document.body.appendChild(newHeading);
 
       for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
@@ -465,6 +471,7 @@ function getKSLItemsFromRenderSearchSection() {
         link.textContent =
           "Search for " + thisSearchObject.searchParams[idx].keyword;
         link.setAttribute("href", localURL);
+        link.setAttribute("target", "_blank");
         newHeading.append(link);
         // document.body.appendChild(newHeading);
         myFragment.append(newHeading);
@@ -481,34 +488,12 @@ function getKSLItemsFromRenderSearchSection() {
       newDiv.setAttribute("id", containerName);
       newDiv.setAttribute("class", "classifieds-container");
       // document.body.appendChild(newDiv);
-      myFragment.append(newDiv);
+      // myFragment.append(newDiv);
 
-      var newHeading = document.createElement("h1");
-      // newHeading.setAttribute("id", containerName + "-hdr");
-      newHeading.innerHTML = thisSearchObject.title;
+      // document.body.appendChild(myFragment);
+      // generateHeadingsForDiv(thisSearchObject, document.body);
+      // document.body.append(newDiv);
 
-      /*
-      var divString = "#" + containerName;
-
-      $(divString + "-hdr").click(function () {
-        $(divString).toggle();
-      });
-
-      // document.querySelector("#mike-skis");
-      /*
-      var divString = "#" + containerName;
-      console.log(divString);
-      var myDiv = myFragment.querySelector(divString);
-      console.log(myDiv);
-  
-      newHeading.addEventListener("click", function () {
-        console.log(searchObjectArray);
-      });
-          */
-
-      myFragment.prepend(newHeading);
-
-      document.body.appendChild(myFragment);
       console.log("Created Div");
       console.log("Done With Search Params");
     })(searchIdx);
@@ -517,8 +502,14 @@ function getKSLItemsFromRenderSearchSection() {
   document.body.prepend(selectMenu);
 
   // Create a single div that we can select different searches
+  var headingDiv = document.createElement("div");
+  var containerName = "heading-div";
+  headingDiv.setAttribute("id", containerName);
+  // headingDiv.setAttribute("class", "classifieds-container");
+  document.body.append(headingDiv);
+
   var newDiv = document.createElement("div");
-  var containerName = "single-div";
+  containerName = "items-div";
   newDiv.setAttribute("id", containerName);
   newDiv.setAttribute("class", "classifieds-container");
   document.body.append(newDiv);
@@ -527,31 +518,32 @@ function getKSLItemsFromRenderSearchSection() {
     var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
     console.log("Selected option: " + selectedOption);
     var selectedSearchObject = searchObjectArray[selectedOption];
-    $("#" + thisDivName).append($ad);
-  });
-  var topHeading = document.createElement("h1");
-  // newHeading.setAttribute("id", containerName + "-hdr");
-  topHeading.innerHTML = "Test";
-  document.body.prepend(topHeading);
-  topHeading.addEventListener("click", function () {
-    console.log(searchObjectArray);
+    generateHeadingsForDiv(selectedSearchObject, headingDiv);
+    displayKSLItemsFromObject(selectedSearchObject, containerName);
+
+    // $("#" + thisDivName).append($ad);
   });
 }
 
 function generateHeadingsForDiv(thisSearchObject, divObject) {
   var newHeading = document.createElement("h1");
   // newHeading.setAttribute("id", containerName + "-hdr");
+  divObject.innerHTML = "";
   newHeading.innerHTML = thisSearchObject.title;
+
   divObject.append(newHeading);
 
   for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
     var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
     newHeading = document.createElement("h3");
+    newHeading.setAttribute("class", "search-heading");
+    //newHeading.setAttribute("display", "inline block");
     var link = document.createElement("a");
 
     link.textContent =
       "Search for " + thisSearchObject.searchParams[idx].keyword;
     link.setAttribute("href", localURL);
+    link.setAttribute("target", "_blank");
     newHeading.append(link);
     // document.body.appendChild(newHeading);
     divObject.append(newHeading);

@@ -71,6 +71,10 @@
         font-weight: bold;
       }
 
+      .search-heading {
+        display: inline-block;
+        margin: 0 10px;
+      }
       .heading-div {
         display: inline-block;
         width: auto;
@@ -104,70 +108,9 @@
         object-fit: cover; /* Scale the image to cover the container */
         object-position: center; /* Center the image within the container */
       }
-
-      /*
-      .ad-title {
-        color: #fff;
-        font-size: 1.1rem;
-        margin-top: 0;
-        margin-bottom: 10px;
-      }
-
-      .ad-price {
-        font-weight: bold;
-        font-size: 0.9em;
-        color: #ffb800;
-        margin-bottom: 10px;
-      }
-
-      .ad-description {
-        color: #fff;
-        margin-top: 10px;
-        font-size: 0.9em;
-      }
-      */
-
-      /* Media queries for smaller screens */
-
-      /*
-      @media (max-width: 768px) {
-        .classified-ad {
-          width: calc(50% - 15px);
-        }
-        .classified-ad:nth-child(2n + 1) {
-          margin-right: 15px;
-        }
-      }
-      */
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
-    <!-- 
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-3.2.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-theme-3.2.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/font-awesome-4.3.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/ol-4.6.4.css" type="text/css">
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/mapclick.css" />
-
-        CSS -->
-    <!--[if lte IE 7
-      ]><link
-        rel="stylesheet"
-        type="text/css"
-        href="http://forecast.weather.gov/css/bootstrap-ie7.css"
-    /><![endif]-->
-    <!--[if lte IE 9
-      ]><link
-        rel="stylesheet"
-        type="text/css"
-        href="http://forecast.weather.gov/css/mapclick-ie.css"
-    /><![endif]-->
-
-    <!--
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/print.css" />
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/search.css" />
-        -->
-    <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
     <script>
       function displayKSLData(data, divName) {
         // Convert the response data to a jQuery object
@@ -384,6 +327,5 @@
   </head>
   <body>
     <!-- Auto populated later -->
-    <h2>Test 2</h2>
   </body>
 </html>

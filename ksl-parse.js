@@ -56,51 +56,17 @@ function truncateDescription(str, n, useWordBoundary) {
   );
 }
 
-function displayKSLItemsFromObject(searchObject) {
-  // Example Item
-  /*
-
-  {
-    "id": 71053851,
-    "memberId": 2409406,
-    "status": "Active",
-    "displayTime": "2023-03-18T03:16:23Z",
-    "photo": "https://img.ksl.com/mx/mplace-classifieds.ksl.com/2409406-1677780011-719029.jpg",
-    "category": "Winter Sports",
-    "city": "Salt Lake City",
-    "contactMethod": [
-        "messages"
-    ],
-    "description": "Price is reflecting the value of the bindings as the skis may be out of life... \n\nThe skis are are well used. Bases are are actually in good shape (no core shots) but the top is delaminating in a few spots. The toes have been mounted 2 times and the heals have been mounted 3 times. Heals are mounted to an adjustment plate.\n\nThe bindings have plenty of life left. They are Dynafit TLT Superlite 2.0 12. I also have a spare heal piece and will include leashes. \n\nPrice is OBO.",
-    "marketType": "Sale",
-    "name": "Bryce Mihalevich",
-    "newUsed": "UsedGood",
-    "price": 250,
-    "sellerType": "Private",
-    "state": "UT",
-    "subCategory": "Backcountry Equipment",
-    "title": "Dynafit bindings and BD Helios",
-    "zip": "84103",
-    "reducedPriceData": {
-        "previousPrice": 350,
-        "lowestPrice": 250,
-        "startDate": 1679109367
-    },
-    "pageviews": 267,
-    "favorited": 9,
-    "priceDropAllowed": true,
-    "contentType": "free",
-    "activeDealer": false,
-    "listingType": "normal",
-    "source": "classifiedListing",
-    "email": 0
- 
-        }
-   */
+function displayKSLItemsFromObject(searchObject, divOverride = false) {
   console.log(searchObject);
 
   // Since the search object array contains all the items, we need to clear the div first:
-  $("#" + searchObject.divName).empty();
+  var thisDivName = searchObject.divName;
+
+  if (divOverride) {
+    thisDivName = divOverride;
+  }
+
+  $("#" + thisDivName).empty();
 
   for (var idx = 0; idx < searchObject.items.length; idx++) {
     var item = searchObject.items[idx];
@@ -166,7 +132,7 @@ function displayKSLItemsFromObject(searchObject) {
 
     // Append the ad element to the page
     //console.log("Append " + searchObject.divName + " " + title);
-    $("#" + searchObject.divName).append($ad);
+    $("#" + thisDivName).append($ad);
 
     const itemsPerLine = 5;
     const numLinesPerSearch = 5;
@@ -321,7 +287,6 @@ function getKSLItemsFromRenderSearchSection() {
     expandSearch: "1",
   };
 
-  console.log("Test 123");
   // Create an array of search items to combine under the same umbrella
   var searchWords = [];
   searchWords.push("qst");
@@ -351,9 +316,6 @@ function getKSLItemsFromRenderSearchSection() {
   */
 
   // Create an array of search items to combine under the same umbrella
-  var searchObject2 = {};
-
-  console.log("Test 123");
 
   searchObject.title = "Boots for Mike";
   searchObject.divName = "mike-boots";
@@ -472,12 +434,23 @@ function getKSLItemsFromRenderSearchSection() {
   console.log("Test 123");
   console.log("Length: " + searchObjectArray.length);
 
+  var selectMenu = document.createElement("select");
+  var option = document.createElement("option");
+  option.text = "-- Select a Search --";
+  option.value = -1;
+  selectMenu.add(option);
+
   for (searchIdx = 0; searchIdx < searchObjectArray.length; searchIdx++) {
     (function (searchIdxLocal) {
       var thisSearchObject = searchObjectArray[searchIdxLocal];
 
       console.log(" Search Object Index: " + searchIdxLocal);
       console.log(thisSearchObject);
+
+      option = document.createElement("option");
+      option.text = thisSearchObject.title;
+      option.value = searchIdx;
+      selectMenu.add(option);
 
       // Create a div and heading
       const myFragment = document.createDocumentFragment();
@@ -527,19 +500,60 @@ function getKSLItemsFromRenderSearchSection() {
       console.log(divString);
       var myDiv = myFragment.querySelector(divString);
       console.log(myDiv);
+  
       newHeading.addEventListener("click", function () {
-        if (myDiv.style.display === "none") {
-          myDiv.style.display = "block";
-        } else {
-          myDiv.style.display = "none";
-        }
+        console.log(searchObjectArray);
       });
-      */
+          */
+
       myFragment.prepend(newHeading);
 
       document.body.appendChild(myFragment);
       console.log("Created Div");
       console.log("Done With Search Params");
     })(searchIdx);
+  }
+
+  document.body.prepend(selectMenu);
+
+  // Create a single div that we can select different searches
+  var newDiv = document.createElement("div");
+  var containerName = "single-div";
+  newDiv.setAttribute("id", containerName);
+  newDiv.setAttribute("class", "classifieds-container");
+  document.body.append(newDiv);
+
+  selectMenu.addEventListener("change", function () {
+    var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
+    console.log("Selected option: " + selectedOption);
+    var selectedSearchObject = searchObjectArray[selectedOption];
+    $("#" + thisDivName).append($ad);
+  });
+  var topHeading = document.createElement("h1");
+  // newHeading.setAttribute("id", containerName + "-hdr");
+  topHeading.innerHTML = "Test";
+  document.body.prepend(topHeading);
+  topHeading.addEventListener("click", function () {
+    console.log(searchObjectArray);
+  });
+}
+
+function generateHeadingsForDiv(thisSearchObject, divObject) {
+  var newHeading = document.createElement("h1");
+  // newHeading.setAttribute("id", containerName + "-hdr");
+  newHeading.innerHTML = thisSearchObject.title;
+  divObject.append(newHeading);
+
+  for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
+    var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
+    newHeading = document.createElement("h3");
+    var link = document.createElement("a");
+
+    link.textContent =
+      "Search for " + thisSearchObject.searchParams[idx].keyword;
+    link.setAttribute("href", localURL);
+    newHeading.append(link);
+    // document.body.appendChild(newHeading);
+    divObject.append(newHeading);
   }
 }

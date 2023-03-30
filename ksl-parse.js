@@ -1,61 +1,3 @@
-function getKSLVarData(url, callback) {
-  // Use jQuery to get the contents of the external page
-
-  var proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
-  // var proxyAddress = "https://crossorigin.me/"
-  var fullURL = proxyAddress + url;
-  $.ajax({
-    url: fullURL,
-    success: function (data) {
-      callback(data);
-    },
-  });
-}
-
-function addS(count) {
-  if (count > 1) {
-    return "s";
-  }
-  return "";
-}
-function adAge(adISODate) {
-  // Convert ISO 8601 time string to Date object
-  // console.log(adISODate);
-  var date = new Date(adISODate);
-
-  // console.group(date);
-  // Calculate time difference in milliseconds
-  var now = new Date();
-  var diff = now.getTime() - date.getTime();
-
-  // Convert milliseconds to minutes, hours, or days
-  var minutes = Math.floor(diff / 1000 / 60);
-  var hours = Math.floor(diff / 1000 / 60 / 60);
-  var days = Math.floor(diff / 1000 / 60 / 60 / 24);
-
-  // Output time difference
-  if (days > 0) {
-    return days + " day" + addS(days) + " ago";
-  } else if (hours > 0) {
-    return hours + " hour" + addS(hours) + " ago";
-  } else {
-    return minutes + " minute" + addS(minutes) + " ago";
-  }
-}
-
-// From Stack Overflow
-function truncateDescription(str, n, useWordBoundary) {
-  if (str.length <= n) {
-    return str;
-  }
-  const subString = str.slice(0, n - 1); // the original check
-  return (
-    (useWordBoundary
-      ? subString.slice(0, subString.lastIndexOf(" "))
-      : subString) + "&hellip;"
-  );
-}
-
 function displayKSLItemsFromObject(searchObject, divOverride = false) {
   console.log(searchObject);
 
@@ -177,7 +119,7 @@ function parseArgumentsFromFunction(data, functionName) {
 function handleKSLVariableData(data, functionName, searchObject) {
   console.log(searchObject);
   values = parseArgumentsFromFunction(data, functionName);
-  var itemArray = values[0];
+  // var itemArray = values[0];
 
   // *************************************
   // GPT Code for remove duplicates and sort by time
@@ -477,7 +419,7 @@ function getKSLItemsFromRenderSearchSection() {
         myFragment.append(newHeading);
         const searchFunctionName = "renderSearchSection";
 
-        getKSLVarData(localURL, function (data) {
+        getAjaxDataWithCallback(localURL, function (data) {
           console.log("Got a response for " + localURL);
           handleKSLVariableData(data, searchFunctionName, thisSearchObject);
         });

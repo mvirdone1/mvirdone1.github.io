@@ -1,3 +1,18 @@
+function fixZeroAndNull(data) {
+  // If the data is zero or null return the previous value
+  // Assumes the first value in the range is non-zero and non-null
+  for (let i = 1; i < data.length; i++) {
+    if (data[i] === 0 || data[i] === null) {
+      data[i] = data[i - 1];
+    }
+  }
+}
+
+function divify(inputString) {
+  // Replace all spaces with - and make everything lower case
+  return inputString.replace(/\s+/g, "-").toLowerCase();
+}
+
 // Generic function to scape web stuff
 function getAjaxDataWithCallback(url, callback, proxyAddress = "") {
   // Use jQuery to get the contents of the external page

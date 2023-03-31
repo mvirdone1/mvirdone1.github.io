@@ -92,6 +92,88 @@ function displayKSLItemsFromObject(searchObject, divOverride = false) {
   }
 }
 
+// Deprecated function kept around for reference
+function parseKSLDataFromDOM(data, divName) {
+  // Convert the response data to a jQuery object
+  var $html = $(data);
+
+  // Find all of the classified ad elements on the page
+  var $ads = $html.find(".listing-item");
+
+  console.log("Display Data: " + divName);
+  console.log("Starting the loop");
+
+  // console.log($ads)
+
+  // Loop through the ad elements and display them on the page
+  $ads.each(function (index) {
+    //console.log("In the loop")
+    // Get the title, price, image, and description of the ad
+    var title = $(this).find(".item-info-title").text();
+    console.group(title);
+    var url = $(this).find(".item-info-title a").attr("href");
+    var price = $(this).find(".item-info-price").text();
+    var imgSrc = $(this).find(".img-wrapper img").attr("src");
+    var description = $(this).find(".item-description").text();
+    var timeOnSite = $(this).find(".item-detail").text();
+    // timeOnSite = $(this).("span.timeOnSite");
+    var location = $(this).find(".item-address").text();
+
+    $(this)
+      .find("*")
+      .each(function () {
+        console.log(this);
+      });
+
+    // var description = $(".item-description").find("span").text();
+
+    //console.log(imgSrc);
+
+    // Create a new element to display the ad
+    var $ad = $('<div class="classified-ad"></div>');
+    $ad.append(
+      '<h2><a href="https://classifieds.ksl.com/' +
+        url +
+        '">' +
+        title +
+        "</a></h2>"
+    );
+    /*$ad.append(
+                              '<img class="ad-image" height="100px" src="' + imgSrc + '">'
+                            );*/
+
+    $ad.append(
+      '<a href="https://classifieds.ksl.com/' +
+        url +
+        '"><img height="175px" src="' +
+        imgSrc +
+        '"></a>'
+    );
+    /*
+                            $ad.append('<p class="ad-description">' + description + "</p>");
+                            $ad.append('<p class="ad-price">' + price + "</p>");
+                  */
+
+    $ad.append("<p>" + description + "</p>");
+    $ad.append("<p>" + price + "</p>");
+    $ad.append("<p> Time:" + timeOnSite + "</p>");
+    $ad.append("<p>" + location + "</p>");
+
+    // Append the ad element to the page
+    $(divName).append($ad);
+
+    // Add a class to every third ad to clear the row
+    if ((index + 1) % 6 === 0) {
+      $ad.addClass("clear-row");
+    }
+
+    if (index >= 17) {
+      return false;
+    }
+    console.groupEnd();
+  });
+}
+
 function parseArgumentsFromFunction(data, functionName) {
   var scriptContent = $(data)
     .find('script:contains("' + functionName + '(")')
@@ -419,10 +501,16 @@ function getKSLItemsFromRenderSearchSection() {
         myFragment.append(newHeading);
         const searchFunctionName = "renderSearchSection";
 
-        getAjaxDataWithCallback(localURL, function (data) {
-          console.log("Got a response for " + localURL);
-          handleKSLVariableData(data, searchFunctionName, thisSearchObject);
-        });
+        const proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+
+        getAjaxDataWithCallback(
+          localURL,
+          function (data) {
+            console.log("Got a response for " + localURL);
+            handleKSLVariableData(data, searchFunctionName, thisSearchObject);
+          },
+          proxyAddress
+        );
       }
 
       var newDiv = document.createElement("div");

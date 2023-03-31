@@ -1,11 +1,12 @@
 // Generic function to scape web stuff
-function getAjaxDataWithCallback(url, callback) {
+function getAjaxDataWithCallback(url, callback, proxyAddress = "") {
   // Use jQuery to get the contents of the external page
-  var proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+  // var proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
   // var proxyAddress = "https://crossorigin.me/"
   var fullURL = proxyAddress + url;
   $.ajax({
     url: fullURL,
+    dataType: "html",
     success: function (data) {
       callback(data);
     },

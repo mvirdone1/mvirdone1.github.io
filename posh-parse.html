@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Poshmark Shopping</title>
+    <script src="posh-parse.js"></script>
+    <script src="helper.js"></script>
+    <style>
+      /* Set the background color of the page */
+      body {
+        background-color: #1f2943;
+      }
+
+      /* Set the font family for the page */
+      body {
+        font-family: "Open Sans", sans-serif;
+      }
+
+      div {
+        display: inline;
+      }
+
+      /* Style the classified ad container */
+      .classifieds-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin: 0 -10px;
+
+        padding: 10px;
+      }
+
+      .classified-ad {
+        width: calc(20% - 50px);
+        margin: 0 10px 20px;
+        position: relative;
+        overflow: hidden;
+        background-color: #2a3a5c;
+        border-radius: 5px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .classified-ad.clear-row {
+        margin-right: 0;
+      }
+
+      /* Style the ad image */
+
+      /* Style the ad content */
+      /*
+      .ad-content {
+        position: relative;
+        z-index: 2;
+        padding: 10px;
+        color: #fff;
+      }
+      */
+
+      a {
+        color: #ffb800;
+      }
+
+      h1 {
+        color: #fff;
+      }
+      h2 {
+        display: block;
+        font-size: 1.5em;
+        margin-block-start: 0.83em;
+        margin-block-end: 0.83em;
+        margin-inline-start: 0px;
+        margin-inline-end: 0px;
+        font-weight: bold;
+      }
+
+      .search-heading {
+        display: inline-block;
+        margin: 0 10px;
+      }
+      .heading-div {
+        display: inline-block;
+        width: auto;
+        height: 100px;
+        overflow: hidden; /* Hide any overflowing content */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content vertically */
+      }
+
+      p {
+        color: #fff;
+      }
+
+      /* Define the styles for the parent div */
+      .image-parent {
+        display: inline-block;
+        width: auto;
+        height: 300px;
+        overflow: hidden; /* Hide any overflowing content */
+        justify-content: center; /* Center content vertically */
+        align-items: center; /* Center content vertically */
+      }
+
+      .ad-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        position: relative;
+        z-index: 1;
+        border-radius: 10px;
+        object-fit: cover; /* Scale the image to cover the container */
+        object-position: center; /* Center the image within the container */
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+    <script>
+      $(document).ready(function () {
+        // iterateOverParseArray(parseArray);
+
+        getPoshmarkItems();
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Auto populated later -->
+  </body>
+</html>

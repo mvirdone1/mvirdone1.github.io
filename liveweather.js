@@ -101,12 +101,13 @@ class WeatherPlotter {
     return pcmdString;
   }
 
-  createHourlyWeatherPlotUrl(options) {
+  buildURL(options, office, zone) {
+    // console.log(wfo);
     const queryParams = new URLSearchParams({
       lat: options.lat,
       lon: options.lon,
-      wfo: options.office,
-      zcode: "UTZ110",
+      wfo: office,
+      zcode: zone,
       gset: "30",
       gdiff: "10",
       unit: "0",
@@ -123,7 +124,26 @@ class WeatherPlotter {
     });
 
     return `${this.baseURL}${this.plotterPath}?${queryParams.toString()}`;
-    return url;
+  }
+
+  createHourlyWeatherPlotUrl(options, elementId) {
+    const apiUrl = `https://api.weather.gov/points/${options.lat},${options.lon}`;
+
+    return fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        const office = data.properties.cwa;
+        const zone = data.properties.forecastZone.substring(39);
+        var url = this.buildURL(options, office, zone);
+        console.log("Weather Plot URL: " + url);
+        document.getElementById(elementId).src = url;
+
+        return { office, zone };
+      })
+      .catch((error) => {
+        console.error(`Error fetching weather info: ${error}`);
+        return null;
+      });
   }
 }
 
@@ -386,8 +406,7 @@ function createChartObject(charts, locationTitle, attributes) {
   });
 }
 
-function displayAllLocationInfo(locationObject) {
-  console.log("Displaying All Location Info");
+function updateWeatherPlot(locationObject) {
   const plotter = new WeatherPlotter();
 
   var weatherPlotParamObject = {
@@ -416,19 +435,32 @@ function displayAllLocationInfo(locationObject) {
     ],
   };
 
+  var plotId = "weather-plot";
   const weatherHourlyURL = plotter.createHourlyWeatherPlotUrl(
-    weatherPlotParamObject
+    weatherPlotParamObject,
+    plotId
   );
+}
+
+function displayAllLocationInfo(locationObject) {
+  console.log("Displaying All Location Info");
+
   const contentElement = document.getElementById("dynamic-div");
 
+  // Create the heading
   var newHeading = document.createElement("h1");
   newHeading.textContent = locationObject.locationName;
   contentElement.append(newHeading);
 
+  var plotId = "weather-plot";
+  // Create the image element
   var img = document.createElement("img");
-  img.src = weatherHourlyURL;
+  img.id = plotId;
   img.alt = "Weather Plot";
   contentElement.appendChild(img);
+
+  // Update the URL for the image element
+  updateWeatherPlot(locationObject);
 
   for (const chartObject of locationObject.chartObjects) {
     newHeading = document.createElement("h2");
@@ -452,10 +484,128 @@ function displayAllLocationInfo(locationObject) {
   }
 }
 
-// Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
-window.onload = function () {
-  var locationObjects = [];
+function showMap() {
+  console.log("In Show Map");
+  const mapHTML = `    <div id="map"></div>
+    <form>
+      <label for="lat">Latitude:</label>
+      <input type="text" id="lat" name="lat" />
+      <br />
+      <label for="lon">Longitude:</label>
+      <input type="text" id="lon" name="lon" />
+    </form>`;
 
+  const forecastElement = document.getElementById("map-div");
+  forecastElement.innerHTML = mapHTML;
+
+  let lat = 40;
+  let lon = -110;
+  const map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: lat, lng: lon },
+    zoom: 5,
+  });
+
+  var marker;
+
+  map.addListener("click", (event) => {
+    lat = event.latLng.lat();
+    lon = event.latLng.lng();
+    document.getElementById("lat").value = lat;
+    document.getElementById("lon").value = lon;
+
+    // Remove the previous marker if it exists
+    if (marker) {
+      marker.setMap(null);
+    }
+
+    // Add a new marker to show the most recent click
+    marker = new google.maps.Marker({
+      position: event.latLng,
+      map,
+    });
+
+    var locationObject = {
+      lat: lat,
+      lon: lon,
+      locationName: "Forecast at Map Click",
+      // weatherOffice: "SLC",
+      chartObjects: [],
+    };
+
+    // Update the URL for the image element
+    updateWeatherPlot(locationObject);
+  });
+
+  const contentElement = document.getElementById("dynamic-div");
+  // Create the heading
+  var newHeading = document.createElement("h1");
+  newHeading.textContent = "Map Click Forecast";
+  contentElement.append(newHeading);
+
+  var plotId = "weather-plot";
+
+  // Create the image element
+  var img = document.createElement("img");
+  img.id = plotId;
+  img.alt = "Weather Plot";
+  contentElement.appendChild(img);
+}
+
+function initMap() {
+  console.log("Init Map Callback from Google");
+  showMap();
+}
+
+function createFullMountainSuitePlots(locationObject, charts) {
+  var attributes = {};
+
+  // Plot 3 day snow change
+  attributes.title = "Snow Change";
+  attributes.days = 3;
+  attributes.offset = true;
+  attributes.chartType = chartTypes.snowDepth;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
+
+  // Plot 1 day snow change
+  attributes.days = 1;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
+  // Plot 1 day temp
+  attributes.title = "Temperature";
+  attributes.days = 1;
+  attributes.offset = false;
+  attributes.chartType = chartTypes.temperature;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
+
+  // Plot 1 day wind
+  attributes.title = "Wind Speed";
+  attributes.chartType = chartTypes.windSpeed;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
+
+  // Plot 1 day wind
+  attributes.title = "Total Snow";
+  attributes.days = 5;
+  attributes.offset = false;
+  attributes.chartType = chartTypes.snowDepth;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
+}
+
+function initLocationObjects() {
+  var locationObjects = [];
   //---------------------------------
   // Logan Weather
   //---------------------------------
@@ -463,7 +613,7 @@ window.onload = function () {
     lat: "41.76760",
     lon: "-111.77928",
     locationName: "Logan Local (Green Canyon)",
-    weatherOffice: "SLC",
+    //weatherOffice: "SLC",
     chartObjects: [],
   };
 
@@ -519,7 +669,7 @@ window.onload = function () {
   locationObject.lat = "36.5785";
   locationObject.lon = "-118.2923";
   locationObject.locationName = "Mount Whitney";
-  locationObject.weatherOffice = "HNX";
+  // locationObject.weatherOffice = "HNX";
   // Clear the array
   locationObject.chartObjects = [];
   charts = [];
@@ -532,189 +682,13 @@ window.onload = function () {
 
   locationObjects.push({ ...locationObject });
 
-  /*
+  return locationObjects;
+}
 
-  var tempChartObject = {
-    charts: charts,
-    title: "Logan Local Weather (Green Canyon) - 24 Hour",
-    divName: "logan-weather",
-    numHours: 24 * 1,
-    offset: false,
-    dataType: chartTypes.temperature, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  var chartObjects = [];
-  chartObjects.push(tempChartObject);
-
-  var tempChartObject = {
-    charts: charts,
-    title: "Logan Local Wind (Green Canyon) - 24 Hour",
-    divName: "logan-wind",
-    numHours: 24 * 1,
-    offset: false,
-    dataType: chartTypes.windSpeed, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  var charts2 = [];
-  charts2.push("TGLU1");
-  charts2.push("TGSU1");
-  charts2.push("LGS");
-
-  tempChartObject = {
-    charts: charts2,
-    title: "Change in Snow Up Canyon - 3 Day",
-    divName: "up-snow-change-72",
-    numHours: 24 * 3,
-    offset: true,
-    dataType: chartTypes.snowDepth, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  tempChartObject = {
-    charts: charts2,
-    title: "Change in Snow Up Canyon - 1 Day",
-    divName: "up-snow-change-24",
-    numHours: 24 * 1,
-    offset: true,
-    dataType: chartTypes.snowDepth, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  tempChartObject = {
-    charts: charts2,
-    title: "Temperature Up Canyon - 24 Hour",
-    divName: "up-temp",
-    numHours: 24 * 1,
-    offset: false,
-    dataType: chartTypes.temperature, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  tempChartObject = {
-    charts: charts2,
-    title: "Wind Up Canyon - 24 Hour",
-    divName: "up-wind",
-    numHours: 24 * 1,
-    offset: false,
-    dataType: chartTypes.windSpeed, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  tempChartObject = {
-    charts: charts2,
-    title: "Total Snow Up Canyon - 3 Day",
-    divName: "up-snow-total",
-    numHours: 24 * 3,
-    offset: false,
-    dataType: chartTypes.snowDepth, // 0 = Temperature, 1 = Snow Depth
-  };
-
-  chartObjects.push(tempChartObject);
-
-  var plotWhitney = true;
-  if (plotWhitney) {
-    charts2 = [];
-    charts2.push("CWDC1");
-    charts2.push("CBTC1");
-    charts2.push("UTYC1");
-    charts2.push("CQ270");
-
-    tempChartObject = {
-      charts: charts2,
-      title: "Change in Snow Whitney - 3 Day",
-      divName: "whit-snow-change-72",
-      numHours: 24 * 3,
-      offset: true,
-      dataType: chartObjects.snowDepth, // 0 = Temperature, 1 = Snow Depth
-    };
-
-    chartObjects.push(tempChartObject);
-
-    tempChartObject = {
-      charts: charts2,
-      title: "Change in Snow Whitney - 1 Day",
-      divName: "whit-snow-change-24",
-      numHours: 24 * 1,
-      offset: true,
-      dataType: chartTypes.snowDepth, // 0 = Temperature, 1 = Snow Depth
-    };
-
-    chartObjects.push(tempChartObject);
-
-    tempChartObject = {
-      charts: charts2,
-      title: "Temperature Whitney - 24 Hour",
-      divName: "whitney-temp",
-      numHours: 24 * 1,
-      offset: false,
-      dataType: chartTypes.temperature, // 0 = Temperature, 1 = Snow Depth
-    };
-
-    chartObjects.push(tempChartObject);
-
-    tempChartObject = {
-      charts: charts2,
-      title: "Wind Whitney - 24 Hour",
-      divName: "whitney-wind",
-      numHours: 24 * 1,
-      offset: false,
-      dataType: chartTypes.windSpeed, // 0 = Temperature, 1 = Snow Depth
-    };
-
-    chartObjects.push(tempChartObject);
-
-    tempChartObject = {
-      charts: charts2,
-      title: "Total Snow Whitney - 3 Day",
-      divName: "whitney-snow-total",
-      numHours: 24 * 3,
-      offset: false,
-      dataType: chartTypes.snowDepth, // 0 = Temperature, 1 = Snow Depth
-    };
-
-    chartObjects.push(tempChartObject);
-  }
-
-  console.log("Trying to do the weather URL");
-  // Example usage:
-  const plotter = new WeatherPlotter();
-
-  var weatherPlotParamObject = {
-    lat: "41.76760",
-    lon: "-111.77928",
-    hours: 36,
-    pmcdArray: [
-      GraphTypes.Temperature,
-      GraphTypes.WindChill,
-      GraphTypes.Snow,
-      GraphTypes.Rain,
-      GraphTypes.SurfaceWind,
-      GraphTypes.ProbQPF01,
-      GraphTypes.ProbQPF025,
-      GraphTypes.ProbQPF05,
-      GraphTypes.ProbQPF1,
-      GraphTypes.ProbQPF2,
-      GraphTypes.ProbSnow01,
-      GraphTypes.ProbSnow1,
-      GraphTypes.ProbSnow3,
-      GraphTypes.ProbSnow6,
-      GraphTypes.ProbSnow12,
-      GraphTypes.SkyCover,
-      GraphTypes.PrecipitationPotential,
-    ],
-  };
-
-  */
-
+function createDropDownMenu(locationObjects) {
   var selectMenu = document.createElement("select");
   var option = document.createElement("option");
-  option.text = "-- Select a Search --";
+  option.text = "Map Search";
   option.value = -1;
   selectMenu.add(option);
 
@@ -736,106 +710,37 @@ window.onload = function () {
       selectMenu.options[selectMenu.selectedIndex].value
     );
     console.log("Selected option: " + selectedOption);
-
-    document.getElementById("dynamic-div").innerHTML = "";
-
-    switch (selectedOption) {
-      case -1:
-        document.getElementById("dynamic-div").innerHTML =
-          "<h1>Select a product from above </h1>";
-        break;
-
-      case 0:
-        console.log("Avy Forecast Start");
-        displayAvyForecast("dynamic-div");
-        console.log("Case " + selectedOption);
-        break;
-
-      default:
-        console.log("Case " + selectedOption);
-        displayAllLocationInfo(locationObjects[selectedOption - 1]);
-        console.log("Case " + selectedOption);
-    }
-
-    // $("#" + thisDivName).append($ad);
+    handleDropDownChange(selectedOption, locationObjects);
   });
-
-  // displayAvyForecast();
-
-  /*const loganURL = plotter.createHourlyWeatherPlotUrl(weatherPlotParamObject);
-
-  weatherPlotParamObject.lat = "41.95216";
-  weatherPlotParamObject.lon = "-111.49158";
-  const summitURL = plotter.createHourlyWeatherPlotUrl(weatherPlotParamObject);
-
-  const forecastElement = document.getElementById("wPlot");
-  forecastElement.innerHTML = `
-  <table>
-  <tr>
-    <td>
-      <h3>Green Canyon Forecast </h3>
-
-      <img  src="${loganURL}" alt="Weather Plot">
-
-    </td>
-    <td>
-  
-      <h3>Logan Summit (Swan Flats) </h3>
-      <img  src="${summitURL}" alt="Weather Plot">
-    </td>
-  </tr>
-  </table>
-
-  `;
-
-  */
-  // Iterate over the charts
-};
-
-function createFullMountainSuitePlots(locationObject, charts) {
-  var attributes = {};
-
-  // Plot 3 day snow change
-  attributes.title = "Snow Change";
-  attributes.days = 3;
-  attributes.offset = true;
-  attributes.chartType = chartTypes.snowDepth;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
-
-  // Plot 1 day snow change
-  attributes.days = 1;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
-  // Plot 1 day temp
-  attributes.title = "Temperature";
-  attributes.days = 1;
-  attributes.offset = false;
-  attributes.chartType = chartTypes.temperature;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
-
-  // Plot 1 day wind
-  attributes.title = "Wind Speed";
-  attributes.chartType = chartTypes.windSpeed;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
-
-  // Plot 1 day wind
-  attributes.title = "Total Snow";
-  attributes.days = 5;
-  attributes.offset = false;
-  attributes.chartType = chartTypes.snowDepth;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
 }
+
+function handleDropDownChange(selectedOption, locationObjects) {
+  document.getElementById("dynamic-div").innerHTML = "";
+  document.getElementById("map-div").innerHTML = "";
+
+  switch (selectedOption) {
+    case -1:
+      showMap();
+
+      break;
+
+    case 0:
+      console.log("Avy Forecast Start");
+      displayAvyForecast("dynamic-div");
+      break;
+
+    default:
+      displayAllLocationInfo(locationObjects[selectedOption - 1]);
+  }
+}
+
+// Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
+window.onload = function () {
+  // Initialize the map
+  // initMap();
+
+  var locationObjects = initLocationObjects();
+  createDropDownMenu(locationObjects);
+
+  // handleDropDownChange(-1);
+};

@@ -5,6 +5,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"
+      async
+      defer
+    ></script>
+
+    <!--src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"-->
     <script src="liveweather.js"></script>
     <script src="helper.js"></script>
 
@@ -14,15 +21,35 @@
         -webkit-user-select: none;
         -ms-user-select: none;
       }
+      #map {
+        height: 400px;
+        width: 600px;
+      }
     </style>
   </head>
   <body>
+    <div id="map-div"></div>
+    <div id="dynamic-div"></div>
     <!--
     <h1>Mesonet Temperature Data</h1>
     <canvas id="temperatureChart"></canvas>
-    -->
-    <div id="dynamic-div"></div>
+
+
+    <div id="map"></div>
+    <div id="form-outputs">
+      <form>
+        <label for="lat">Latitude:</label>
+        <input type="text" id="lat" name="lat" />
+        <br />
+        <label for="lon">Longitude:</label>
+        <input type="text" id="lon" name="lon" />
+      </form>
+    </div>
+        -->
+
+    <!--
     <div id="forecast"></div>
     <div id="wPlot"></div>
+    -->
   </body>
 </html>

@@ -261,6 +261,7 @@ function buildKSLSearchURL(searchParams) {
   for (const key in searchParams) {
     url = url + "/" + key + "/" + searchParams[key];
   }
+  url += "/private";
   // url = url + "/expandSearch/1/";
   return url;
 }
@@ -269,10 +270,8 @@ function createSearchObject(
   searchObject,
   searchParams,
   searchWords,
-  baseSearchString
+  searchCategories
 ) {
-  searchCategories = Array(searchWords.length).fill(baseSearchString);
-
   for (wordIdx = 0; wordIdx < searchWords.length; wordIdx++) {
     searchParams.keyword = searchWords[wordIdx];
     searchParams.search = searchCategories[wordIdx];
@@ -318,12 +317,16 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords.push("chetler");
   searchWords.push("bacon");
 
+  var searchCategories = Array(searchWords.length).fill(
+    "Winter-Sports/Downhill-Skis"
+  );
+
   searchObjectArray.push(
     createSearchObject(
       searchObject,
       searchParams,
       searchWords,
-      "Winter-Sports/Downhill-Skis"
+      searchCategories
     )
   );
 
@@ -351,8 +354,16 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords.push("29.0");
   searchWords.push("29.5");
 
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill("Winter-Sports");
+
   searchObjectArray.push(
-    createSearchObject(searchObject, searchParams, searchWords, "Winter-Sports")
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      searchCategories
+    )
   );
 
   searchObject.title = "Backcountry Gear";
@@ -366,8 +377,16 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords.push("backland");
   searchWords.push("voile");
 
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill("Winter-Sports");
+
   searchObjectArray.push(
-    createSearchObject(searchObject, searchParams, searchWords, "Winter-Sports")
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      searchCategories
+    )
   );
 
   searchObject.title = "SRAM Drivetrain";
@@ -383,12 +402,17 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords.push("gx");
   searchWords.push("x01");
 
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill(
+    "Cycling/Mountain-Bike-Parts"
+  );
+
   searchObjectArray.push(
     createSearchObject(
       searchObject,
       searchParams,
       searchWords,
-      "Cycling/Mountain-Bike-Parts"
+      searchCategories
     )
   );
 
@@ -402,12 +426,24 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords = [];
   searchWords.push("mammut");
   searchWords.push("osprey");
+  searchWords.push("patagonia black hole");
   searchWords.push("kamber");
+  searchWords.push("kode");
+  searchWords.push("Ascendant");
+  searchWords.push("refuge air");
+  searchWords.push("uberlayer");
   searchWords.push("dawn patrol");
-  searchWords.push("crampons");
+
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill("");
 
   searchObjectArray.push(
-    createSearchObject(searchObject, searchParams, searchWords, "")
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      searchCategories
+    )
   );
 
   searchObject.title = "XC Bikes";
@@ -429,12 +465,45 @@ function getKSLItemsFromRenderSearchSection() {
   searchWords.push("nica");
   searchWords.push("spectral");
 
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill("Cycling/Mountain-Bikes");
+
   searchObjectArray.push(
     createSearchObject(
       searchObject,
       searchParams,
       searchWords,
-      "Cycling/Mountain-Bikes"
+      searchCategories
+    )
+  );
+
+  searchObject.title = "Clothing";
+  searchObject.divName = "clothes";
+  searchObject.searchParams = [];
+  searchObject.items = [];
+  searchParams.priceFrom = "5";
+  searchParams.priceTo = "150";
+
+  searchWords = [];
+  searchWords.push("patagonia");
+  searchWords.push("black diamond");
+  searchWords.push("outdoor research");
+  searchWords.push("mammut");
+  searchWords.push("marmot");
+  searchWords.push("rab");
+  searchWords.push("polartec alpha");
+
+  searchCategories = [];
+  searchCategories = Array(searchWords.length).fill(
+    "Clothing-and-Apparel/Mens-Clothing"
+  );
+
+  searchObjectArray.push(
+    createSearchObject(
+      searchObject,
+      searchParams,
+      searchWords,
+      searchCategories
     )
   );
 

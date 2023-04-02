@@ -77,7 +77,7 @@ function displayKSLItemsFromObject(searchObject, divOverride = false) {
     $("#" + thisDivName).append($ad);
 
     const itemsPerLine = 5;
-    const numLinesPerSearch = 5;
+    const numLinesPerSearch = 7;
 
     // Add a class to every third ad to clear the row
     if ((idx + 1) % itemsPerLine === 0) {

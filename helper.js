@@ -11,6 +11,28 @@ function camelToTitleCase(str) {
     });
 }
 
+// GPT Code for set and get cookies
+// Function to set a cookie with the specified name and value
+function setCookie(name, value) {
+  document.cookie = `${name}=${value}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+}
+
+// Function to get the value of a cookie with the specified name
+function getCookie(name) {
+  const cookieString = decodeURIComponent(document.cookie);
+  const cookieArray = cookieString.split(";");
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i];
+    while (cookie.charAt(0) === " ") {
+      cookie = cookie.substring(1);
+    }
+    if (cookie.indexOf(name + "=") === 0) {
+      return cookie.substring(name.length + 1, cookie.length);
+    }
+  }
+  return null;
+}
+
 function fixZeroAndNull(data) {
   // If the data is zero or null return the previous value
   // Assumes the first value in the range is non-zero and non-null

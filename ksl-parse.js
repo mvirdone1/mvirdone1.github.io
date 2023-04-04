@@ -563,6 +563,15 @@ function getKSLItemsFromRenderSearchSection() {
     )
   );
 
+  // Convert the searchParamsArray to a JSON string and save it to a cookie
+  setCookie("searchObjectArray", JSON.stringify(searchObjectArray));
+
+  // Load the searchParamsArray from the cookie
+  const searchObjectArrayCookie = getCookie("searchObjectArray");
+  const loadedSearchParamsArray = JSON.parse(searchObjectArrayCookie);
+  console.log("Made a Cookie");
+  console.log(loadedSearchParamsArray);
+
   //searchParams.keyword = "bent";
   //searchObject.searchParams.push({ ...searchParams });
 

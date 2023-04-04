@@ -20,6 +20,8 @@ function setCookie(name, value) {
 // Function to get the value of a cookie with the specified name
 function getCookie(name) {
   const cookieString = decodeURIComponent(document.cookie);
+
+  console.log(cookieString);
   const cookieArray = cookieString.split(";");
   for (let i = 0; i < cookieArray.length; i++) {
     let cookie = cookieArray[i];

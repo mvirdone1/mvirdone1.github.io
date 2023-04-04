@@ -564,6 +564,8 @@ function getKSLItemsFromRenderSearchSection() {
   );
 
   // Convert the searchParamsArray to a JSON string and save it to a cookie
+  console.log("Made a Cookie");
+  console.log(JSON.stringify(searchObjectArray));
   setCookie("searchObjectArray", JSON.stringify(searchObjectArray));
 
   // Load the searchParamsArray from the cookie

@@ -570,8 +570,10 @@ function getKSLItemsFromRenderSearchSection() {
 
   // Load the searchParamsArray from the cookie
   const searchObjectArrayCookie = getCookie("searchObjectArray");
+  console.log("Eating a Cookie");
+  console.log(searchObjectArrayCookie);
   const loadedSearchParamsArray = JSON.parse(searchObjectArrayCookie);
-  console.log("Made a Cookie");
+
   console.log(loadedSearchParamsArray);
 
   //searchParams.keyword = "bent";

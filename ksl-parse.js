@@ -1,4 +1,15 @@
-function displayKSLItemsFromObject(searchObject, divOverride = false) {
+const sortOptions = {
+  dateNew: 0,
+  dateOld: 1,
+  priceLow: 2,
+  priceHigh: 3,
+};
+
+function displayKSLItemsFromObject(
+  searchObject,
+  sortOption = sortOptions.dateNew,
+  divOverride = false
+) {
   console.log(searchObject);
 
   // Since the search object array contains all the items, we need to clear the div first:
@@ -9,6 +20,8 @@ function displayKSLItemsFromObject(searchObject, divOverride = false) {
   }
 
   $("#" + thisDivName).empty();
+
+  sortKSLItems(searchObject.items, sortOption);
 
   for (var idx = 0; idx < searchObject.items.length; idx++) {
     var item = searchObject.items[idx];
@@ -220,15 +233,7 @@ function handleKSLVariableData(data, functionName, searchObject) {
   });
 
   // Sort the resulting array by the "displayTime" property
-  uniqueArray.sort((a, b) => {
-    if (a.displayTime > b.displayTime) {
-      return -1;
-    }
-    if (a.displayTime < b.displayTime) {
-      return 1;
-    }
-    return 0;
-  });
+  sortKSLItems(uniqueArray);
 
   // *************************************
   // GPT Code for remove duplicates and sort by time
@@ -236,6 +241,57 @@ function handleKSLVariableData(data, functionName, searchObject) {
 
   searchObject.items = [...uniqueArray];
   displayKSLItemsFromObject(searchObject);
+}
+
+function sortKSLItems(sortArray, sortOption = sortOptions.dateNew) {
+  // A generally terrible idea where I am going to use the LSB to
+  // enumerate sort order
+  // And then the remaining bits will be the sort option type...
+
+  // Bitwise operator to get the LSB for the sort order
+  var sortOrder = sortOption & 1;
+
+  var sortUp = -1;
+  var sortDown = 1;
+
+  if (sortOrder == 1) {
+    sortUp = 1;
+    sortDown = -1;
+  }
+
+  console.log("Sort Option: " + sortOption);
+
+  switch (+sortOption) {
+    case sortOptions.priceHigh:
+    case sortOptions.priceLow:
+      console.log("Sort By Price");
+      sortArray.sort((a, b) => {
+        if (a.price > b.price) {
+          return sortDown;
+        }
+        if (a.price < b.price) {
+          return sortUp;
+        }
+        return 0;
+      });
+      break;
+
+    case sortOptions.dateNew:
+    case sortOptions.dateOld:
+      console.log("Actually Sort By Date, not default");
+    default:
+      console.log("Sort By Date");
+      sortArray.sort((a, b) => {
+        if (a.displayTime > b.displayTime) {
+          return sortUp;
+        }
+        if (a.displayTime < b.displayTime) {
+          return sortDown;
+        }
+        return 0;
+      });
+      break;
+  }
 }
 
 function buildKSLSearchURL(searchParams) {
@@ -600,6 +656,28 @@ function getKSLItemsFromRenderSearchSection() {
 
   document.body.prepend(selectMenu);
 
+  var sortMenu = document.createElement("select");
+  for (const key in sortOptions) {
+    option = document.createElement("option");
+    option.text = camelToTitleCase(key);
+    option.value = sortOptions[key];
+    sortMenu.add(option);
+  }
+
+  /*
+  option = document.createElement("option");
+  option.text = "Date";
+  option.value = sortOptions.date;
+  sortMenu.add(option);
+  option = document.createElement("option");
+
+  option.text = "Price";
+  option.value = sortOptions.price;
+  sortMenu.add(option);
+  */
+
+  document.body.append(sortMenu);
+
   // Create a single div that we can select different searches
   var headingDiv = document.createElement("div");
   var containerName = "heading-div";
@@ -613,7 +691,28 @@ function getKSLItemsFromRenderSearchSection() {
   newDiv.setAttribute("class", "classifieds-container");
   document.body.append(newDiv);
 
+  sortMenu.addEventListener("change", function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName
+    );
+
+    // $("#" + thisDivName).append($ad);
+  });
+
   selectMenu.addEventListener("change", function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName
+    );
+
+    /*
     var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
     console.log("Selected option: " + selectedOption);
     var selectedSearchObject = searchObjectArray[selectedOption];
@@ -621,7 +720,24 @@ function getKSLItemsFromRenderSearchSection() {
     displayKSLItemsFromObject(selectedSearchObject, containerName);
 
     // $("#" + thisDivName).append($ad);
+    */
   });
+}
+
+function renderSelectedAdContents(
+  selectMenu,
+  sortMenu,
+  searchObjectArray,
+  headingDiv,
+  containerName
+) {
+  var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
+  console.log("Selected option: " + selectedOption);
+  var selectedSearchObject = searchObjectArray[selectedOption];
+  generateHeadingsForDiv(selectedSearchObject, headingDiv);
+
+  var sortOption = sortMenu.options[sortMenu.selectedIndex].value;
+  displayKSLItemsFromObject(selectedSearchObject, sortOption, containerName);
 }
 
 function generateHeadingsForDiv(thisSearchObject, divObject) {

@@ -1,3 +1,16 @@
+// Chat GPT Code
+// Using this to take a javascript element and use
+// the key as the text in a dropdown menu
+function camelToTitleCase(str) {
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1 $2") // split words at camel case
+    .replace(/([A-Z][a-z])/g, " $1") // split words at title case
+    .replace(/(\b\w)/gi, function (word) {
+      // capitalize first letter of each word
+      return word.toUpperCase();
+    });
+}
+
 function fixZeroAndNull(data) {
   // If the data is zero or null return the previous value
   // Assumes the first value in the range is non-zero and non-null

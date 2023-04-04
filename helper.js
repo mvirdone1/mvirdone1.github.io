@@ -14,7 +14,9 @@ function camelToTitleCase(str) {
 // GPT Code for set and get cookies
 // Function to set a cookie with the specified name and value
 function setCookie(name, value) {
+  document.cookie = "username=John Doe; expires=Thu, 18 Dec 2213 12:00:00 UTC";
   document.cookie = `${name}=${value}; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/`;
+  console.log(document.cookie);
 }
 
 // Function to get the value of a cookie with the specified name

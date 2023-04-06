@@ -13,33 +13,34 @@ function camelToTitleCase(str) {
 
 // GPT Code for set and get cookies
 // Function to set a cookie with the specified name and value
-function setCookie(name, value) {
+function setLocalStorage(name, value) {
   // document.cookie = "username=John Doe; expires=Thu, 18 Dec 2213 12:00:00 UTC";
 
+  localStorage.setItem(name, value);
+
+  /*
   cookieString =
     name + "=" + value + "; expires=Fri, 31 Dec 9999 23:59:59 GMT;";
 
   console.log(cookieString);
   document.cookie = cookieString;
   console.log(document.cookie);
+
+  */
 }
 
 // Function to get the value of a cookie with the specified name
-function getCookie(name) {
-  const cookieString = document.cookie;
+function getLocalStorage(name) {
+  const myItem = localStorage.getItem(name);
 
-  console.log(cookieString);
-  const cookieArray = cookieString.split(";");
-  for (let i = 0; i < cookieArray.length; i++) {
-    let cookie = cookieArray[i];
-    while (cookie.charAt(0) === " ") {
-      cookie = cookie.substring(1);
-    }
-    if (cookie.indexOf(name + "=") === 0) {
-      return cookie.substring(name.length + 1, cookie.length);
-    }
+  if (myItem !== null) {
+    // Do something with myItem
+    return myItem;
+  } else {
+    // Handle the case where myItem doesn't exist
+    alert(name + " not found!");
+    return null;
   }
-  return null;
 }
 
 function fixZeroAndNull(data) {
@@ -118,4 +119,117 @@ function truncateDescription(str, n, useWordBoundary) {
       ? subString.slice(0, subString.lastIndexOf(" "))
       : subString) + "&hellip;"
   );
+}
+
+function createKSLSearchObject(
+  searchObject,
+  searchParams,
+  searchWords,
+  searchCategories
+) {
+  for (wordIdx = 0; wordIdx < searchWords.length; wordIdx++) {
+    searchParams.keyword = searchWords[wordIdx];
+    searchParams.search = searchCategories[wordIdx];
+    // Push each item as a new object
+    searchObject.searchParams.push({ ...searchParams });
+  }
+
+  // Return a completely new object
+  return { ...searchObject };
+}
+
+// Chat GPT code with some modifications
+function createNestedList(object, parent) {
+  var list = document.createElement("ul");
+  parent.appendChild(list);
+
+  for (var key in object) {
+    var listItem = document.createElement("li");
+
+    if (typeof object[key] === "object" && !Array.isArray(object[key])) {
+      listItem.innerText = key;
+
+      createNestedList(object[key], listItem);
+    } else if (Array.isArray(object[key])) {
+      listItem.innerText = key;
+      var sublist = document.createElement("ul");
+      listItem.appendChild(sublist);
+
+      object[key].forEach(function (item) {
+        if (typeof object[key] === "object") {
+          var sublist = document.createElement("ul");
+          parent.appendChild(sublist);
+          createNestedList(item, listItem);
+        } else {
+          var subitem = document.createElement("li");
+          subitem.innerText = item + "[" + key + "]";
+          sublist.appendChild(subitem);
+        }
+      });
+    } else {
+      listItem.innerText = key + ": " + object[key];
+    }
+
+    list.appendChild(listItem);
+  }
+}
+
+// createNestedList(myObject, document.getElementById("resultsList"));
+
+function createArrayIdxString(arrayIdx) {
+  var arrayString = "";
+
+  for (idx in arrayIdx) {
+    arrayString = arrayString + "[" + arrayIdx[idx] + "]";
+  }
+  return arrayString;
+}
+function createSingleLI(key, value, arrayIdx) {
+  var myLI = document.createElement("li");
+  var itemText = createArrayIdxString(arrayIdx) + key + ": " + value;
+  console.log(itemText);
+  myLI.text = itemText;
+
+  return myLI;
+}
+
+function ULObjectItems(myObject, root, indexArray = []) {
+  var myUL = document.createElement("ul");
+
+  root.appendChild(myUL);
+
+  for (const key in myObject) {
+    var iteratedObject = myObject[key];
+
+    // Print out what we're working with for the recusion
+    console.log({
+      currentKey: key,
+      currentObject: iteratedObject,
+      arrayLength: indexArray.length,
+    });
+
+    // Handle arrays
+    if (Array.isArray(iteratedObject)) {
+      /*
+      for (idx in myObject) {
+        console.log("Array Level " + idx);
+        ULObjectItems(myObject[idx], indexArray.push(idx));
+        */
+
+      ULObjectItems(iteratedObject, indexArray.push(key));
+    }
+    // Handle Objects
+    else if (typeof iteratedObject === "object") {
+      console.log("Object");
+      ULObjectItems(iteratedObject, indexArray);
+      // Handle the simplest case
+    } else {
+      console.log("Single Element");
+      var myLI = createSingleLI(key, iteratedObject, indexArray);
+      myUL.append(myLI);
+    }
+  }
+  myFragment.appendChild(myUL);
+
+  return myFragment;
 }

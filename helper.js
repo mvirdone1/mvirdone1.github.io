@@ -11,6 +11,14 @@ function camelToTitleCase(str) {
     });
 }
 
+function printObjectPre(myObject) {
+  return (
+    myObject.length +
+    " elements \n" +
+    JSON.stringify(myObject).replace(/\[/g, "\n[").replace(/\}\,/g, "},\n")
+  );
+}
+
 // GPT Code for set and get cookies
 // Function to set a cookie with the specified name and value
 function setLocalStorage(name, value) {

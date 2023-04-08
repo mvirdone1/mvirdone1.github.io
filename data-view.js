@@ -6,6 +6,7 @@ function loadDataViewPage() {
 function createInitContent() {
   // Get a reference to the div
   const myDiv = document.getElementById("data-div");
+  var searchObjectArray = [];
 
   // Create a button element
   var myHeading = document.createElement("h3");
@@ -27,16 +28,15 @@ function createInitContent() {
   preElement.id = "variable-pre";
   preElement.innerHTML = "Variable Contents";
   myDiv.appendChild(preElement);
+  document.getElementById("variable-pre").innerHTML =
+    printObjectPre(searchObjectArray);
 
   // Add an onclick listener to the button
   initButton.onclick = function () {
     searchObjectArray = initKSLVariables();
     console.log("Init Variable");
-    document.getElementById("variable-pre").innerHTML = JSON.stringify(
-      searchObjectArray
-    )
-      .replace(/\[/g, "\n[")
-      .replace(/\}\,/g, "},\n");
+    document.getElementById("variable-pre").innerHTML =
+      printObjectPre(searchObjectArray);
 
     setLocalStorage("searchObjectArray", JSON.stringify(searchObjectArray));
 
@@ -62,7 +62,12 @@ function createInitContent() {
 
   // Add an onclick listener to the button
   loadButton.onclick = function () {
-    var searchObjectArray = loadKSLParams();
+    searchObjectArray = loadKSLParams();
+
+    document.getElementById("variable-pre").innerHTML =
+      printObjectPre(searchObjectArray);
+
+    setLocalStorage("searchObjectArray", JSON.stringify(searchObjectArray));
 
     // setLocalStorage("SearchObjectArray", JSON.stringify(searchObjectArray));
   };
@@ -75,6 +80,7 @@ function loadKSLParams() {
   searchObjectArray = JSON.parse(searchObjectArrayCookie);
   console.log("Read from File Variable");
   console.log(searchObjectArray);
+  return searchObjectArray;
 }
 
 function initKSLVariables() {

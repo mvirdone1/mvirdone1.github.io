@@ -7,11 +7,13 @@ const sortOptions = {
 
 function displayKSLItemsFromObject(
   searchObject,
+  searchString = "",
   sortOption = sortOptions.dateNew,
   divOverride = false
 ) {
   console.log(searchObject);
 
+  console.log("Search:" + searchString + " Length: " + searchString.length);
   // Since the search object array contains all the items, we need to clear the div first:
   var thisDivName = searchObject.divName;
 
@@ -22,6 +24,8 @@ function displayKSLItemsFromObject(
   $("#" + thisDivName).empty();
 
   sortKSLItems(searchObject.items, sortOption);
+
+  var itemIdx = 0;
 
   for (var idx = 0; idx < searchObject.items.length; idx++) {
     var item = searchObject.items[idx];
@@ -87,20 +91,30 @@ function displayKSLItemsFromObject(
 
     // Append the ad element to the page
     //console.log("Append " + searchObject.divName + " " + title);
-    $("#" + thisDivName).append($ad);
 
-    const itemsPerLine = 5;
-    const numLinesPerSearch = 7;
+    if (
+      searchString.length == 0 ||
+      (searchString.length > 0 &&
+        (description.toLowerCase().includes(searchString.toLowerCase()) ||
+          title.toLowerCase().includes(searchString.toLowerCase())))
+    ) {
+      $("#" + thisDivName).append($ad);
 
-    // Add a class to every third ad to clear the row
-    if ((idx + 1) % itemsPerLine === 0) {
-      $ad.addClass("clear-row");
-      // console.log("New Row");
+      const itemsPerLine = 5;
+      const numLinesPerSearch = 7;
+
+      // Add a class to every third ad to clear the row
+      if ((itemIdx + 1) % itemsPerLine === 0) {
+        $ad.addClass("clear-row");
+        // console.log("New Row");
+      }
+
+      if (itemIdx >= itemsPerLine * numLinesPerSearch - 1) {
+        return false;
+      }
+      itemIdx++;
     }
 
-    if (idx >= itemsPerLine * numLinesPerSearch - 1) {
-      return false;
-    }
     // console.groupEnd();
   }
 }
@@ -240,7 +254,7 @@ function handleKSLVariableData(data, functionName, searchObject) {
   // *************************************
 
   searchObject.items = [...uniqueArray];
-  displayKSLItemsFromObject(searchObject);
+  // displayKSLItemsFromObject(searchObject);
 }
 
 function sortKSLItems(sortArray, sortOption = sortOptions.dateNew) {
@@ -294,6 +308,53 @@ function sortKSLItems(sortArray, sortOption = sortOptions.dateNew) {
   }
 }
 
+function renderSelectedAdContents(
+  selectMenu,
+  sortMenu,
+  searchObjectArray,
+  headingDiv,
+  containerName,
+  searchString
+) {
+  var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
+  console.log("Selected option: " + selectedOption);
+  var selectedSearchObject = searchObjectArray[selectedOption];
+  generateHeadingsForDiv(selectedSearchObject, headingDiv);
+
+  var sortOption = sortMenu.options[sortMenu.selectedIndex].value;
+  displayKSLItemsFromObject(
+    selectedSearchObject,
+    searchString,
+    sortOption,
+    containerName
+  );
+}
+
+function generateHeadingsForDiv(thisSearchObject, divObject) {
+  var newHeading = document.createElement("h1");
+  // newHeading.setAttribute("id", containerName + "-hdr");
+  divObject.innerHTML = "";
+  newHeading.innerHTML = thisSearchObject.title;
+
+  divObject.append(newHeading);
+
+  for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
+    var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
+    newHeading = document.createElement("h3");
+    newHeading.setAttribute("class", "search-heading");
+    //newHeading.setAttribute("display", "inline block");
+    var link = document.createElement("a");
+
+    link.textContent =
+      "Search for " + thisSearchObject.searchParams[idx].keyword;
+    link.setAttribute("href", localURL);
+    link.setAttribute("target", "_blank");
+    newHeading.append(link);
+    // document.body.appendChild(newHeading);
+    divObject.append(newHeading);
+  }
+}
+
 function buildKSLSearchURL(searchParams) {
   //    https://classifieds.ksl.com/search/Winter-Sports/Downhill-Skis/
   // keyword/qst/expandSearch/1/
@@ -322,6 +383,115 @@ function buildKSLSearchURL(searchParams) {
   return url;
 }
 
+// Using some of the existing arrays create drop downs and stuff
+function buildPageLayoutAndMenus(searchObjectArray) {
+  var menuDiv = document.createElement("div");
+  var selectMenu = document.createElement("select");
+  selectMenu.setAttribute("id", "item-menu");
+  var containerName = "menu-div";
+  menuDiv.setAttribute("id", containerName);
+
+  document.body.append(menuDiv);
+  var option = document.createElement("option");
+
+  option.text = "-- Select a Search --";
+  option.value = -1;
+  selectMenu.add(option);
+
+  for (const key in searchObjectArray) {
+    var thisSearchObject = searchObjectArray[key];
+
+    console.log(" Search Object Index: " + key);
+    console.log(thisSearchObject);
+
+    option = document.createElement("option");
+    option.text = thisSearchObject.title;
+    option.value = key;
+    selectMenu.add(option);
+  }
+
+  menuDiv.append(selectMenu);
+  selectMenu.addEventListener("change", function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName,
+      document.getElementById("search-input").value
+    );
+    /*
+    var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
+    console.log("Selected option: " + selectedOption);
+    var selectedSearchObject = searchObjectArray[selectedOption];
+    generateHeadingsForDiv(selectedSearchObject, headingDiv);
+    displayKSLItemsFromObject(selectedSearchObject, containerName);
+
+    // $("#" + thisDivName).append($ad);
+    */
+  });
+
+  var sortMenu = document.createElement("select");
+  sortMenu.setAttribute("id", "sort-menu");
+
+  for (const key in sortOptions) {
+    option = document.createElement("option");
+    option.text = camelToTitleCase(key);
+    option.value = sortOptions[key];
+    sortMenu.add(option);
+  }
+
+  menuDiv.append(sortMenu);
+
+  sortMenu.addEventListener("change", function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName,
+      document.getElementById("search-input").value
+    );
+
+    // $("#" + thisDivName).append($ad);
+  });
+
+  var searchText = document.createElement("input");
+  searchText.setAttribute("type", "text");
+
+  searchText.setAttribute("id", "search-input");
+  menuDiv.append(searchText);
+
+  const updateSearchButton = document.createElement("button");
+  updateSearchButton.textContent = "Update Filter";
+  // Insert the button into the div
+  menuDiv.appendChild(updateSearchButton);
+
+  updateSearchButton.onclick = function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName,
+      document.getElementById("search-input").value
+    );
+  };
+
+  // Create a single div that we can select different searches
+  var headingDiv = document.createElement("div");
+  var containerName = "heading-div";
+  headingDiv.setAttribute("id", containerName);
+  // headingDiv.setAttribute("class", "classifieds-container");
+  document.body.append(headingDiv);
+
+  var newDiv = document.createElement("div");
+  containerName = "items-div";
+  newDiv.setAttribute("id", containerName);
+  newDiv.setAttribute("class", "classifieds-container");
+  document.body.append(newDiv);
+}
+
 function getKSLItemsFromRenderSearchSection() {
   // Get the browser width in pixels
   var browserWidth = window.innerWidth;
@@ -329,30 +499,15 @@ function getKSLItemsFromRenderSearchSection() {
   // Print the browser width to the console
   console.log("Browser width: " + browserWidth + " pixels");
 
-  // Convert the searchParamsArray to a JSON string and save it to a cookie
-
-  /*
-  console.log("Made a Cookie");
-  console.log(JSON.stringify(searchObjectArray));
-  setLocalStorage("searchObjectArray", JSON.stringify(searchObjectArray));
-
-  // Load the searchParamsArray from the cookie
+  // Load the list of items from local storage
   const searchObjectArrayCookie = getLocalStorage("searchObjectArray");
-  console.log("Eating a Cookie");
-  console.log(searchObjectArrayCookie);
-  const loadedSearchParamsArray = JSON.parse(searchObjectArrayCookie);
-  */
-
-  const searchObjectArrayCookie = getLocalStorage("searchObjectArray");
-  console.log("Eating a Cookie");
-  // console.log(searchObjectArrayCookie);
   searchObjectArray = JSON.parse(searchObjectArrayCookie);
+  console.log("Ate a Cookie - But really local storage");
 
-  // console.log(searchObjectArray);
+  // Build out the search menus in our upper div
+  buildPageLayoutAndMenus(searchObjectArray);
 
-  //searchParams.keyword = "bent";
-  //searchObject.searchParams.push({ ...searchParams });
-
+  // Prototype of the search object
   /*
   var searchParams2 = {
     search: "Winter-Sports/Downhill-Skis",
@@ -364,18 +519,11 @@ function getKSLItemsFromRenderSearchSection() {
     Private: "Sale",
     perPage: "24",
   };
-  searchObject.searchParams.push(searchParams2);
   */
 
-  console.log("Test 123");
   console.log("Length: " + searchObjectArray.length);
 
-  var selectMenu = document.createElement("select");
-  var option = document.createElement("option");
-  option.text = "-- Select a Search --";
-  option.value = -1;
-  selectMenu.add(option);
-
+  // Create an array of callback functions
   for (searchIdx = 0; searchIdx < searchObjectArray.length; searchIdx++) {
     (function (searchIdxLocal) {
       var thisSearchObject = searchObjectArray[searchIdxLocal];
@@ -383,34 +531,9 @@ function getKSLItemsFromRenderSearchSection() {
       console.log(" Search Object Index: " + searchIdxLocal);
       console.log(thisSearchObject);
 
-      option = document.createElement("option");
-      option.text = thisSearchObject.title;
-      option.value = searchIdx;
-      selectMenu.add(option);
-
-      // Create a div and heading
-      const myFragment = document.createDocumentFragment();
-
-      var newHeading = document.createElement("h1");
-      // newHeading.setAttribute("id", containerName + "-hdr");
-      newHeading.innerHTML = thisSearchObject.title;
-
-      myFragment.prepend(newHeading);
-
-      //document.body.appendChild(newHeading);
-
       for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
         var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
-        newHeading = document.createElement("h3");
-        var link = document.createElement("a");
 
-        link.textContent =
-          "Search for " + thisSearchObject.searchParams[idx].keyword;
-        link.setAttribute("href", localURL);
-        link.setAttribute("target", "_blank");
-        newHeading.append(link);
-        // document.body.appendChild(newHeading);
-        myFragment.append(newHeading);
         const searchFunctionName = "renderSearchSection";
 
         const proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
@@ -425,129 +548,8 @@ function getKSLItemsFromRenderSearchSection() {
         );
       }
 
-      var newDiv = document.createElement("div");
-      var containerName = thisSearchObject.divName;
-      newDiv.setAttribute("id", containerName);
-      newDiv.setAttribute("class", "classifieds-container");
-      // document.body.appendChild(newDiv);
-      // myFragment.append(newDiv);
-
-      // document.body.appendChild(myFragment);
-      // generateHeadingsForDiv(thisSearchObject, document.body);
-      // document.body.append(newDiv);
-
       console.log("Created Div");
       console.log("Done With Search Params");
     })(searchIdx);
-  }
-
-  document.body.prepend(selectMenu);
-
-  var sortMenu = document.createElement("select");
-  for (const key in sortOptions) {
-    option = document.createElement("option");
-    option.text = camelToTitleCase(key);
-    option.value = sortOptions[key];
-    sortMenu.add(option);
-  }
-
-  /*
-  option = document.createElement("option");
-  option.text = "Date";
-  option.value = sortOptions.date;
-  sortMenu.add(option);
-  option = document.createElement("option");
-
-  option.text = "Price";
-  option.value = sortOptions.price;
-  sortMenu.add(option);
-  */
-
-  document.body.append(sortMenu);
-
-  // Create a single div that we can select different searches
-  var headingDiv = document.createElement("div");
-  var containerName = "heading-div";
-  headingDiv.setAttribute("id", containerName);
-  // headingDiv.setAttribute("class", "classifieds-container");
-  document.body.append(headingDiv);
-
-  var newDiv = document.createElement("div");
-  containerName = "items-div";
-  newDiv.setAttribute("id", containerName);
-  newDiv.setAttribute("class", "classifieds-container");
-  document.body.append(newDiv);
-
-  sortMenu.addEventListener("change", function () {
-    renderSelectedAdContents(
-      selectMenu,
-      sortMenu,
-      searchObjectArray,
-      headingDiv,
-      containerName
-    );
-
-    // $("#" + thisDivName).append($ad);
-  });
-
-  selectMenu.addEventListener("change", function () {
-    renderSelectedAdContents(
-      selectMenu,
-      sortMenu,
-      searchObjectArray,
-      headingDiv,
-      containerName
-    );
-
-    /*
-    var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
-    console.log("Selected option: " + selectedOption);
-    var selectedSearchObject = searchObjectArray[selectedOption];
-    generateHeadingsForDiv(selectedSearchObject, headingDiv);
-    displayKSLItemsFromObject(selectedSearchObject, containerName);
-
-    // $("#" + thisDivName).append($ad);
-    */
-  });
-}
-
-function renderSelectedAdContents(
-  selectMenu,
-  sortMenu,
-  searchObjectArray,
-  headingDiv,
-  containerName
-) {
-  var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
-  console.log("Selected option: " + selectedOption);
-  var selectedSearchObject = searchObjectArray[selectedOption];
-  generateHeadingsForDiv(selectedSearchObject, headingDiv);
-
-  var sortOption = sortMenu.options[sortMenu.selectedIndex].value;
-  displayKSLItemsFromObject(selectedSearchObject, sortOption, containerName);
-}
-
-function generateHeadingsForDiv(thisSearchObject, divObject) {
-  var newHeading = document.createElement("h1");
-  // newHeading.setAttribute("id", containerName + "-hdr");
-  divObject.innerHTML = "";
-  newHeading.innerHTML = thisSearchObject.title;
-
-  divObject.append(newHeading);
-
-  for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
-    var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
-    newHeading = document.createElement("h3");
-    newHeading.setAttribute("class", "search-heading");
-    //newHeading.setAttribute("display", "inline block");
-    var link = document.createElement("a");
-
-    link.textContent =
-      "Search for " + thisSearchObject.searchParams[idx].keyword;
-    link.setAttribute("href", localURL);
-    link.setAttribute("target", "_blank");
-    newHeading.append(link);
-    // document.body.appendChild(newHeading);
-    divObject.append(newHeading);
   }
 }

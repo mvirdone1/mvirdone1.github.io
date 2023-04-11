@@ -24,6 +24,14 @@ function createInitContent() {
   // Insert the button into the div
   myDiv.appendChild(initButton);
 
+  myHeading = document.createElement("h3");
+  myHeading.innerText = "Delete Item from Local Storage";
+  myDiv.appendChild(myHeading);
+  const deleteButton = document.createElement("button");
+  deleteButton.textContent = "Delete";
+  // Insert the button into the div
+  myDiv.appendChild(deleteButton);
+
   const preElement = document.createElement("pre");
   preElement.id = "variable-pre";
   preElement.innerHTML = "Variable Contents";
@@ -71,10 +79,15 @@ function createInitContent() {
 
     // setLocalStorage("SearchObjectArray", JSON.stringify(searchObjectArray));
   };
+
+  deleteButton.onclick = function () {
+    clearLocalStorage("searchObjectArray");
+  };
 }
 
 function loadKSLParams() {
   const searchObjectArrayCookie = getLocalStorage("searchObjectArray");
+
   console.log("Eating a Cookie");
   // console.log(searchObjectArrayCookie);
   searchObjectArray = JSON.parse(searchObjectArrayCookie);

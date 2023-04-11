@@ -492,6 +492,21 @@ function buildPageLayoutAndMenus(searchObjectArray) {
   document.body.append(newDiv);
 }
 
+function redirectForSetObject() {
+  newHeading = document.createElement("h3");
+  newHeading.setAttribute("class", "search-heading");
+  //newHeading.setAttribute("display", "inline block");
+  var link = document.createElement("a");
+
+  link.textContent = "Go to Data View to Set Variable";
+  link.setAttribute("href", "https://mvirdone1.github.io/data-view.html");
+  link.setAttribute("target", "_blank");
+
+  newHeading.append(link);
+  // document.body.appendChild(newHeading);
+  document.body.append(newHeading);
+}
+
 function getKSLItemsFromRenderSearchSection() {
   // Get the browser width in pixels
   var browserWidth = window.innerWidth;
@@ -501,6 +516,11 @@ function getKSLItemsFromRenderSearchSection() {
 
   // Load the list of items from local storage
   const searchObjectArrayCookie = getLocalStorage("searchObjectArray");
+  if (searchObjectArrayCookie === null) {
+    redirectForSetObject();
+    return;
+  }
+
   searchObjectArray = JSON.parse(searchObjectArrayCookie);
   console.log("Ate a Cookie - But really local storage");
 

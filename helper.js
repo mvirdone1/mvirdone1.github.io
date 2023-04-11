@@ -37,6 +37,11 @@ function setLocalStorage(name, value) {
   */
 }
 
+function clearLocalStorage(name) {
+  localStorage.removeItem(name);
+  alert("removed " + name);
+}
+
 // Function to get the value of a cookie with the specified name
 function getLocalStorage(name) {
   const myItem = localStorage.getItem(name);

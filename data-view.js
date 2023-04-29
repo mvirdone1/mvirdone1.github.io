@@ -36,15 +36,19 @@ function createInitContent() {
   preElement.id = "variable-pre";
   preElement.innerHTML = "Variable Contents";
   myDiv.appendChild(preElement);
-  document.getElementById("variable-pre").innerHTML =
+  var preElementName = preElement.id;
+  // preElementName = "null-div";
+  document.getElementById(preElementName).innerHTML =
     printObjectPre(searchObjectArray);
 
   // Add an onclick listener to the button
   initButton.onclick = function () {
     searchObjectArray = initKSLVariables();
     console.log("Init Variable");
-    document.getElementById("variable-pre").innerHTML =
-      printObjectPre(searchObjectArray);
+    document.getElementById(preElementName).innerHTML = printObjectPre(
+      searchObjectArray,
+      true
+    );
 
     setLocalStorage("searchObjectArray", JSON.stringify(searchObjectArray));
 
@@ -72,7 +76,7 @@ function createInitContent() {
   loadButton.onclick = function () {
     searchObjectArray = loadKSLParams();
 
-    document.getElementById("variable-pre").innerHTML =
+    document.getElementById(preElementName).innerHTML =
       printObjectPre(searchObjectArray);
 
     setLocalStorage("searchObjectArray", JSON.stringify(searchObjectArray));

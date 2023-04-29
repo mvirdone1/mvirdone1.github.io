@@ -11,12 +11,36 @@ function camelToTitleCase(str) {
     });
 }
 
-function printObjectPre(myObject) {
-  return (
-    myObject.length +
-    " elements \n" +
-    JSON.stringify(myObject).replace(/\[/g, "\n[").replace(/\}\,/g, "},\n")
-  );
+function printObjectPre(myObject, itemsOnly = false) {
+  if (itemsOnly) {
+    var returnString = myObject.length + " elements \n";
+
+    // Iterate over the array of search objects
+    for (var objectKey in myObject) {
+      console.log(myObject[objectKey].searchParams);
+      // For each search object, iterate over the searchParams (another array)
+      for (var searchKey in myObject[objectKey].searchParams) {
+        console.log(myObject[objectKey].searchParams[searchKey]);
+        returnString += myObject[objectKey].title + ",";
+        for (var currentSearchParam in myObject[objectKey].searchParams[
+          searchKey
+        ]) {
+          returnString +=
+            myObject[objectKey].searchParams[searchKey][currentSearchParam] +
+            ",";
+        }
+        returnString += "\n";
+      }
+    }
+
+    return returnString;
+  } else {
+    return (
+      myObject.length +
+      " elements \n" +
+      JSON.stringify(myObject).replace(/\[/g, "\n[").replace(/\}\,/g, "},\n")
+    );
+  }
 }
 
 // GPT Code for set and get cookies

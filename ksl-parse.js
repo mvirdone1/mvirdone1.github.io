@@ -228,6 +228,8 @@ function parseArgumentsFromFunction(data, functionName) {
 function handleKSLVariableData(data, functionName, searchObject) {
   console.log(searchObject);
   values = parseArgumentsFromFunction(data, functionName);
+  console.log("Values");
+  console.log(values);
   // var itemArray = values[0];
 
   // *************************************
@@ -346,13 +348,22 @@ function generateHeadingsForDiv(thisSearchObject, divObject) {
     var link = document.createElement("a");
 
     link.textContent =
-      "Search for " + thisSearchObject.searchParams[idx].keyword;
+      "Search for " +
+      thisSearchObject.searchParams[idx].keyword.replaceAll("%20", " ");
     link.setAttribute("href", localURL);
     link.setAttribute("target", "_blank");
     newHeading.append(link);
     // document.body.appendChild(newHeading);
     divObject.append(newHeading);
   }
+
+  newHeading = document.createElement("p");
+  newHeading.innerHTML =
+    "Received " +
+    thisSearchObject.numReturned +
+    " out of " +
+    thisSearchObject.searchParams.length;
+  divObject.append(newHeading);
 }
 
 function buildKSLSearchURL(searchParams) {
@@ -378,7 +389,8 @@ function buildKSLSearchURL(searchParams) {
   for (const key in searchParams) {
     url = url + "/" + key + "/" + searchParams[key];
   }
-  url += "/private";
+
+  // url += "/private";
   // url = url + "/expandSearch/1/";
   return url;
 }
@@ -507,6 +519,101 @@ function redirectForSetObject() {
   document.body.append(newHeading);
 }
 
+function requestAPIDataAndCreateObjectArray(url) {
+  var searchObjectArray = [];
+  var request = new XMLHttpRequest();
+  request.open("GET", url, false); // set third argument to true for asynchronous request
+  request.send(null);
+
+  if (request.status === 200) {
+    var data = JSON.parse(request.responseText);
+    console.log(data);
+    // Do something with the data
+
+    console.log("Got data from Google!");
+
+    var title = null;
+    var searchObject = {};
+
+    // Iterate over each returned row to get the serarch objects
+    for (const key in data) {
+      var currentRow = data[key];
+      // Make a new object each time the title changes
+      if (currentRow.title !== title) {
+        console.log("New Item: " + data[key].title);
+        // If this isn't the first time through with a new searchObject, push it onto the array
+        if (title != null) {
+          searchObjectArray.push(searchObject);
+          searchObject = {};
+        }
+        title = currentRow.title;
+        searchObject.title = currentRow.title;
+        searchObject.divName = divify(currentRow.title);
+        searchObject.numReturned = 0;
+        searchObject.searchParams = [];
+        searchObject.items = [];
+      }
+
+      searchParam = {};
+
+      // Iterate over each of the items in the
+      for (const searchKey in currentRow) {
+        // Append everything _but_ title
+        if (searchKey !== "title") {
+          // console.log(searchKey);
+          searchParam[searchKey] = currentRow[searchKey].toString();
+        }
+      }
+      // console.log(searchParam);
+      searchObject.searchParams.push(searchParam);
+    }
+
+    // Push the last one onto the array
+    searchObjectArray.push(searchObject);
+
+    // Do something with the data
+    console.log(searchObjectArray);
+    return [...searchObjectArray];
+  } else {
+    alert("Never got a response from list API");
+    return null;
+  }
+}
+
+/*
+function compareSearchObj(obj1, obj2) {
+  for (const arrayKey in obj1) {
+    var obj1Item = obj1[arrayKey];
+    var obj2Item = obj2[arrayKey];
+
+    for (const searcbObjKey in obj1Item) {
+      if (searcbObjKey == "searchParams") {
+        var obj1Params = obj1Item.searchParams;
+
+        var obj2Params = obj2Item.searchParams;
+        for (const paramArrayKey in obj1Params) {
+          var obj1SearchParam = obj1Params[paramArrayKey];
+          var obj2SearchParam = obj2Params[paramArrayKey];
+          for (const paramsKey in obj1SearchParam) {
+            if (obj1SearchParam[paramsKey] != obj2SearchParam[paramsKey]) {
+              console.log(
+                "Mismatch in key : " +
+                  paramsKey +
+                  " obj 1: " +
+                  obj1SearchParam[paramsKey] +
+                  " obj 2: " +
+                  obj2SearchParam[paramsKey]
+              );
+            }
+          }
+        }
+      } else {
+      }
+    }
+  }
+}
+*/
+
 function getKSLItemsFromRenderSearchSection() {
   // Get the browser width in pixels
   var browserWidth = window.innerWidth;
@@ -521,8 +628,17 @@ function getKSLItemsFromRenderSearchSection() {
     return;
   }
 
-  searchObjectArray = JSON.parse(searchObjectArrayCookie);
   console.log("Ate a Cookie - But really local storage");
+  console.log(JSON.parse(searchObjectArrayCookie));
+
+  const googleAPIAddress =
+    "https://script.google.com/macros/s/AKfycbzteMlY1d-dmfmn5o2Ff_1KQIQOSs_G1EIzBVWI1ungz1W7pkIdJAKv_xYwfKH46Hkufw/exec";
+
+  var searchObjectArray = requestAPIDataAndCreateObjectArray(googleAPIAddress);
+
+  // compareSearchObj(searchObjectArray, JSON.parse(searchObjectArrayCookie));
+
+  // return null;
 
   // Build out the search menus in our upper div
   buildPageLayoutAndMenus(searchObjectArray);
@@ -549,10 +665,11 @@ function getKSLItemsFromRenderSearchSection() {
       var thisSearchObject = searchObjectArray[searchIdxLocal];
 
       console.log(" Search Object Index: " + searchIdxLocal);
-      console.log(thisSearchObject);
+      console.log(thisSearchObject.title);
 
       for (idx = 0; idx < thisSearchObject.searchParams.length; idx++) {
         var localURL = buildKSLSearchURL(thisSearchObject.searchParams[idx]);
+        console.log(localURL);
 
         const searchFunctionName = "renderSearchSection";
 
@@ -562,13 +679,14 @@ function getKSLItemsFromRenderSearchSection() {
           localURL,
           function (data) {
             console.log("Got a response for " + localURL);
+            thisSearchObject.numReturned++;
+
             handleKSLVariableData(data, searchFunctionName, thisSearchObject);
           },
           proxyAddress
         );
       }
 
-      console.log("Created Div");
       console.log("Done With Search Params");
     })(searchIdx);
   }

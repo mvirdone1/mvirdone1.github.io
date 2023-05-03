@@ -5,10 +5,21 @@ const sortOptions = {
   priceHigh: 3,
 };
 
+const itemsPerLine = 5;
+
+const numResults = [
+  itemsPerLine * 5,
+  itemsPerLine * 7,
+  itemsPerLine * 10,
+  itemsPerLine * 13,
+  itemsPerLine * 1000,
+];
+
 function displayKSLItemsFromObject(
   searchObject,
   searchString = "",
   sortOption = sortOptions.dateNew,
+  numItemsShown = itemsPerLine * 7,
   divOverride = false
 ) {
   console.log(searchObject);
@@ -100,8 +111,8 @@ function displayKSLItemsFromObject(
     ) {
       $("#" + thisDivName).append($ad);
 
-      const itemsPerLine = 5;
-      const numLinesPerSearch = 7;
+      // const itemsPerLine = 5;
+      // const numLinesPerSearch = 7;
 
       // Add a class to every third ad to clear the row
       if ((itemIdx + 1) % itemsPerLine === 0) {
@@ -109,7 +120,7 @@ function displayKSLItemsFromObject(
         // console.log("New Row");
       }
 
-      if (itemIdx >= itemsPerLine * numLinesPerSearch - 1) {
+      if (itemIdx >= numItemsShown - 1) {
         return false;
       }
       itemIdx++;
@@ -316,7 +327,8 @@ function renderSelectedAdContents(
   searchObjectArray,
   headingDiv,
   containerName,
-  searchString
+  searchString,
+  numItemsMenu
 ) {
   var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
   console.log("Selected option: " + selectedOption);
@@ -324,10 +336,14 @@ function renderSelectedAdContents(
   generateHeadingsForDiv(selectedSearchObject, headingDiv);
 
   var sortOption = sortMenu.options[sortMenu.selectedIndex].value;
+
+  var numItemsShown = numItemsMenu.options[numItemsMenu.selectedIndex].value;
+
   displayKSLItemsFromObject(
     selectedSearchObject,
     searchString,
     sortOption,
+    numItemsShown,
     containerName
   );
 }
@@ -430,7 +446,8 @@ function buildPageLayoutAndMenus(searchObjectArray) {
       searchObjectArray,
       headingDiv,
       containerName,
-      document.getElementById("search-input").value
+      document.getElementById("search-input").value,
+      numItemsMenu
     );
     /*
     var selectedOption = selectMenu.options[selectMenu.selectedIndex].value;
@@ -462,11 +479,43 @@ function buildPageLayoutAndMenus(searchObjectArray) {
       searchObjectArray,
       headingDiv,
       containerName,
-      document.getElementById("search-input").value
+      document.getElementById("search-input").value,
+      numItemsMenu
     );
 
     // $("#" + thisDivName).append($ad);
   });
+
+  var numItemsMenu = document.createElement("select");
+  sortMenu.setAttribute("id", "num-items-menu");
+
+  for (let i = 0; i < numResults.length; i++) {
+    const option = document.createElement("option");
+    option.value = numResults[i];
+    if (i < numResults.length - 1) {
+      option.text = numResults[i] + " items";
+    } else {
+      option.text = "All";
+    }
+    numItemsMenu.appendChild(option);
+  }
+
+  numItemsMenu.selectedIndex = 1;
+
+  numItemsMenu.addEventListener("change", function () {
+    renderSelectedAdContents(
+      selectMenu,
+      sortMenu,
+      searchObjectArray,
+      headingDiv,
+      containerName,
+      document.getElementById("search-input").value,
+      numItemsMenu
+    );
+
+    // $("#" + thisDivName).append($ad);
+  });
+  menuDiv.append(numItemsMenu);
 
   var searchText = document.createElement("input");
   searchText.setAttribute("type", "text");
@@ -485,7 +534,8 @@ function buildPageLayoutAndMenus(searchObjectArray) {
         searchObjectArray,
         headingDiv,
         containerName,
-        document.getElementById("search-input").value
+        document.getElementById("search-input").value,
+        numItemsMenu
       );
     }
   });
@@ -502,7 +552,8 @@ function buildPageLayoutAndMenus(searchObjectArray) {
       searchObjectArray,
       headingDiv,
       containerName,
-      document.getElementById("search-input").value
+      document.getElementById("search-input").value,
+      numItemsMenu
     );
   };
 

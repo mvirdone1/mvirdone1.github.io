@@ -474,6 +474,22 @@ function buildPageLayoutAndMenus(searchObjectArray) {
   searchText.setAttribute("id", "search-input");
   menuDiv.append(searchText);
 
+  // Add a listener to all keystrokes and then trigger on enter to update the search
+  // This kinda makes the button unnecessary, but it's better usability to give both
+  $(document.body).keyup(function (ev) {
+    // 13 is ENTER
+    if (ev.which === 13) {
+      renderSelectedAdContents(
+        selectMenu,
+        sortMenu,
+        searchObjectArray,
+        headingDiv,
+        containerName,
+        document.getElementById("search-input").value
+      );
+    }
+  });
+
   const updateSearchButton = document.createElement("button");
   updateSearchButton.textContent = "Update Filter";
   // Insert the button into the div
@@ -631,10 +647,15 @@ function getKSLItemsFromRenderSearchSection() {
   console.log("Ate a Cookie - But really local storage");
   console.log(JSON.parse(searchObjectArrayCookie));
 
+  const APIProxyAddress = ""; // "https://api.codetabs.com/v1/proxy?quest=";
   const googleAPIAddress =
     "https://script.google.com/macros/s/AKfycbzteMlY1d-dmfmn5o2Ff_1KQIQOSs_G1EIzBVWI1ungz1W7pkIdJAKv_xYwfKH46Hkufw/exec";
 
-  var searchObjectArray = requestAPIDataAndCreateObjectArray(googleAPIAddress);
+  console.log(APIProxyAddress + googleAPIAddress);
+
+  var searchObjectArray = requestAPIDataAndCreateObjectArray(
+    APIProxyAddress + googleAPIAddress
+  );
 
   // compareSearchObj(searchObjectArray, JSON.parse(searchObjectArrayCookie));
 

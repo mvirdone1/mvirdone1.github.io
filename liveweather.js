@@ -734,8 +734,9 @@ function handleDropDownChange(selectedOption, locationObjects) {
   }
 }
 
-// Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
-window.onload = function () {
+function liveWeatherInit() {
+  // Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
+  // window.onload = function () {
   // Initialize the map
   // initMap();
 
@@ -743,4 +744,4 @@ window.onload = function () {
   createDropDownMenu(locationObjects);
 
   // handleDropDownChange(-1);
-};
+}

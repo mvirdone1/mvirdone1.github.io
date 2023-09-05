@@ -745,7 +745,8 @@ function getKSLItemsFromRenderSearchSection() {
 
         const searchFunctionName = "renderSearchSection";
 
-        const proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+        var proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+        proxyAddress = "";
 
         getAjaxDataWithCallback(
           localURL,

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wasatch 100 Weather</title>
+
+    <script src="liveweather.js"></script>
+    <script src="raceweather.js"></script>
+    <script src="helper.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <h1>Wasatch 100 Weather Charts</h1>
+    <p>
+      Select an aid station from the drop down list. It might take a few seconds
+      for the plot to update. Images are auto generated using data from
+      weather.gov
+    </p>
+
+    <script>
+      $(document).ready(function () {
+        // Initialize all the javascript
+        initW100();
+      });
+    </script>
+  </body>
+</html>

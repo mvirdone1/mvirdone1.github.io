@@ -87,6 +87,33 @@ function createInitContent() {
   deleteButton.onclick = function () {
     clearLocalStorage("searchObjectArray");
   };
+
+  myHeading = document.createElement("h3");
+  myHeading.innerText = "Do Zip Code Stuff";
+  myDiv.appendChild(myHeading);
+  const zipButton = document.createElement("button");
+  zipButton.textContent = "Zip Away";
+  // Insert the button into the div
+  myDiv.appendChild(zipButton);
+  zipButton.onclick = function () {
+    zipAway();
+  };
+}
+
+async function zipAway() {
+  const states = ["ut", "id", "wy"];
+  const zipCodes = [];
+
+  for (const state of states) {
+    const apiUrl = `https://api.zippopotam.us/us/${state}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    const stateZipCodes = data.places.map((place) => place["post code"]);
+    zipCodes.push(...stateZipCodes);
+  }
+  console.log(zipCodes);
+
+  return zipCodes;
 }
 
 function loadKSLParams() {

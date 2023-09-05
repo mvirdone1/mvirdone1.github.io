@@ -92,7 +92,10 @@ function fixZeroAndNull(data) {
 
 function divify(inputString) {
   // Replace all spaces with - and make everything lower case
-  return inputString.replace(/\s+/g, "-").toLowerCase();
+  return inputString
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9-]/g, "")
+    .toLowerCase();
 }
 
 // Generic function to scape web stuff

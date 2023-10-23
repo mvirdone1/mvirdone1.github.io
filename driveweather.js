@@ -63,15 +63,6 @@ function updateDriveList() {
     console.log("[" + idx + "]: " + driveLocations[idx]);
     coordinates = driveLocations[idx].split(",");
     getWeatherOverview(coordinates[0], coordinates[1], idx);
-
-    var location = { lat: coordinates[0], lng: coordinates[1] }; // Replace with your desired coordinates
-
-    // Create a marker and set its position
-    var marker = new google.maps.Marker({
-      map: myGMap,
-      position: location,
-      title: "Weather " + idx,
-    });
   }
 
   updateWeatherImages();

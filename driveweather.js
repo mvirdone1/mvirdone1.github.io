@@ -39,9 +39,8 @@ function showMapDrive() {
       position: event.latLng,
       map,
     });
+    updateDriveList();
   });
-
-  updateDriveList();
 }
 
 function appendLatLon(lat, lon) {

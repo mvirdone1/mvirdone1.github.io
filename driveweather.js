@@ -44,8 +44,8 @@ function showMapDrive() {
 }
 
 function appendLatLon(lat, lon) {
-  document.getElementById("lat-lon").value =
-    document.getElementById("lat-lon").value + lat + "," + lon + ";";
+  oldValue = document.getElementById("lat-lon").value;
+  document.getElementById("lat-lon").value = oldValue + lat + "," + lon + ";";
 }
 
 function initMapDrive() {

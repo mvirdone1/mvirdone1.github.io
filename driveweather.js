@@ -50,7 +50,7 @@ function initMapDrive() {
 function updateDriveList() {
   driveLocations = document.getElementById("lat-lon").value.split(";");
   // Clear the inner HTML every time we refresh the list
-  $("#dynamic-div").innerHTML = "";
+  $("#dynamic-div").empty();
 
   for (idx = 0; idx < driveLocations.length; idx++) {
     console.log("[" + idx + "]: " + driveLocations[idx]);

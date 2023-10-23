@@ -1,3 +1,5 @@
+var myGMap;
+
 function showMapDrive() {
   console.log("In Show Map");
 
@@ -9,14 +11,14 @@ function showMapDrive() {
       zoom: 5,
     });
 */
-  const map = new google.maps.Map(document.getElementById("map"), {
+  myGMap = new google.maps.Map(document.getElementById("map"), {
     center: { lat: lat, lng: lon },
     zoom: 5,
   });
 
   var marker;
 
-  map.addListener("click", (event) => {
+  myGMap.addListener("click", (event) => {
     lat = Math.round(event.latLng.lat() * 100) / 100;
     lon = Math.round(event.latLng.lng() * 100) / 100;
 
@@ -30,7 +32,7 @@ function showMapDrive() {
     // Add a new marker to show the most recent click
     marker = new google.maps.Marker({
       position: event.latLng,
-      map,
+      map: myGMap,
     });
     updateDriveList();
   });
@@ -61,6 +63,15 @@ function updateDriveList() {
     console.log("[" + idx + "]: " + driveLocations[idx]);
     coordinates = driveLocations[idx].split(",");
     getWeatherOverview(coordinates[0], coordinates[1], idx);
+
+    var location = { lat: coordinates[0], lng: coordinates[1] }; // Replace with your desired coordinates
+
+    // Create a marker and set its position
+    var marker = new google.maps.Marker({
+      map: myGMap,
+      position: location,
+      title: "Weather " + idx,
+    });
   }
 
   updateWeatherImages();

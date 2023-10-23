@@ -1,4 +1,4 @@
-var myGMap;
+// var myGMap;
 
 function showMapDrive() {
   console.log("In Show Map");
@@ -11,7 +11,7 @@ function showMapDrive() {
       zoom: 5,
     });
 */
-  myGMap = new google.maps.Map(document.getElementById("map"), {
+  const myGMap = new google.maps.Map(document.getElementById("map"), {
     center: { lat: lat, lng: lon },
     zoom: 5,
   });

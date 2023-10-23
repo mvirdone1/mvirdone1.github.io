@@ -809,7 +809,7 @@ function updateWeatherImages() {
         var $imgsrc = $(this).attr("src");
         console.log(index + ": " + $(this).attr("src"));
 
-        var $imgsrc2 = "http://forecast.weather.gov/" + $imgsrc;
+        var $imgsrc2 = "https://forecast.weather.gov/" + $imgsrc;
         $(this).attr("src", $imgsrc2);
         $(this).attr("class", "fixed");
         // $img.attr('alt',imgalt);

@@ -52,11 +52,31 @@ function updateDriveList() {
   // Clear the inner HTML every time we refresh the list
   $("#dynamic-div").empty();
 
-  for (idx = 0; idx < driveLocations.length; idx++) {
+  linkURL =
+    "https://mvirdone1.github.io/driveweather.html?drive=" +
+    document.getElementById("lat-lon").value;
+  $("#drive-link").attr("href", linkURL);
+
+  for (idx = 0; idx < driveLocations.length - 1; idx++) {
     console.log("[" + idx + "]: " + driveLocations[idx]);
     coordinates = driveLocations[idx].split(",");
     getWeatherOverview(coordinates[0], coordinates[1], idx);
   }
+
+  updateWeatherImages();
+}
+
+function deleteLocation(deleteIdx) {
+  driveLocations = document.getElementById("lat-lon").value.split(";");
+
+  $("#lat-lon").val("");
+  for (idx = 0; idx < driveLocations.length - 1; idx++) {
+    if (idx != deleteIdx) {
+      coordinates = driveLocations[idx].split(",");
+      appendLatLon(coordinates[0], coordinates[1]);
+    }
+  }
+  updateDriveList();
 }
 
 function getWeatherOverview(lat, lon, idx) {
@@ -65,8 +85,20 @@ function getWeatherOverview(lat, lon, idx) {
 
   console.log(lat, lon, idx);
 
+  var deleteButton = $(
+    '<button id="deleteButton-' + idx + '">Delete Location</button>'
+  );
+
+  // Append the button to a container div
+  $("#dynamic-div").append(deleteButton);
+
   myDiv = $("<div>").attr("id", "forecast-" + idx);
   $("#dynamic-div").append(myDiv);
+
+  // Add a click event listener to the button
+  deleteButton.on("click", function () {
+    deleteLocation(idx);
+  });
 
   myDiv.load(localURL + " #seven-day-forecast");
 }
@@ -88,7 +120,9 @@ function driveWeatherInit() {
     <form>
       <label for="lat-lon">Lat Lon List:</label>
       <input type="text" id="lat-lon" name="lat-lon" />
-    </form>`;
+    </form>
+    <a id="drive-link" href="">Linkable Version</a>
+    `;
 
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;

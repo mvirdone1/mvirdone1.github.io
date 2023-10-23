@@ -27,8 +27,7 @@ function showMapDrive() {
   map.addListener("click", (event) => {
     lat = event.latLng.lat();
     lon = event.latLng.lng();
-    document.getElementById("lat-lon").value =
-      document.getElementById("lat-lon").value + ";" + lat + "," + lon;
+    appendLatLon(lat, lon);
 
     // Remove the previous marker if it exists
     if (marker) {
@@ -45,21 +44,31 @@ function showMapDrive() {
   updateDriveList();
 }
 
+function appendLatLon(lat, lon) {
+  document.getElementById("lat-lon").value =
+    document.getElementById("lat-lon").value + lat + "," + lon + ";";
+}
+
 function initMapDrive() {
   console.log("Init Map Callback from Google");
   showMapDrive();
 }
 
 function updateDriveList() {
-  return 0;
+  driveLocations = document.getElementById("lat-lon").value.split(";");
+
+  for (idx = 0; idx < driveLocations.length; idx++) {
+    console.log("[" + idx + "]: " + driveLocations[idx]);
+    coordinates = driveLocations[idx].split(",");
+    getWeatherOverview(coordinates[0], coordinates[1], idx);
+  }
 }
 
-function getWeatherOverview(driveObject, idx) {
+function getWeatherOverview(lat, lon, idx) {
   localURL =
-    "https://forecast.weather.gov/MapClick.php?lat=" +
-    driveObject.lat +
-    "&lon=" +
-    driveObject.lon;
+    "https://forecast.weather.gov/MapClick.php?lat=" + lat + "&lon=" + lon;
+
+  console.log(lat, lon, idx);
 
   myDiv = $("<div>").attr("id", "forecast-" + idx);
   $("#dynamic-div").append(myDiv);
@@ -67,19 +76,14 @@ function getWeatherOverview(driveObject, idx) {
   myDiv.load(localURL + " #seven-day-forecast");
 }
 
-function getDriveURLParameters(driveString, driveObjects) {
+function getDriveURLParameters(driveString) {
   driveLocations = driveString.split(";");
 
   for (driveLocation of driveLocations) {
-    var locationObject = {
-      lat: 0,
-      lon: 0,
-      div: "",
-    };
     coordinates = driveLocation.split(",");
-    locationObject.lat = coordinates[0];
-    locationObject.lon = coordinates[1];
-    driveObjects.push(locationObject);
+    if (coordinates.length == 2) {
+      appendLatLon(coordinates[0], coordinates[1]);
+    }
   }
 }
 
@@ -88,28 +92,15 @@ function driveWeatherInit() {
   const queryString = window.location.search;
   console.log(queryString);
   const urlParams = new URLSearchParams(queryString);
-  var driveObjects = [];
-  var driveObject = {
-    lat: 41.73,
-    lon: -111.83,
-    div: "",
-  };
-  driveObjects.push(driveObject);
+
+  appendLatLon(41.73, -111.83);
 
   if (urlParams.has("drive")) {
     console.log("Found a drive parameter");
-    getDriveURLParameters(urlParams.get("drive"), driveObjects);
+    getDriveURLParameters(urlParams.get("drive"));
   }
 
-  for (idx = 0; idx < driveObjects.length; idx++) {
-    console.log(driveObjects[idx]);
-    getWeatherOverview(driveObjects[idx], idx);
-  }
-
-  //console.log(driveObjects);
-
-  // showMap();
-
+  updateDriveList();
   var intervalId = window.setInterval(function () {
     updateWeatherImages();
   }, 1000);
@@ -121,8 +112,6 @@ function updateWeatherImages() {
     .each(function (index) {
       if ($(this).attr("class") != "fixed") {
         var $imgsrc = $(this).attr("src");
-        console.log(index + ": " + $(this).attr("src"));
-
         var $imgsrc2 = "https://forecast.weather.gov/" + $imgsrc;
         $(this).attr("src", $imgsrc2);
         $(this).attr("class", "fixed");

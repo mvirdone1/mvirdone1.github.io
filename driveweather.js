@@ -1,13 +1,5 @@
 function showMapDrive() {
   console.log("In Show Map");
-  const mapHTML = `    <div id="map"></div>
-    <form>
-      <label for="lat-lon">Lat Lon List:</label>
-      <input type="text" id="lat-lon" name="lat-lon" />
-    </form>`;
-
-  const forecastElement = document.getElementById("map-div");
-  forecastElement.innerHTML = mapHTML;
 
   let lat = 40;
   let lon = -110;
@@ -25,8 +17,9 @@ function showMapDrive() {
   var marker;
 
   map.addListener("click", (event) => {
-    lat = event.latLng.lat();
-    lon = event.latLng.lng();
+    lat = Math.round(event.latLng.lat() * 100) / 100;
+    lon = Math.round(event.latLng.lng() * 100) / 100;
+
     appendLatLon(lat, lon);
 
     // Remove the previous marker if it exists
@@ -43,6 +36,7 @@ function showMapDrive() {
   });
 }
 
+showMapDrive();
 function appendLatLon(lat, lon) {
   oldValue = document.getElementById("lat-lon").value;
   document.getElementById("lat-lon").value = oldValue + lat + "," + lon + ";";
@@ -55,6 +49,8 @@ function initMapDrive() {
 
 function updateDriveList() {
   driveLocations = document.getElementById("lat-lon").value.split(";");
+  // Clear the inner HTML every time we refresh the list
+  $("#dynamic-div").innerHTML = "";
 
   for (idx = 0; idx < driveLocations.length; idx++) {
     console.log("[" + idx + "]: " + driveLocations[idx]);
@@ -87,12 +83,22 @@ function getDriveURLParameters(driveString) {
 }
 
 function driveWeatherInit() {
+  // Setup the map pane
+  const mapHTML = `    <div id="map"></div>
+    <form>
+      <label for="lat-lon">Lat Lon List:</label>
+      <input type="text" id="lat-lon" name="lat-lon" />
+    </form>`;
+
+  const forecastElement = document.getElementById("map-div");
+  forecastElement.innerHTML = mapHTML;
+
   // Get the URL and see if we have pre-set
   const queryString = window.location.search;
   console.log(queryString);
   const urlParams = new URLSearchParams(queryString);
 
-  appendLatLon(41.73, -111.83);
+  // appendLatLon(41.73, -111.83);
 
   if (urlParams.has("drive")) {
     console.log("Found a drive parameter");

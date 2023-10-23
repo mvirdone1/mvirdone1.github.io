@@ -99,10 +99,12 @@ function driveWeatherInit() {
     getDriveURLParameters(urlParams.get("drive"));
   }
 
-  updateDriveList();
   var intervalId = window.setInterval(function () {
+    console.log("Updating Images");
     updateWeatherImages();
   }, 1000);
+
+  updateDriveList();
 }
 
 function updateWeatherImages() {

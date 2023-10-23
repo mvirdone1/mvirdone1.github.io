@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Drive Forecast Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"
+      async
+      defer
+    ></script>
+
+    <!--src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"-->
+    <script src="liveweather.js"></script>
+    <script src="helper.js"></script>
+
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/bootstrap-3.2.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/bootstrap-theme-3.2.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/font-awesome-4.3.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/ol-4.6.4.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/mapclick.css"
+    />
+    <!--[if lte IE 7
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/bootstrap-ie7.css"
+    /><![endif]-->
+    <!--[if lte IE 9
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/mapclick-ie.css"
+    /><![endif]-->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/print.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/search.css"
+    />
+    <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
+
+    <style>
+      canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+      #map {
+        height: 400px;
+        width: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map-div"></div>
+    <div id="dynamic-div"></div>
+    <!--
+    <h1>Mesonet Temperature Data</h1>
+    <canvas id="temperatureChart"></canvas>
+
+
+    <div id="map"></div>
+    <div id="form-outputs">
+      <form>
+        <label for="lat">Latitude:</label>
+        <input type="text" id="lat" name="lat" />
+        <br />
+        <label for="lon">Longitude:</label>
+        <input type="text" id="lon" name="lon" />
+      </form>
+    </div>
+        -->
+
+    <!--
+    <div id="forecast"></div>
+    <div id="wPlot"></div>
+    -->
+
+    <script>
+      $(document).ready(function () {
+        // iterateOverParseArray(parseArray);
+
+        driveWeatherInit();
+      });
+    </script>
+  </body>
+</html>

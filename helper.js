@@ -273,3 +273,27 @@ function ULObjectItems(myObject, root, indexArray = []) {
 
   return myFragment;
 }
+
+function fixImgPath(jqueryObject, baseURL) {
+  // https://stackoverflow.com/questions/53580130/image-src-relative-path-to-absolute-path
+
+  console.log($(jqueryObject).find("img"));
+
+  myImages = $(jqueryObject).find("img");
+
+  for (img of myImages) {
+    oldURL = $(img).attr("src");
+    console.log(baseURL + oldURL);
+    $(img).attr("src", baseURL + oldURL);
+  }
+
+  /*
+  $(jqueryObject)
+    .find("img")
+    .each(function (e) {
+      var c = baseURL + $(this).attr("src");
+      $(this).attr("src", c);
+    });
+
+    */
+}

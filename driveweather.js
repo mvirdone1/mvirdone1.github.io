@@ -87,14 +87,17 @@ function getWeatherOverview(lat, lon, idx) {
 
   console.log(lat, lon, idx);
 
+  $("#dynamic-div").append("<h1> Location " + idx + "</h1>");
+
   var deleteButton = $(
-    '<button id="deleteButton-' + idx + '">Delete Location</button>'
+    '<button id="deleteButton-' + idx + '">Delete Location ' + idx + "</button>"
   );
 
   // Append the button to a container div
   $("#dynamic-div").append(deleteButton);
 
   myDiv = $("<div>").attr("id", "forecast-" + idx);
+
   $("#dynamic-div").append(myDiv);
 
   // Add a click event listener to the button
@@ -129,6 +132,14 @@ function driveWeatherInit() {
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;
 
+  var reverseButton = $('<button id="reverseButton">Reverse List</button>');
+
+  $("#map-div").append(reverseButton);
+  // Add a click event listener to the button
+  reverseButton.on("click", function () {
+    reverseList();
+  });
+
   // Get the URL and see if we have pre-set
   const queryString = window.location.search;
   console.log(queryString);
@@ -146,6 +157,18 @@ function driveWeatherInit() {
     console.log("Updating Images");
     updateWeatherImages();
   }, 1000);
+}
+
+function reverseList() {
+  driveLocations = document.getElementById("lat-lon").value.split(";");
+
+  $("#lat-lon").val("");
+
+  for (idx = 0; idx < driveLocations.length - 1; idx++) {
+    coordinates = driveLocations[driveLocations.length - 2 - idx].split(",");
+    appendLatLon(coordinates[0], coordinates[1]);
+  }
+  updateDriveList();
 }
 
 function updateWeatherImages() {

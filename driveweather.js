@@ -87,7 +87,7 @@ function getWeatherOverview(lat, lon, idx) {
 
   console.log(lat, lon, idx);
 
-  $("#dynamic-div").append("<h1> Location " + idx + "</h1>");
+  $("#dynamic-div").append("<h1> Location " + idx + 1 + "</h1>");
 
   var deleteButton = $(
     '<button id="deleteButton-' + idx + '">Delete Location ' + idx + "</button>"

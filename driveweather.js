@@ -38,7 +38,6 @@ function showMapDrive() {
   });
 }
 
-showMapDrive();
 function appendLatLon(lat, lon) {
   oldValue = document.getElementById("lat-lon").value;
   document.getElementById("lat-lon").value = oldValue + lat + "," + lon + ";";
@@ -59,10 +58,14 @@ function updateDriveList() {
     document.getElementById("lat-lon").value;
   $("#drive-link").attr("href", linkURL);
 
+  myMapManager.deleteAllMarkers();
+
   for (idx = 0; idx < driveLocations.length - 1; idx++) {
     console.log("[" + idx + "]: " + driveLocations[idx]);
     coordinates = driveLocations[idx].split(",");
     getWeatherOverview(coordinates[0], coordinates[1], idx);
+    mapPosition = { lat: Number(coordinates[0]), lng: Number(coordinates[1]) };
+    myMapManager.addMarker(mapPosition, "");
   }
 
   updateWeatherImages();
@@ -91,7 +94,11 @@ function getWeatherOverview(lat, lon, idx) {
   $("#dynamic-div").append("<h1> Location " + printIdx + "</h1>");
 
   var deleteButton = $(
-    '<button id="deleteButton-' + idx + '">Delete Location ' + idx + "</button>"
+    '<button id="deleteButton-' +
+      idx +
+      '">Delete Location ' +
+      printIdx +
+      "</button>"
   );
 
   // Append the button to a container div
@@ -120,18 +127,73 @@ function getDriveURLParameters(driveString) {
   }
 }
 
+function initMapManager() {
+  // Usage example
+  const initialCenter = { lat: 40.0, lng: -110.0 };
+  const initialZoom = 5;
+  const myMapManager = new MapManager("map", initialCenter, initialZoom);
+  window.myMapManager = myMapManager;
+
+  // Add a click event listener to the map
+  myMapManager.setMapClickListener((position) => {
+    // mapManager.addMarker(position, "");
+    console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
+
+    numDecimals = 2;
+    roundFactor = 10 ** numDecimals;
+
+    lat = Math.round(position.lat * roundFactor) / roundFactor;
+    lon = Math.round(position.lng * roundFactor) / roundFactor;
+
+    appendLatLon(lat, lon);
+    updateDriveList();
+  });
+
+  var reverseButton = $('<button id="reverseButton">Reverse List</button>');
+
+  $("#map-div").append(reverseButton);
+  // Add a click event listener to the button
+  reverseButton.on("click", function () {
+    reverseList();
+  });
+
+  // Get the URL and see if we have pre-set
+  const queryString = window.location.search;
+  console.log(queryString);
+  const urlParams = new URLSearchParams(queryString);
+
+  // appendLatLon(41.73, -111.83);
+
+  if (urlParams.has("drive")) {
+    console.log("Found a drive parameter");
+    getDriveURLParameters(urlParams.get("drive"));
+    updateDriveList();
+  }
+
+  var intervalId = window.setInterval(function () {
+    console.log("Updating Images");
+    updateWeatherImages();
+  }, 1000);
+}
+
 function driveWeatherInit() {
   // Setup the map pane
-  const mapHTML = `    <div id="map"></div>
+  /*
+  const mapHTML = `    <div id="map" style="width: 75%; height: 400px;"></div>
     <form>
       <label for="lat-lon">Lat Lon List:</label>
       <input type="text" id="lat-lon" name="lat-lon" />
     </form>
+    <br>
+    <button id="addMarkerButton">Add Marker</button>
+    <button id="updateMarkerButton">Update Marker</button>
+    <button id="deleteMarkerButton">Delete Marker</button>
     <a id="drive-link" href="">Linkable Version</a>
     `;
 
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;
+  */
 
   var reverseButton = $('<button id="reverseButton">Reverse List</button>');
 

@@ -6,8 +6,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
+    <script src="helper.js"></script>
+    <script src="mapManager.js"></script>
+    <script src="driveweather.js"></script>
+
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMapDrive"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMapManager"
       async
       defer
     ></script>
@@ -70,41 +74,17 @@
         width: 600px;
       }
     </style>
-
-    <script src="driveweather.js"></script>
-    <script src="helper.js"></script>
   </head>
   <body>
-    <div id="map-div"></div>
-    <div id="dynamic-div"></div>
-    <!--
-    <h1>Mesonet Temperature Data</h1>
-    <canvas id="temperatureChart"></canvas>
-
-
-    <div id="map"></div>
-    <div id="form-outputs">
+    <div id="map-div">
+      <div id="map" style="width: 75%; height: 400px"></div>
       <form>
-        <label for="lat">Latitude:</label>
-        <input type="text" id="lat" name="lat" />
-        <br />
-        <label for="lon">Longitude:</label>
-        <input type="text" id="lon" name="lon" />
+        <label for="lat-lon">Lat Lon List:</label>
+        <input type="text" id="lat-lon" name="lat-lon" />
       </form>
+      <br />
+      <a id="drive-link" href="">Linkable Version</a>
     </div>
-        -->
-
-    <!--
-    <div id="forecast"></div>
-    <div id="wPlot"></div>
-    -->
-
-    <script>
-      $(document).ready(function () {
-        // iterateOverParseArray(parseArray);
-
-        driveWeatherInit();
-      });
-    </script>
+    <div id="dynamic-div"></div>
   </body>
 </html>

@@ -129,8 +129,8 @@ function getDriveURLParameters(driveString) {
 
 function initMapManager() {
   // Usage example
-  const initialCenter = { lat: 40.0, lng: -110.0 };
-  const initialZoom = 5;
+  const initialCenter = { lat: 41.69, lng: -111.8 };
+  const initialZoom = 8;
   const myMapManager = new MapManager("map", initialCenter, initialZoom);
   window.myMapManager = myMapManager;
 

@@ -11,15 +11,15 @@ function appendLatLon(lat, lon) {
 function updateDriveList() {
   $("#dynamic-div").empty();
 
-  linkURL = "https://mvirdone1.github.io/driveweather.html?drive=";
+  var linkURL = "https://mvirdone1.github.io/driveweather.html?drive=";
 
   myMapManager.deleteAllMarkers();
 
   for (idx = 0; idx < locationList.length; idx++) {
     console.log("[" + idx + "]: " + locationList[idx]);
 
-    lat = locationList[idx][0];
-    lon = locationList[idx][1];
+    var lat = locationList[idx][0];
+    var lon = locationList[idx][1];
 
     getWeatherOverview(lat, lon, idx);
     mapPosition = {
@@ -43,7 +43,7 @@ function deleteLocation(deleteIdx) {
 }
 
 function getWeatherOverview(lat, lon, idx) {
-  localURL =
+  var localURL =
     "https://forecast.weather.gov/MapClick.php?lat=" + lat + "&lon=" + lon;
 
   console.log(lat, lon, idx);
@@ -62,7 +62,7 @@ function getWeatherOverview(lat, lon, idx) {
   // Append the button to a container div
   $("#dynamic-div").append(deleteButton);
 
-  myDiv = $("<div>").attr("id", "forecast-" + idx);
+  var myDiv = $("<div>").attr("id", "forecast-" + idx);
 
   $("#dynamic-div").append(myDiv);
 
@@ -75,10 +75,10 @@ function getWeatherOverview(lat, lon, idx) {
 }
 
 function getDriveURLParameters(driveString) {
-  driveLocations = driveString.split(";");
+  var driveLocations = driveString.split(";");
 
   for (driveLocation of driveLocations) {
-    coordinates = driveLocation.split(",");
+    var coordinates = driveLocation.split(",");
     if (coordinates.length == 2) {
       appendLatLon(coordinates[0], coordinates[1]);
     }
@@ -97,11 +97,11 @@ function initMapManager() {
     // mapManager.addMarker(position, "");
     console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
 
-    numDecimals = 2;
-    roundFactor = 10 ** numDecimals;
+    const numDecimals = 2;
+    const roundFactor = 10 ** numDecimals;
 
-    lat = Math.round(position.lat * roundFactor) / roundFactor;
-    lon = Math.round(position.lng * roundFactor) / roundFactor;
+    var lat = Math.round(position.lat * roundFactor) / roundFactor;
+    var lon = Math.round(position.lng * roundFactor) / roundFactor;
 
     appendLatLon(lat, lon);
     updateDriveList();

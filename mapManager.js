@@ -63,3 +63,36 @@ class MapManager {
     this.mapClickListener = callback;
   }
 }
+
+var globalCallbackName = "";
+
+// This function reads the current URL and then calls one of two javascript files to get the test or production API keys
+function initMapKey(callbackName) {
+  var currentSiteUrl = window.location.href;
+  console.log("Current Site URL:", currentSiteUrl);
+
+  var myScript = document.createElement("script");
+
+  if (currentSiteUrl.includes("https://mvirdone1.github.io")) {
+    // Production
+    console.log("Production Key");
+    myScript.src = "mapKey.js";
+  } else {
+    // Test
+    console.log("Test Key");
+    myScript.src = "mapKey.test.js";
+  }
+
+  // Set the defer attribute
+
+  myScript.defer = true;
+  myScript.async = true;
+
+  document.body.appendChild(myScript);
+
+  globalCallbackName = callbackName;
+}
+
+function getGMapCallbackName() {
+  return globalCallbackName;
+}

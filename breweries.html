@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>San Diego Breweries Map</title>
+    <style>
+      #map {
+        height: 600px;
+        width: 80%;
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>San Diego B&B (Breweries and Bike Trails) Map</h1>
+    <div id="map"></div>
+
+    <script>
+      // Define brewery locations
+      var breweryLocations = [
+        {
+          name: "Ballast Point Brewing Company",
+          lat: 32.8887,
+          lng: -117.1628,
+          website: "https://www.ballastpoint.com/",
+        },
+        {
+          name: "Stone Brewing World Bistro & Gardens",
+          lat: 33.1152,
+          lng: -117.1194,
+          website: "https://www.stonebrewing.com/",
+        },
+        {
+          name: "Modern Times Beer",
+          lat: 32.7517,
+          lng: -117.2037,
+          website: "https://www.moderntimesbeer.com/",
+        },
+        {
+          name: "AleSmith Brewing Company",
+          lat: 32.8885,
+          lng: -117.1584,
+          website: "https://www.alesmith.com/",
+        },
+        {
+          name: "Green Flash Brewing Company",
+          lat: 32.9013,
+          lng: -117.1803,
+          website: "https://www.greenflashbrew.com/",
+        },
+        {
+          name: "Karl Strauss Brewing Company",
+          lat: 32.9022,
+          lng: -117.1626,
+          website: "https://www.karlstrauss.com/",
+        },
+        {
+          name: "Pizza Port Brewing Company",
+          lat: 33.0351,
+          lng: -117.2669,
+          website: "https://www.pizzaport.com/",
+        },
+        {
+          name: "Lost Abbey",
+          lat: 33.1433,
+          lng: -117.2402,
+          website: "https://lostabbey.com/",
+        },
+        {
+          name: "Half Door Brewing Co.",
+          lat: 32.7114,
+          lng: -117.1592,
+          website: "https://www.halfdoorbrewingco.com/",
+        },
+        {
+          name: "Mike Hess Brewing",
+          lat: 32.7305,
+          lng: -117.1712,
+          website: "https://www.mikehessbrewing.com/",
+        },
+        {
+          name: "Pure Project",
+          lat: 32.9028,
+          lng: -117.1568,
+          website: "https://www.purebrewing.org/",
+        },
+        {
+          name: "Mikkeller Brewing San Diego",
+          lat: 32.8994,
+          lng: -117.1566,
+          website: "https://www.mikkellersd.com/",
+        },
+        {
+          name: "Thorn Brewing Co.",
+          lat: 32.7215,
+          lng: -117.1696,
+          website: "https://thorn.beer/",
+        },
+        {
+          name: "Rip Current Brewing",
+          lat: 32.9531,
+          lng: -117.2376,
+          website: "https://ripcurrentbrewing.com/",
+        },
+        {
+          name: "Eppig Brewing",
+          lat: 32.7228,
+          lng: -117.1688,
+          website: "https://www.eppigbrewing.com/",
+        },
+        {
+          name: "Burgeon Beer Company",
+          lat: 33.1261,
+          lng: -117.1175,
+          website: "https://www.burgeonbeer.com/",
+        },
+        {
+          name: "Benchmark Brewing Company",
+          lat: 32.7527,
+          lng: -117.1609,
+          website: "https://www.benchmarkbrewing.com/",
+        },
+        {
+          name: "Council Brewing Company",
+          lat: 32.8371,
+          lng: -117.1356,
+          website: "https://councilbrew.com/",
+        },
+        {
+          name: "Second Chance Beer Company",
+          lat: 32.7935,
+          lng: -117.1439,
+          website: "https://www.secondchancebeer.com/",
+        },
+        {
+          name: "Alesmith Sublime Mexican Lager",
+          lat: 32.8885,
+          lng: -117.1584,
+          website: "https://www.alesmith.com/",
+        },
+        {
+          name: " Amplified Ale Works East Village",
+          lat: 32.7103,
+          lng: -117.1567,
+          website: "https://www.amplifiedales.com/",
+        },
+      ];
+
+      // Array of mountain bike areas with names and coordinates
+      var bikeAreas = [
+        {
+          name: "Anderson Truck Trail",
+          coordinates: { lat: 32.7495, lng: -116.7022 },
+        },
+        {
+          name: "Mission Trails Regional Park",
+          coordinates: { lat: 32.8495, lng: -117.0421 },
+        },
+        { name: "Daley Ranch", coordinates: { lat: 33.1518, lng: -117.0732 } },
+        {
+          name: "La Costa Preserve",
+          coordinates: { lat: 33.0973, lng: -117.2582 },
+        },
+        {
+          name: "Noble Canyon Trail",
+          coordinates: { lat: 32.8137, lng: -116.5485 },
+        },
+        {
+          name: "Laguna Mountain Recreation Area",
+          coordinates: { lat: 32.865, lng: -116.422 },
+        },
+        {
+          name: "Black Mountain",
+          coordinates: { lat: 32.9559, lng: -117.1376 },
+        },
+        {
+          name: "Sycamore Canyon Open Space Preserve",
+          coordinates: { lat: 32.8665, lng: -117.0111 },
+        },
+        {
+          name: "Big Bear Mountain Resort",
+          coordinates: { lat: 34.2439, lng: -116.9114 },
+        },
+        {
+          name: "Cuyamaca Rancho State Park",
+          coordinates: { lat: 32.981, lng: -116.5936 },
+        },
+      ];
+
+      // Blue marker icon
+      var blueMarker = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+
+      // Initialize the map
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 32.7157, lng: -117.1611 }, // San Diego coordinates
+          zoom: 10,
+        });
+
+        // Add markers to the map with InfoWindows displaying the full brewery name and a link to their website
+        breweryLocations.forEach(function (brewery) {
+          var marker = new google.maps.Marker({
+            position: { lat: brewery.lat, lng: brewery.lng },
+            map: map,
+            title: brewery.name[0], // Display the first letter of the brewery name as a label
+          });
+
+          var infoWindow = new google.maps.InfoWindow({
+            content:
+              "<div><strong>" +
+              brewery.name +
+              '</strong><br><a href="' +
+              brewery.website +
+              '" target="_blank">Visit Website</a></div>',
+          });
+
+          marker.addListener("click", function () {
+            infoWindow.open(map, marker);
+          });
+
+          // Close the InfoWindow when clicking anywhere on the map
+          google.maps.event.addListener(map, "click", function () {
+            infoWindow.close();
+          });
+        });
+
+        // Loop through the bike areas and add markers to the map
+        bikeAreas.forEach(function (area) {
+          var marker = new google.maps.Marker({
+            position: area.coordinates,
+            map: map,
+            title: area.name,
+            icon: blueMarker, // Set the marker icon
+          });
+
+          // Add an info window to display the name when the marker is clicked
+          var infoWindow = new google.maps.InfoWindow({
+            content: area.name,
+          });
+
+          marker.addListener("click", function () {
+            infoWindow.open(map, marker);
+          });
+          // Close the InfoWindow when clicking anywhere on the map
+          google.maps.event.addListener(map, "click", function () {
+            infoWindow.close();
+          });
+        });
+      }
+    </script>
+
+    <script src="helper.js"></script>
+    <script src="mapManager.js"></script>
+    <script defer>
+      // Call the following functions to setup the google maps API by getting a production or test key
+      // Then source additional script to do the API initialization and callback
+      initMapKey("initMap");
+      //initializeMap("initMapManager");
+    </script>
+  </body>
+</html>

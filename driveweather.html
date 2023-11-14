@@ -6,15 +6,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
+    <!-- <script src="driveweather.js"></script>-->
     <script src="helper.js"></script>
     <script src="mapManager.js"></script>
     <script src="driveweather.js"></script>
-
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMapManager"
-      async
-      defer
-    ></script>
 
     <!-- CSS -->
     <link
@@ -83,5 +78,12 @@
       <a id="drive-link" href=""><h3>Link For This Map</h3></a>
     </div>
     <div id="dynamic-div"></div>
+
+    <script defer>
+      // Call the following functions to setup the google maps API by getting a production or test key
+      // Then source additional script to do the API initialization and callback
+      initMapKey("initMapManager");
+      //initializeMap("initMapManager");
+    </script>
   </body>
 </html>

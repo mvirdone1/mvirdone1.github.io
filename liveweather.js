@@ -112,7 +112,7 @@ class WeatherPlotter {
       gdiff: "10",
       unit: "0",
       tinfo: "MY7",
-      ahour: "0",
+      ahour: options.offsetHours,
       pcmd: this.getPCMD(options.pmcdArray),
       lg: "en",
       indu: "1!1!1!",
@@ -126,7 +126,7 @@ class WeatherPlotter {
     return `${this.baseURL}${this.plotterPath}?${queryParams.toString()}`;
   }
 
-  createHourlyWeatherPlotUrl(options, elementId) {
+  updateHourlyWeatherPlotUrl(options, elementId) {
     const apiUrl = `https://api.weather.gov/points/${options.lat},${options.lon}`;
 
     return fetch(apiUrl)
@@ -137,6 +137,7 @@ class WeatherPlotter {
         var url = this.buildURL(options, office, zone);
         console.log("Weather Plot URL: " + url);
         document.getElementById(elementId).src = url;
+        document.getElementById(elementId + "-link").href = url;
 
         return { office, zone };
       })
@@ -173,7 +174,7 @@ function setErroneousValuesToAverage(data, windowSize, threshold) {
 function displayAvyForecast(divId = "forecast") {
   console.log("Avy Forecast");
   // make API request to get forecast data
-  const proxyAddress = "https://api.codetabs.com/v1/proxy?quest=";
+  const proxyAddress = ""; // "https://api.codetabs.com/v1/proxy?quest=";
   const forecastAddress = "https://utahavalanchecenter.org/forecast/logan/json";
   fetch(proxyAddress + forecastAddress)
     .then((response) => response.json())
@@ -216,7 +217,7 @@ function displayWeatherData2(
 ) {
   // Retrieve Mesonet temperature data using Mesonet API
   const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
-  const token = "0ad1ebf61ff847a78b2166e39db3cbd6";
+  const token = "32a5383da0cf44a19368207bc32f2d7f";
 
   var varName = "";
   var plotType = "";
@@ -406,7 +407,11 @@ function createChartObject(charts, locationTitle, attributes) {
   });
 }
 
-function updateWeatherPlot(locationObject) {
+function updateWeatherPlot(
+  locationObject,
+  offsetHours = 0,
+  plotId = "weather-plot"
+) {
   const plotter = new WeatherPlotter();
 
   var weatherPlotParamObject = {
@@ -414,6 +419,7 @@ function updateWeatherPlot(locationObject) {
     lon: locationObject.lon,
     office: locationObject.weatherOffice,
     hours: 48,
+    offsetHours: offsetHours,
     pmcdArray: [
       GraphTypes.Temperature,
       GraphTypes.WindChill,
@@ -435,8 +441,8 @@ function updateWeatherPlot(locationObject) {
     ],
   };
 
-  var plotId = "weather-plot";
-  const weatherHourlyURL = plotter.createHourlyWeatherPlotUrl(
+  // var plotId = "weather-plot";
+  const weatherHourlyURL = plotter.updateHourlyWeatherPlotUrl(
     weatherPlotParamObject,
     plotId
   );
@@ -453,11 +459,18 @@ function displayAllLocationInfo(locationObject) {
   contentElement.append(newHeading);
 
   var plotId = "weather-plot";
+  var linkId = plotId + "-link";
+
+  var linkElement = document.createElement("a");
+  linkElement.id = linkId;
+  linkElement.target = "_blank";
+
   // Create the image element
-  var img = document.createElement("img");
-  img.id = plotId;
-  img.alt = "Weather Plot";
-  contentElement.appendChild(img);
+  var imageElement = document.createElement("img");
+  imageElement.id = plotId;
+  imageElement.alt = "Weather Plot";
+  linkElement.appendChild(imageElement);
+  contentElement.appendChild(linkElement);
 
   // Update the URL for the image element
   updateWeatherPlot(locationObject);
@@ -498,8 +511,8 @@ function showMap() {
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;
 
-  let lat = 40;
-  let lon = -110;
+  let lat = 41.5;
+  let lon = -111.8;
 
   /* const map = new google.maps.Map($("map"), {
       center: { lat: lat, lng: lon },
@@ -508,7 +521,7 @@ function showMap() {
 */
   const map = new google.maps.Map(document.getElementById("map"), {
     center: { lat: lat, lng: lon },
-    zoom: 5,
+    zoom: 7,
   });
 
   var marker;
@@ -516,8 +529,8 @@ function showMap() {
   map.addListener("click", (event) => {
     lat = event.latLng.lat();
     lon = event.latLng.lng();
-    document.getElementById("lat").value = lat;
-    document.getElementById("lon").value = lon;
+    document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
+    document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
 
     // Remove the previous marker if it exists
     if (marker) {
@@ -540,6 +553,7 @@ function showMap() {
 
     // Update the URL for the image element
     updateWeatherPlot(locationObject);
+    updateWeatherPlot(locationObject, 49, "weather-plot-2");
   });
 
   const contentElement = document.getElementById("dynamic-div");
@@ -550,13 +564,25 @@ function showMap() {
 
   var plotId = "weather-plot";
 
-  // Create the image element
-  var img = document.createElement("img");
-  img.id = plotId;
-  img.alt = "Weather Plot";
-  contentElement.appendChild(img);
+  createWeatherPlotImageElement(plotId, contentElement);
+
+  var plotId = "weather-plot-2";
+
+  createWeatherPlotImageElement(plotId, contentElement);
 }
 
+function createWeatherPlotImageElement(plotId, contentElement) {
+  var linkId = plotId + "-link";
+  var linkElement = document.createElement("a");
+  linkElement.id = linkId;
+  // Create the image element
+  var imageElement = document.createElement("img");
+  imageElement.id = plotId;
+  imageElement.alt = "Weather Plot";
+  imageElement.classList.add("scaledImage");
+  linkElement.appendChild(imageElement);
+  contentElement.appendChild(linkElement);
+}
 function initMap() {
   console.log("Init Map Callback from Google");
   showMap();

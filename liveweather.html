@@ -5,15 +5,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
+    <!--
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"
       async
       defer
     ></script>
+    -->
 
     <!--src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"-->
-    <script src="liveweather.js"></script>
+
     <script src="helper.js"></script>
+    <script src="mapManager.js"></script>
+    <script src="liveweather.js"></script>
 
     <style>
       canvas {
@@ -24,6 +28,13 @@
       #map {
         height: 400px;
         width: 600px;
+      }
+
+      .scaledImage {
+        max-width: 100%; /* Ensure the image does not exceed its native width */
+        height: auto; /* Maintain the image's aspect ratio */
+        margin: 0;
+        width: 50%; /* Each image takes up half the page */
       }
     </style>
   </head>
@@ -54,6 +65,13 @@
 
     <script>
       window.onload(liveWeatherInit());
+    </script>
+
+    <script defer>
+      // Call the following functions to setup the google maps API by getting a production or test key
+      // Then source additional script to do the API initialization and callback
+      initMapKey("initMap");
+      //initializeMap("initMapManager");
     </script>
   </body>
 </html>

@@ -20,6 +20,12 @@
     <script src="liveweather.js"></script>
 
     <style>
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
       canvas {
         -moz-user-select: none;
         -webkit-user-select: none;
@@ -36,32 +42,40 @@
         margin: 0;
         width: 50%; /* Each image takes up half the page */
       }
+      .footer {
+        bottom: 0;
+        width: 100%;
+        max-height: 10%; /* Set the maximum height as needed */
+        overflow: auto; /* Add overflow:auto to enable scrolling if content exceeds max-height */
+      }
+
+
     </style>
   </head>
   <body>
     <div id="map-div"></div>
     <div id="dynamic-div"></div>
-    <!--
-    <h1>Mesonet Temperature Data</h1>
-    <canvas id="temperatureChart"></canvas>
-
-
-    <div id="map"></div>
-    <div id="form-outputs">
-      <form>
-        <label for="lat">Latitude:</label>
-        <input type="text" id="lat" name="lat" />
-        <br />
-        <label for="lon">Longitude:</label>
-        <input type="text" id="lon" name="lon" />
-      </form>
+    <div id="footer" class="footer">
+      <hr />
+      <table border="0" width="100%">
+        <tr>
+          <td width="50%">
+              <a href="https://synopticdata.com/">
+                <img height="50px" src="synoptic-logo.jpg" />
+              </a>
+              All historical time-series data provided by
+              <a href="https://synopticdata.com/">Synoptic</a>
+            </p>
+          </td>
+          <td width="50%">
+            <p>
+              All forecast data and future weather plots provided by <a href="https://weather.gov" >NOAA
+              weather.gov</a>
+            </p>
+          </td>
+        </tr>
+      </table>
     </div>
-        -->
-
-    <!--
-    <div id="forecast"></div>
-    <div id="wPlot"></div>
-    -->
 
     <script>
       window.onload(liveWeatherInit());

@@ -75,8 +75,22 @@ String.prototype.replaceAt = function (index, replacement) {
   );
 };
 
+/*****************************
+GLOBAL VARIABLES
+******************************/
 // Changing this to a global variable:
 var locationObjects = [];
+
+var myGoogleMap;
+
+var myMarkers = [];
+
+/*
+const myGoogleMap = new google.maps.Map(document.getElementById("map"), {
+  center: { lat: 41.5, lng: -111.8 },
+  zoom: 7,
+});
+*/
 
 function loganWeatherPlot() {}
 
@@ -525,14 +539,16 @@ function showMap(lat = 41.5, lon = -111.8) {
       zoom: 5,
     });
 */
-  const map = new google.maps.Map(document.getElementById("map"), {
+  myGoogleMap = new google.maps.Map(document.getElementById("map"), {
     center: { lat: lat, lng: lon },
     zoom: 7,
   });
 
   var marker;
 
-  map.addListener("click", (event) => {
+  myGoogleMap.setCenter({ lat: lat, lng: lon });
+
+  myGoogleMap.addListener("click", (event) => {
     lat = event.latLng.lat();
     lon = event.latLng.lng();
     document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
@@ -546,8 +562,10 @@ function showMap(lat = 41.5, lon = -111.8) {
     // Add a new marker to show the most recent click
     marker = new google.maps.Marker({
       position: event.latLng,
-      map,
+      map: myGoogleMap,
     });
+
+    myMarkers.push(marker);
 
     var locationObject = {
       lat: lat,
@@ -560,6 +578,7 @@ function showMap(lat = 41.5, lon = -111.8) {
     // Update the URL for the image element
     updateWeatherPlot(locationObject);
     updateWeatherPlot(locationObject, 49, "weather-plot-2");
+    updateLinkURL(-1);
   });
 
   const contentElement = document.getElementById("dynamic-div");
@@ -859,6 +878,16 @@ function parseURL() {
         // weatherOffice: "SLC",
         chartObjects: [],
       };
+
+      // Add a new marker to show the most recent click
+      var newMarker = new google.maps.Marker({
+        position: { lat: parseFloat(lat), lng: parseFloat(lon) },
+        map: myGoogleMap,
+        title: "Hello World",
+      });
+
+      console.log("My Marker?");
+      console.log(newMarker);
 
       // Update the URL for the image element
       updateWeatherPlot(locationObject);

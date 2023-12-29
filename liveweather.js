@@ -761,13 +761,16 @@ function parseURL() {
 
   console.log(validOptions);
 
-  var lat = 41.5;
-  var lon = -111.8;
+  var lat = document.getElementById("lat").value;
+  var lon = document.getElementById("lon").value;
 
   if (urlParams.has("lat") && urlParams.has("lon")) {
     console.log("Got lat lon");
     lat = parseFloat(urlParams.get("lat"));
     lon = parseFloat(urlParams.get("lon"));
+
+    document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
+    document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
   }
 
   // Only update the page if we received a valid mode
@@ -794,8 +797,6 @@ function parseURL() {
 
       console.log("Showing the map " + lat + " " + lon);
       // showMap(Number(lat), Number(lon));
-      document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
-      document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
 
       var locationObject = {
         lat: lat,
@@ -831,8 +832,8 @@ function displayMapClickView() {
 
   createWeatherPlotImageElement(plotId, contentElement);
 
-  document.getElementById("lat").value = lat;
-  document.getElementById("lon").value = lon;
+  lat = document.getElementById("lat").value;
+  lon = document.getElementById("lon").value;
 
   var locationObject = {
     lat: lat,
@@ -860,14 +861,17 @@ function initMap() {
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;
 
-  displayMapClickView();
+  // Default map center for Logan
+  lat = 41.7713;
+  lon = -111.8082;
+  document.getElementById("lat").value = lat;
+  document.getElementById("lon").value = lon;
 
-  lat = 41.5;
-  lon = -111.8;
   console.log("Init Map Callback from Google");
   const initialCenter = { lat: lat, lng: lon };
   const initialZoom = 7;
   const myMapManager = new MapManager("map", initialCenter, initialZoom);
+  myMapManager.addMarker(initialCenter, "Forecast Location", "Wx");
 
   // Make this instance of the map manager a global variable
   window.myMapManager = myMapManager;
@@ -908,4 +912,5 @@ function initMap() {
   locationObjects = initLocationObjects();
   createDropDownMenu(locationObjects);
   parseURL();
+  displayMapClickView();
 }

@@ -75,6 +75,9 @@ String.prototype.replaceAt = function (index, replacement) {
   );
 };
 
+// Changing this to a global variable:
+var locationObjects = [];
+
 function loganWeatherPlot() {}
 
 class WeatherPlotter {
@@ -287,6 +290,7 @@ function displayWeatherData2(
         "rgb(0, 236, 100)", // Bright green
         "rgb(75, 192, 192)", // Teal
         "rgb(153, 102, 255)", // Purple
+        "rgb(0, 0, 0)", // Black
       ];
 
       // Iterate over the data sets
@@ -497,7 +501,7 @@ function displayAllLocationInfo(locationObject) {
   }
 }
 
-function showMap() {
+function showMap(lat = 41.5, lon = -111.8) {
   console.log("In Show Map");
   const mapHTML = `    <div id="map"></div>
     <form>
@@ -511,8 +515,10 @@ function showMap() {
   const forecastElement = document.getElementById("map-div");
   forecastElement.innerHTML = mapHTML;
 
+  /*
   let lat = 41.5;
   let lon = -111.8;
+  */
 
   /* const map = new google.maps.Map($("map"), {
       center: { lat: lat, lng: lon },
@@ -583,10 +589,6 @@ function createWeatherPlotImageElement(plotId, contentElement) {
   linkElement.appendChild(imageElement);
   contentElement.appendChild(linkElement);
 }
-function initMap() {
-  console.log("Init Map Callback from Google");
-  showMap();
-}
 
 function createFullMountainSuitePlots(locationObject, charts) {
   var attributes = {};
@@ -637,7 +639,6 @@ function createFullMountainSuitePlots(locationObject, charts) {
 }
 
 function initLocationObjects() {
-  var locationObjects = [];
   //---------------------------------
   // Logan Weather
   //---------------------------------
@@ -693,6 +694,8 @@ function initLocationObjects() {
   charts.push("TGLU1");
   charts.push("TGSU1");
   charts.push("LGS");
+  charts.push("CRDUT");
+  charts.push("PRSUT");
 
   createFullMountainSuitePlots(locationObject, charts);
 
@@ -719,6 +722,8 @@ function initLocationObjects() {
 
 function createDropDownMenu(locationObjects) {
   var selectMenu = document.createElement("select");
+  selectMenu.id = "dropDownMenu";
+
   var option = document.createElement("option");
   option.text = "Map Search";
   option.value = -1;
@@ -728,7 +733,7 @@ function createDropDownMenu(locationObjects) {
   option.text = "Avalanche Report";
   option.value = 0;
   selectMenu.add(option);
-  document.body.prepend(selectMenu);
+  document.getElementById("my-header").appendChild(selectMenu);
 
   for (objIdx = 0; objIdx < locationObjects.length; objIdx++) {
     option = document.createElement("option");
@@ -744,6 +749,12 @@ function createDropDownMenu(locationObjects) {
     console.log("Selected option: " + selectedOption);
     handleDropDownChange(selectedOption, locationObjects);
   });
+
+  var linkHeader = document.createElement("a");
+  linkHeader.id = "page-link";
+  linkHeader.href = "#"; // Link to nowhere since it will be dynamically updated
+  linkHeader.innerHTML = "<h4>Link to this page</h4>";
+  document.getElementById("my-header").appendChild(linkHeader);
 }
 
 function handleDropDownChange(selectedOption, locationObjects) {
@@ -764,6 +775,97 @@ function handleDropDownChange(selectedOption, locationObjects) {
     default:
       displayAllLocationInfo(locationObjects[selectedOption - 1]);
   }
+
+  updateLinkURL(selectedOption);
+}
+
+function updateLinkURL(selectedOption) {
+  var linkURL =
+    "https://mvirdone1.github.io/liveweather.html?mode=" + selectedOption;
+
+  var myPageLink = document.getElementById("page-link");
+
+  var latValue = parseFloat(document.getElementById("lat").value);
+  var lonValue = parseFloat(document.getElementById("lon").value);
+
+  console.log(latValue + " " + lonValue);
+
+  // This is a dumb logic check, but hopefully nobody is trying to use this tool at 0.000, 0.000 :shrug:
+  if (latValue != 0 && lonValue != 0) {
+    linkURL += "&lat=" + latValue;
+    linkURL += "&lon=" + lonValue;
+  }
+
+  // Set the href attribute using JavaScript
+  myPageLink.href = linkURL;
+}
+
+function parseURL() {
+  const queryString = window.location.search;
+  console.log(queryString);
+  const urlParams = new URLSearchParams(queryString);
+
+  if (!urlParams.has("mode")) {
+    return 0;
+  }
+
+  pageMode = urlParams.get("mode");
+  console.log("Found a mode parameter: " + pageMode);
+
+  // See if the option listed is valid
+  var menuOptions = document.getElementById("dropDownMenu").options;
+  var validOptions = Array.from(menuOptions).map((option) => option.value);
+
+  console.log(validOptions);
+
+  var lat = 41.5;
+  var lon = -111.8;
+
+  if (urlParams.has("lat") && urlParams.has("lon")) {
+    console.log("Got lat lon");
+    lat = urlParams.get("lat");
+    lon = urlParams.get("lon");
+  }
+
+  // Only update the page if we received a valid mode
+  if (validOptions.includes(pageMode)) {
+    console.log("This was a valid option");
+
+    // Clear the page before updading
+    document.getElementById("dynamic-div").innerHTML = "";
+    document.getElementById("map-div").innerHTML = "";
+
+    // Assuming your dropdown has an id "myDropdown"
+    var dropdown = document.getElementById("dropDownMenu");
+
+    // Change the dropdown value programmatically
+    dropdown.value = pageMode;
+
+    // Manually trigger the "change" event
+    var event = new Event("change");
+    dropdown.dispatchEvent(event);
+
+    // Special case for the map click forecast
+    if (pageMode == -1) {
+      console.log("Showing the map " + lat + " " + lon);
+      showMap(Number(lat), Number(lon));
+      document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
+      document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
+
+      var locationObject = {
+        lat: lat,
+        lon: lon,
+        locationName: "Forecast at Map Click",
+        // weatherOffice: "SLC",
+        chartObjects: [],
+      };
+
+      // Update the URL for the image element
+      updateWeatherPlot(locationObject);
+      updateWeatherPlot(locationObject, 49, "weather-plot-2");
+    }
+  }
+  updateLinkURL(dropdown.value);
 }
 
 function liveWeatherInit() {
@@ -772,8 +874,17 @@ function liveWeatherInit() {
   // Initialize the map
   // initMap();
 
-  var locationObjects = initLocationObjects();
+  locationObjects = initLocationObjects();
   createDropDownMenu(locationObjects);
+  // parseURL();
 
   // handleDropDownChange(-1);
+}
+
+function initMap() {
+  console.log("Init Map Callback from Google");
+  showMap();
+
+  // Moved from sync init to async init
+  parseURL();
 }

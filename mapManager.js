@@ -16,12 +16,24 @@ class MapManager {
     });
   }
 
-  addMarker(position, title) {
+  setMapCenter(lat, lon) {
+    this.map.setCenter({ lat: lat, lng: lon });
+  }
+
+  // Call this function to force a re-rendering of the map
+  mapResize() {
+    google.maps.event.trigger(map, "resize");
+  }
+
+  addMarker(position, title, label = "") {
+    if (!label) {
+      label = (this.markers.length + 1).toString();
+    }
     const marker = new google.maps.Marker({
       map: this.map,
       position: position,
       title: title,
-      label: (this.markers.length + 1).toString(),
+      label: label,
     });
 
     this.markers.push(marker);

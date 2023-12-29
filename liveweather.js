@@ -111,7 +111,7 @@ class WeatherPlotter {
         pcmdString.substring(0, pcmdArray[idx]) +
         "1" +
         pcmdString.substring(pcmdArray[idx] + 1);
-      console.log(pcmdArray[idx]);
+      // console.log(pcmdArray[idx]);
     }
 
     console.log(pcmdString);
@@ -160,6 +160,7 @@ class WeatherPlotter {
       })
       .catch((error) => {
         console.error(`Error fetching weather info: ${error}`);
+        console.log(apiUrl);
         return null;
       });
   }
@@ -515,87 +516,6 @@ function displayAllLocationInfo(locationObject) {
   }
 }
 
-function showMap(lat = 41.5, lon = -111.8) {
-  console.log("In Show Map");
-  const mapHTML = `    <div id="map"></div>
-    <form>
-      <label for="lat">Latitude:</label>
-      <input type="text" id="lat" name="lat" />
-      <br />
-      <label for="lon">Longitude:</label>
-      <input type="text" id="lon" name="lon" />
-    </form>`;
-
-  const forecastElement = document.getElementById("map-div");
-  forecastElement.innerHTML = mapHTML;
-
-  /*
-  let lat = 41.5;
-  let lon = -111.8;
-  */
-
-  /* const map = new google.maps.Map($("map"), {
-      center: { lat: lat, lng: lon },
-      zoom: 5,
-    });
-*/
-  myGoogleMap = new google.maps.Map(document.getElementById("map"), {
-    center: { lat: lat, lng: lon },
-    zoom: 7,
-  });
-
-  var marker;
-
-  myGoogleMap.setCenter({ lat: lat, lng: lon });
-
-  myGoogleMap.addListener("click", (event) => {
-    lat = event.latLng.lat();
-    lon = event.latLng.lng();
-    document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
-    document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
-
-    // Remove the previous marker if it exists
-    if (marker) {
-      marker.setMap(null);
-    }
-
-    // Add a new marker to show the most recent click
-    marker = new google.maps.Marker({
-      position: event.latLng,
-      map: myGoogleMap,
-    });
-
-    myMarkers.push(marker);
-
-    var locationObject = {
-      lat: lat,
-      lon: lon,
-      locationName: "Forecast at Map Click",
-      // weatherOffice: "SLC",
-      chartObjects: [],
-    };
-
-    // Update the URL for the image element
-    updateWeatherPlot(locationObject);
-    updateWeatherPlot(locationObject, 49, "weather-plot-2");
-    updateLinkURL(-1);
-  });
-
-  const contentElement = document.getElementById("dynamic-div");
-  // Create the heading
-  var newHeading = document.createElement("h1");
-  newHeading.textContent = "Map Click Forecast";
-  contentElement.append(newHeading);
-
-  var plotId = "weather-plot";
-
-  createWeatherPlotImageElement(plotId, contentElement);
-
-  var plotId = "weather-plot-2";
-
-  createWeatherPlotImageElement(plotId, contentElement);
-}
-
 function createWeatherPlotImageElement(plotId, contentElement) {
   var linkId = plotId + "-link";
   var linkElement = document.createElement("a");
@@ -778,11 +698,15 @@ function createDropDownMenu(locationObjects) {
 
 function handleDropDownChange(selectedOption, locationObjects) {
   document.getElementById("dynamic-div").innerHTML = "";
-  document.getElementById("map-div").innerHTML = "";
+  document.getElementById("map-div").style.display = "none";
 
   switch (selectedOption) {
     case -1:
-      showMap();
+      document.getElementById("map-div").style.display = "block";
+      myMapManager.mapResize();
+      displayMapClickView();
+
+      // showMap();
 
       break;
 
@@ -842,8 +766,8 @@ function parseURL() {
 
   if (urlParams.has("lat") && urlParams.has("lon")) {
     console.log("Got lat lon");
-    lat = urlParams.get("lat");
-    lon = urlParams.get("lon");
+    lat = parseFloat(urlParams.get("lat"));
+    lon = parseFloat(urlParams.get("lon"));
   }
 
   // Only update the page if we received a valid mode
@@ -852,7 +776,7 @@ function parseURL() {
 
     // Clear the page before updading
     document.getElementById("dynamic-div").innerHTML = "";
-    document.getElementById("map-div").innerHTML = "";
+    document.getElementById("map-div").style.display = "none";
 
     // Assuming your dropdown has an id "myDropdown"
     var dropdown = document.getElementById("dropDownMenu");
@@ -866,8 +790,10 @@ function parseURL() {
 
     // Special case for the map click forecast
     if (pageMode == -1) {
+      displayMapClickView();
+
       console.log("Showing the map " + lat + " " + lon);
-      showMap(Number(lat), Number(lon));
+      // showMap(Number(lat), Number(lon));
       document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
       document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
 
@@ -879,15 +805,8 @@ function parseURL() {
         chartObjects: [],
       };
 
-      // Add a new marker to show the most recent click
-      var newMarker = new google.maps.Marker({
-        position: { lat: parseFloat(lat), lng: parseFloat(lon) },
-        map: myGoogleMap,
-        title: "Hello World",
-      });
-
-      console.log("My Marker?");
-      console.log(newMarker);
+      myMapManager.addMarker({ lat: lat, lng: lon }, "Forecast Location", "Wx");
+      myMapManager.setMapCenter(lat, lon);
 
       // Update the URL for the image element
       updateWeatherPlot(locationObject);
@@ -897,23 +816,96 @@ function parseURL() {
   updateLinkURL(dropdown.value);
 }
 
-function liveWeatherInit() {
-  // Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
-  // window.onload = function () {
-  // Initialize the map
-  // initMap();
+function displayMapClickView() {
+  const contentElement = document.getElementById("dynamic-div");
+  // Create the heading
+  var newHeading = document.createElement("h1");
+  newHeading.textContent = "Map Click Forecast";
+  contentElement.append(newHeading);
 
-  locationObjects = initLocationObjects();
-  createDropDownMenu(locationObjects);
-  // parseURL();
+  var plotId = "weather-plot";
 
-  // handleDropDownChange(-1);
+  createWeatherPlotImageElement(plotId, contentElement);
+
+  var plotId = "weather-plot-2";
+
+  createWeatherPlotImageElement(plotId, contentElement);
+
+  document.getElementById("lat").value = lat;
+  document.getElementById("lon").value = lon;
+
+  var locationObject = {
+    lat: lat,
+    lon: lon,
+    locationName: "Forecast at Map Click",
+    // weatherOffice: "SLC",
+    chartObjects: [],
+  };
+
+  // Update the URL for the image element
+  updateWeatherPlot(locationObject);
+  updateWeatherPlot(locationObject, 49, "weather-plot-2");
 }
 
 function initMap() {
+  const mapHTML = `    <div id="map"></div>
+    <form>
+      <label for="lat">Latitude:</label>
+      <input type="text" id="lat" name="lat" />
+      <br />
+      <label for="lon">Longitude:</label>
+      <input type="text" id="lon" name="lon" />
+    </form>`;
+
+  const forecastElement = document.getElementById("map-div");
+  forecastElement.innerHTML = mapHTML;
+
+  displayMapClickView();
+
+  lat = 41.5;
+  lon = -111.8;
   console.log("Init Map Callback from Google");
-  showMap();
+  const initialCenter = { lat: lat, lng: lon };
+  const initialZoom = 7;
+  const myMapManager = new MapManager("map", initialCenter, initialZoom);
+
+  // Make this instance of the map manager a global variable
+  window.myMapManager = myMapManager;
+
+  myMapManager.setMapClickListener((position) => {
+    // mapManager.addMarker(position, "");
+    console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
+
+    const numDecimals = 4;
+    const roundFactor = 10 ** numDecimals;
+
+    var lat = Math.round(position.lat * roundFactor) / roundFactor;
+    var lon = Math.round(position.lng * roundFactor) / roundFactor;
+
+    document.getElementById("lat").value = lat;
+    document.getElementById("lon").value = lon;
+
+    myMapManager.deleteAllMarkers();
+    myMapManager.addMarker(position, "Forecast Location", "Wx");
+
+    var locationObject = {
+      lat: lat,
+      lon: lon,
+      locationName: "Forecast at Map Click",
+      // weatherOffice: "SLC",
+      chartObjects: [],
+    };
+
+    // Update the URL for the image element
+    updateWeatherPlot(locationObject);
+    updateWeatherPlot(locationObject, 49, "weather-plot-2");
+    updateLinkURL(-1);
+  });
+
+  // showMap();
 
   // Moved from sync init to async init
+  locationObjects = initLocationObjects();
+  createDropDownMenu(locationObjects);
   parseURL();
 }

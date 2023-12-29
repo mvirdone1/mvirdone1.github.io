@@ -297,3 +297,71 @@ function fixImgPath(jqueryObject, baseURL) {
 
     */
 }
+
+function replaceXYDataAnomaliesWithAdjacentAverage(data, numStdDev) {
+  // Extract y values for calculations
+  const yValues = data.map((point) => point.y);
+
+  // Calculate mean and standard deviation of y values
+  const mean = yValues.reduce((sum, value) => sum + value, 0) / yValues.length;
+  const variance =
+    yValues.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
+    yValues.length;
+  const stdDev = Math.sqrt(variance);
+
+  // Define a threshold for anomalies
+  const anomalyThreshold = numStdDev * stdDev;
+
+  // Replace anomalies with the average of adjacent values
+  const result = data.map((point, index) => {
+    const y = point.y;
+
+    if (Math.abs(y - mean) > anomalyThreshold) {
+      // Anomaly detected, replace y with the average of adjacent y values
+      const leftY =
+        (data[index - 1] && data[index - 1].y) ||
+        (data[index + 1] && data[index + 1].y);
+      const rightY =
+        (data[index + 1] && data[index + 1].y) ||
+        (data[index - 1] && data[index - 1].y);
+
+      // If the left or right Y values don't exist, then use the right/left respectively
+      const newY = (leftY + rightY) / 2;
+
+      // Return a new object with the original x and the corrected y
+      return { x: point.x, y: newY };
+    } else {
+      // Not an anomaly, keep the original point
+      return point;
+    }
+  });
+
+  return result;
+}
+
+function replaceAnomaliesWithAdjacentAverage(data, numStdDev) {
+  // Step 1: Calculate mean and standard deviation
+  const mean = data.reduce((sum, value) => sum + value, 0) / data.length;
+  const variance =
+    data.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
+    data.length;
+  const stdDev = Math.sqrt(variance);
+
+  // Step 2: Define a threshold for anomalies
+  const anomalyThreshold = numStdDev * stdDev;
+
+  // Step 3: Replace anomalies with the average of adjacent values
+  const result = data.map((value, index) => {
+    if (Math.abs(value - mean) > anomalyThreshold) {
+      // Anomaly detected, replace with the average of adjacent values
+      const leftValue = data[index - 1] || data[index + 1]; // Use right if no left adjacent value
+      const rightValue = data[index + 1] || data[index - 1]; // Use left if no right adjacent value
+      return (leftValue + rightValue) / 2;
+    } else {
+      // Not an anomaly, keep the original value
+      return value;
+    }
+  });
+
+  return result;
+}

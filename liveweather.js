@@ -360,8 +360,6 @@ function handleDropDownChange(selectedOption, locationObjects) {
       myMapManager.mapResize();
       displayMapClickView();
 
-      // showMap();
-
       break;
 
     case 0:
@@ -441,16 +439,9 @@ function parseURL() {
     // Change the dropdown value programmatically
     dropdown.value = pageMode;
 
-    // Manually trigger the "change" event
-    var event = new Event("change");
-    dropdown.dispatchEvent(event);
-
     // Special case for the map click forecast
     if (pageMode == -1) {
-      displayMapClickView();
-
       console.log("Showing the map " + lat + " " + lon);
-      // showMap(Number(lat), Number(lon));
 
       var locationObject = {
         lat: lat,
@@ -468,6 +459,9 @@ function parseURL() {
       updateWeatherPlot(locationObject, 49, "weather-plot-2");
     }
   }
+  // Manually trigger the "change" event
+  var event = new Event("change");
+  dropdown.dispatchEvent(event);
   updateLinkURL(dropdown.value);
 }
 
@@ -560,7 +554,7 @@ function initMap() {
     updateLinkURL(-1);
   });
 
-  // showMap();
+  displayMapClickView();
 
   // Moved from sync init to async init
   locationObjects = initLocationObjects();

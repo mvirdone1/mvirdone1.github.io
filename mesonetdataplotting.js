@@ -3,12 +3,14 @@ function displayWeatherData2(
   canvasId,
   numHours = 24,
   stationType = 0,
-  displayOffset = false
+  displayOffset = false,
+  radiusInfo = ""
 ) {
   // Retrieve Mesonet temperature data using Mesonet API
   const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
   const token = "32a5383da0cf44a19368207bc32f2d7f";
 
+  var stations = [];
   var varName = "";
   var plotType = "";
   var changeString = "";
@@ -43,12 +45,14 @@ function displayWeatherData2(
 
   console.log(stidStr);
 
+  if (stid == "" && radiusInfo == "") {
+    console.error("Request for plotting has neither station or radius info");
+    return 0;
+  }
+
   const params = {
     token: token,
-    //stid: stidStr,
     vars: varName,
-    //start: 202204010000,
-    //end: 202204080000,
     recent: numHours * 60, // Minutes
     units: "english",
   };
@@ -58,8 +62,20 @@ function displayWeatherData2(
     )
     .join("&");
 
-  // Append the comma separated list of station IDs
-  queryString += "&stid=" + stidStr;
+  if (stid != "") {
+    // Append the comma separated list of station IDs
+    queryString += "&stid=" + stidStr;
+  } else {
+    queryString +=
+      "&radius=" +
+      radiusInfo.lat +
+      "," +
+      radiusInfo.lon +
+      "," +
+      radiusInfo.radius;
+
+    queryString += "&limit=" + radiusInfo.limit;
+  }
 
   const apiUrlWithParams = `${apiURL}?${queryString}`;
   console.log(apiUrlWithParams);
@@ -87,6 +103,14 @@ function displayWeatherData2(
         var dates = [];
         var stationName = data.STATION[dataSetIdx].NAME;
         var stationID = data.STATION[dataSetIdx].STID;
+
+        var station = {};
+        station.lat = data.STATION[dataSetIdx].LATITUDE;
+        station.lon = data.STATION[dataSetIdx].LONGITUDE;
+        station.name = data.STATION[dataSetIdx].NAME;
+        station.stid = data.STATION[dataSetIdx].STID;
+
+        stations.push(station);
 
         // Get the data based on what type of request we've sent
         switch (stationType) {
@@ -122,7 +146,7 @@ function displayWeatherData2(
           dataSet.push({ x: dates[dataIdx], y: tempData[dataIdx] });
         }
 
-        dataSet = replaceXYDataAnomaliesWithAdjacentAverage(dataSet, 3);
+        dataSet = replaceXYDataAnomaliesWithAdjacentAverage(dataSet, 1.5);
 
         // Add the array of objects to the array of arrays
         dataSets.push({
@@ -173,4 +197,6 @@ function displayWeatherData2(
       });
     })
     .catch((error) => console.error(error));
+
+  return stations;
 }

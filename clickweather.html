@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logan Area Weather</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+    <!--
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"
+      async
+      defer
+    ></script>
+    -->
+
+    <!--src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY&callback=initMap"-->
+
+    <script src="helper.js"></script>
+    <script src="mapManager.js"></script>
+    <script src="weatherplotter.js"></script>   
+    <script src="mesonetdataplotting.js"></script>
+    <script src="weatherhelper.js"></script>
+    <script src="clickweather.js"></script>
+
+
+    <style>
+
+  
+
+      canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+      #map {
+        height: 400px;
+        width: 600px;
+      }
+
+      .scaledImage {
+        max-width: 100%; /* Ensure the image does not exceed its native width */
+        height: auto; /* Maintain the image's aspect ratio */
+        margin: 0;
+        width: 50%; /* Each image takes up half the page */
+      }
+      .footer {
+        bottom: 0;
+        width: 100%;
+        max-height: 10%; /* Set the maximum height as needed */
+        overflow: auto; /* Add overflow:auto to enable scrolling if content exceeds max-height */
+      }
+
+
+    </style>
+  </head>
+  <body>
+    <div id="my-header"></div>
+    <div id="map-div"></div>
+    <div id="dynamic-div"></div>
+    <div id="my-footer" class="footer">
+      <hr />
+      <table border="0" width="100%">
+        <tr>
+          <td width="50%">
+              <a href="https://synopticdata.com/">
+                <img height="50px" src="synoptic-logo.jpg" />
+              </a>
+              All historical time-series data provided by
+              <a href="https://synopticdata.com/">Synoptic</a>
+            </p>
+          </td>
+          <td width="50%">
+            <p>
+              All forecast data and future weather plots provided by <a href="https://weather.gov" >NOAA
+              weather.gov</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <script>
+      // liveWeatherInit();
+    </script>
+
+    <script defer>
+      // Call the following functions to setup the google maps API by getting a production or test key
+      // Then source additional script to do the API initialization and callback
+      initMapKey("initMap");
+      //initializeMap("initMapManager");
+    </script>
+  </body>
+</html>

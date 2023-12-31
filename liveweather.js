@@ -1,9 +1,3 @@
-const chartTypes = {
-  temperature: 0,
-  snowDepth: 1,
-  windSpeed: 2,
-};
-
 String.prototype.replaceAt = function (index, replacement) {
   return (
     this.substring(0, index) +
@@ -55,72 +49,6 @@ function displayAvyForecast(divId = "forecast") {
     .catch((error) => console.error(error));
 }
 
-function createChartObject(charts, locationTitle, attributes) {
-  console.log("My Title: " + attributes.title);
-  return (tempChartObject = {
-    charts: charts,
-    title:
-      locationTitle +
-      " " +
-      attributes.title +
-      " - " +
-      attributes.days +
-      " Day" +
-      addS(attributes.days),
-    divName:
-      divify(locationTitle) +
-      "-" +
-      attributes.title.substring(0, 4) +
-      "-" +
-      attributes.days +
-      "dy",
-    numHours: 24 * attributes.days,
-    offset: attributes.offset,
-    dataType: attributes.chartType, // 0 = Temperature, 1 = Snow Depth
-  });
-}
-
-function updateWeatherPlot(
-  locationObject,
-  offsetHours = 0,
-  plotId = "weather-plot"
-) {
-  const plotter = new WeatherPlotter();
-
-  var weatherPlotParamObject = {
-    lat: locationObject.lat,
-    lon: locationObject.lon,
-    office: locationObject.weatherOffice,
-    hours: 48,
-    offsetHours: offsetHours,
-    pmcdArray: [
-      GraphTypes.Temperature,
-      GraphTypes.WindChill,
-      GraphTypes.Snow,
-      GraphTypes.Rain,
-      GraphTypes.SurfaceWind,
-      GraphTypes.ProbQPF01,
-      GraphTypes.ProbQPF025,
-      GraphTypes.ProbQPF05,
-      GraphTypes.ProbQPF1,
-      GraphTypes.ProbQPF2,
-      GraphTypes.ProbSnow01,
-      GraphTypes.ProbSnow1,
-      GraphTypes.ProbSnow3,
-      GraphTypes.ProbSnow6,
-      GraphTypes.ProbSnow12,
-      GraphTypes.SkyCover,
-      GraphTypes.PrecipitationPotential,
-    ],
-  };
-
-  // var plotId = "weather-plot";
-  const weatherHourlyURL = plotter.updateHourlyWeatherPlotUrl(
-    weatherPlotParamObject,
-    plotId
-  );
-}
-
 function displayAllLocationInfo(locationObject) {
   console.log("Displaying All Location Info");
 
@@ -160,27 +88,23 @@ function displayAllLocationInfo(locationObject) {
 
     contentElement.appendChild(newCanvas);
 
+    /*var radiusInfo = {};
+    radiusInfo.lat = locationObject.lat;
+    radiusInfo.lon = locationObject.lon;
+    radiusInfo.radius = 20;
+    radiusInfo.limit = 6;
+
+    */
+
     displayWeatherData2(
       chartObject.charts,
       chartObject.divName,
       chartObject.numHours,
       chartObject.dataType,
-      chartObject.offset
+      chartObject.offset,
+      radiusInfo
     );
   }
-}
-
-function createWeatherPlotImageElement(plotId, contentElement) {
-  var linkId = plotId + "-link";
-  var linkElement = document.createElement("a");
-  linkElement.id = linkId;
-  // Create the image element
-  var imageElement = document.createElement("img");
-  imageElement.id = plotId;
-  imageElement.alt = "Weather Plot";
-  imageElement.classList.add("scaledImage");
-  linkElement.appendChild(imageElement);
-  contentElement.appendChild(linkElement);
 }
 
 function createFullMountainSuitePlots(locationObject, charts) {
@@ -220,7 +144,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
     createChartObject(charts, locationObject.locationName, attributes)
   );
 
-  // Plot 1 day wind
+  // Plot 5 day total snow
   attributes.title = "Total Snow";
   attributes.days = 5;
   attributes.offset = false;
@@ -278,8 +202,15 @@ function initLocationObjects() {
   //---------------------------------
   // Up Canyon Weather
   //---------------------------------
+
+  // Right Hand Fork
+  // locationObject.lat = "41.779251";
+  // locationObject.lon = "-111.6294029";
+
+  // Swan Flats
   locationObject.lat = "41.95216";
   locationObject.lon = "-111.49158";
+
   locationObject.locationName = "Up Canyon";
   // Clear the array
   locationObject.chartObjects = [];
@@ -463,37 +394,6 @@ function parseURL() {
   var event = new Event("change");
   dropdown.dispatchEvent(event);
   updateLinkURL(dropdown.value);
-}
-
-function displayMapClickView() {
-  const contentElement = document.getElementById("dynamic-div");
-  // Create the heading
-  var newHeading = document.createElement("h1");
-  newHeading.textContent = "Map Click Forecast";
-  contentElement.append(newHeading);
-
-  var plotId = "weather-plot";
-
-  createWeatherPlotImageElement(plotId, contentElement);
-
-  var plotId = "weather-plot-2";
-
-  createWeatherPlotImageElement(plotId, contentElement);
-
-  lat = document.getElementById("lat").value;
-  lon = document.getElementById("lon").value;
-
-  var locationObject = {
-    lat: lat,
-    lon: lon,
-    locationName: "Forecast at Map Click",
-    // weatherOffice: "SLC",
-    chartObjects: [],
-  };
-
-  // Update the URL for the image element
-  updateWeatherPlot(locationObject);
-  updateWeatherPlot(locationObject, 49, "weather-plot-2");
 }
 
 function initMap() {

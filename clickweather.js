@@ -63,6 +63,8 @@ function updateLinkURL() {
 
   // Set the href attribute using JavaScript
   myPageLink.href = linkURL;
+
+  document.title = "Map Click Weather" + " (" + latValue + "," + lonValue + ")";
 }
 
 function createFullMountainSuitePlots(locationObject, charts) {
@@ -78,15 +80,9 @@ function createFullMountainSuitePlots(locationObject, charts) {
     createChartObject(charts, locationObject.locationName, attributes)
   );
 
-  // Plot 1 day snow change
-  attributes.days = 1;
-
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
-  // Plot 1 day temp
+  // Plot 2 day temp
   attributes.title = "Temperature";
-  attributes.days = 1;
+  attributes.days = 2;
   attributes.offset = false;
   attributes.chartType = chartTypes.temperature;
 
@@ -94,7 +90,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
     createChartObject(charts, locationObject.locationName, attributes)
   );
 
-  // Plot 1 day wind
+  // Plot 2 day wind
   attributes.title = "Wind Speed";
   attributes.chartType = chartTypes.windSpeed;
 

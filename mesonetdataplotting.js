@@ -4,13 +4,13 @@ function displayWeatherData2(
   numHours = 24,
   stationType = 0,
   displayOffset = false,
-  radiusInfo = ""
+  radiusInfo = "",
+  customCallbackFunction = ""
 ) {
   // Retrieve Mesonet temperature data using Mesonet API
   const apiURL = "https://api.mesowest.net/v2/stations/timeseries";
   const token = "32a5383da0cf44a19368207bc32f2d7f";
 
-  var stations = [];
   var varName = "";
   var plotType = "";
   var changeString = "";
@@ -87,7 +87,7 @@ function displayWeatherData2(
 
       var dataSets = [];
 
-      const colors = [
+      const chartColors = [
         "rgb(255, 99, 132)", // Red
         "rgb(54, 162, 235)", // Blue
         "rgb(0, 236, 100)", // Bright green
@@ -109,26 +109,34 @@ function displayWeatherData2(
         station.lon = data.STATION[dataSetIdx].LONGITUDE;
         station.name = data.STATION[dataSetIdx].NAME;
         station.stid = data.STATION[dataSetIdx].STID;
+        station.elevation = data.STATION[dataSetIdx].ELEVATION;
+        station.stationType = stationType;
 
-        stations.push(station);
+        maxChange = 0;
 
         // Get the data based on what type of request we've sent
         switch (stationType) {
           case chartTypes.snowDepth: // Snow Depth
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.snow_depth_set_1;
+            maxChange = 10; // Made up number for 10" won't change
             break;
 
           case chartTypes.windSpeed:
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.wind_speed_set_1;
+            maxChange = 25; // Made up number for 25 MPH max change
+
             break;
 
           case chartTypes.temperature: // Air Temp
           default: // Default to air temp
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.air_temp_set_1;
+            maxChange = 15; // Made up number for 15 degrees max change
         }
 
         // Clean up the data removing null and doing the offsets if needed
         fixZeroAndNull(tempData);
+
+        tempData = fixBadDataOnMaxChange(tempData, 10);
 
         if (displayOffset) {
           var offset = tempData[0];
@@ -146,19 +154,24 @@ function displayWeatherData2(
           dataSet.push({ x: dates[dataIdx], y: tempData[dataIdx] });
         }
 
-        dataSet = replaceXYDataAnomaliesWithAdjacentAverage(dataSet, 1.5);
+        // dataSet = replaceXYDataAnomaliesWithAdjacentAverage(dataSet, 1);
 
         // Add the array of objects to the array of arrays
         dataSets.push({
           //x: dates,
           //y: dataSet,
+          station: station,
           label: stationName + " (" + stationID + ")",
           data: dataSet,
           fill: false,
-          borderColor: colors[dataSetIdx],
+          borderColor: chartColors[dataSetIdx],
           tension: 0.1,
           pointRadius: 0,
         });
+      }
+
+      if (customCallbackFunction) {
+        customCallbackFunction(dataSets);
       }
 
       const numTicks = Math.max(12, Math.floor(numHours / 12));
@@ -197,6 +210,4 @@ function displayWeatherData2(
       });
     })
     .catch((error) => console.error(error));
-
-  return stations;
 }

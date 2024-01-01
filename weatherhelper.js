@@ -82,9 +82,19 @@ function createWeatherPlotImageElement(plotId, contentElement) {
   linkElement.appendChild(imageElement);
   contentElement.appendChild(linkElement);
 }
-
 function displayMapClickView() {
-  const contentElement = document.getElementById("dynamic-div");
+  const hideShowHTML = ` 
+  <button onclick="toggleChildVisibility('hide-show-parent')">Show/Hide Forecast Charts</button>
+
+  <div id="hide-show-parent">
+    <div id="hide-show-child"></div>
+  </div>
+    `;
+
+  const dynamicDivElement = document.getElementById("dynamic-div");
+  dynamicDivElement.innerHTML = hideShowHTML;
+
+  const contentElement = document.getElementById("hide-show-child");
   // Create the heading
   var newHeading = document.createElement("h1");
   newHeading.textContent = "Map Click Forecast";

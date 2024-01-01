@@ -80,6 +80,32 @@ function getLocalStorage(name) {
   }
 }
 
+function fixBadDataOnMaxChange(data, maxChange) {
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+
+  // Calculate the average of all values
+  const average = data.reduce((sum, value) => sum + value, 0) / data.length;
+
+  // Process the array
+  for (let i = 0; i < data.length; i++) {
+    if (i === 0) {
+      // For the first value, use the average of all values
+      data[i] = average;
+    } else {
+      // For subsequent values, check the change from the previous value
+      const change = Math.abs(data[i] - data[i - 1]);
+      if (change > maxChange) {
+        // If the change is greater than maxChange, set the value to the previous value
+        data[i] = data[i - 1];
+      }
+    }
+  }
+
+  return data;
+}
+
 function fixZeroAndNull(data) {
   // If the data is zero or null return the previous value
   // Assumes the first value in the range is non-zero and non-null
@@ -364,4 +390,65 @@ function replaceAnomaliesWithAdjacentAverage(data, numStdDev) {
   });
 
   return result;
+}
+
+function rgbArrayToString(rgbArray) {
+  return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
+}
+
+function toggleChildVisibility(parentId) {
+  const parentDiv = document.getElementById(parentId);
+  const childDivs = parentDiv.children;
+
+  for (let i = 0; i < childDivs.length; i++) {
+    const div = childDivs[i];
+    if (div.style.display === "none") {
+      div.style.display = "block";
+    } else {
+      div.style.display = "none";
+    }
+  }
+}
+
+function toggleTableVisibility(tableId) {
+  var table = document.getElementById(tableId);
+  table.style.display = table.style.display === "none" ? "table" : "none";
+}
+
+function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
+  // Radius of the Earth in kilometers and miles
+  const R_km = 6371;
+  const R_miles = 3958.8;
+
+  // Convert latitude and longitude from degrees to radians
+  const lat1Rad = toRadians(lat1);
+  const lon1Rad = toRadians(lon1);
+  const lat2Rad = toRadians(lat2);
+  const lon2Rad = toRadians(lon2);
+
+  // Differences in coordinates
+  const dLat = lat2Rad - lat1Rad;
+  const dLon = lon2Rad - lon1Rad;
+
+  // Haversine formula
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  // Distance in kilometers and miles
+  const distance_km = R_km * c;
+  const distance_miles = R_miles * c;
+
+  return {
+    km: distance_km,
+    miles: distance_miles,
+  };
+}
+
+function toRadians(degrees) {
+  return degrees * (Math.PI / 180);
 }

@@ -20,24 +20,50 @@ class MapManager {
     this.map.setCenter({ lat: lat, lng: lon });
   }
 
+  setZoom(newZoom) {
+    this.map.setZoom(newZoom);
+  }
+
   // Call this function to force a re-rendering of the map
   mapResize() {
     google.maps.event.trigger(map, "resize");
   }
 
-  addMarker(position, title, label = "") {
+  addMarker(position, title, label = "", rgbColor = null) {
     if (!label) {
       label = (this.markers.length + 1).toString();
     }
-    const marker = new google.maps.Marker({
-      map: this.map,
-      position: position,
-      title: title,
-      label: label,
-    });
 
-    this.markers.push(marker);
-    return marker;
+    // Place the standard marker
+    if (!rgbColor) {
+      const marker = new google.maps.Marker({
+        map: this.map,
+        position: position,
+        title: title,
+        label: label,
+      });
+
+      this.markers.push(marker);
+      return marker;
+    } else {
+      const marker = new google.maps.Marker({
+        map: this.map,
+        position: position,
+        title: title,
+        label: label,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: `rgb(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]})`,
+          fillOpacity: 1,
+          strokeWeight: 0,
+          scale: 10, // Adjust the size of the marker
+        },
+        draggable: false, // You can set this to false if you don't want the marker to be draggable
+      });
+
+      this.markers.push(marker);
+      return marker;
+    }
   }
 
   updateMarker(index, position, title) {

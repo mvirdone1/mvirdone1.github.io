@@ -56,7 +56,7 @@ class MapManager {
           fillColor: `rgb(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]})`,
           fillOpacity: 1,
           strokeWeight: 0,
-          scale: 10, // Adjust the size of the marker
+          scale: 8, // Adjust the size of the marker
         },
         draggable: false, // You can set this to false if you don't want the marker to be draggable
       });

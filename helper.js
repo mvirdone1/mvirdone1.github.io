@@ -452,3 +452,21 @@ function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
 function toRadians(degrees) {
   return degrees * (Math.PI / 180);
 }
+
+function timeUTCToLocalString(timeIn) {
+  // Create a Date object from the timestamp
+  var dateObj = new Date(timeIn);
+
+  // Figure out the time zone offset
+
+  // Get the time zone offset in minutes (Mountain Standard Time)
+  var mtOffset = 7 * 60; // Mountain Standard Time is UTC-7
+
+  // Apply the offset to get the local time
+  var localTime = new Date(dateObj.getTime() - mtOffset * 60000);
+
+  // Get the formatted time
+  var formattedTime = localTime.toISOString().slice(11, 16);
+
+  return formattedTime;
+}

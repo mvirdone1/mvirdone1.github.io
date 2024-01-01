@@ -39,24 +39,10 @@ function parseURL() {
 
     document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
     document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
-
-    console.log("Showing the map " + lat + " " + lon);
-
-    var locationObject = {
-      lat: lat,
-      lon: lon,
-      locationName: "Forecast at Map Click",
-      // weatherOffice: "SLC",
-      chartObjects: [],
-    };
-
-    myMapManager.addMarker({ lat: lat, lng: lon }, "Forecast Location", "Wx");
-    myMapManager.setMapCenter(lat, lon);
-
-    // Update the URL for the image element
-    updateWeatherPlot(locationObject);
-    updateWeatherPlot(locationObject, 49, "weather-plot-2");
   }
+
+  const position = { lat: lat, lng: lon };
+  clickWeatherClickListener(position, false);
 }
 
 function updateLinkURL() {
@@ -159,14 +145,14 @@ function postAPIDataCallback(dataSets) {
       */
 
       const stationLocation = {
-        lat: parseFloat(currentDataSet.station.lat),
-        lng: parseFloat(currentDataSet.station.lon),
+        lat: parseFloat(currentStation.lat),
+        lng: parseFloat(currentStation.lon),
       };
 
       myMapManager.addMarker(
         stationLocation,
-        currentDataSet.station.name,
-        currentDataSet.station.stid,
+        currentStation.name,
+        currentStation.stid,
         clickWeatherColors[allStationIndex]
       );
     }
@@ -175,8 +161,26 @@ function postAPIDataCallback(dataSets) {
       clickWeatherColors[allStationIndex]
     );
 
-    // Update the latest measurements
-    // allStations[allStationIndex].latestData[currentStation.stationType] = 0;
+    var lastDataPoint = currentDataSet.data.length - 1;
+    var stationType = currentStation.stationType;
+
+    // If it's raw value and not offset, update the latest value table.
+    if (currentStation.displayOffset == false) {
+      // Update the latest measurements
+      latestMeasurements[allStationIndex][stationType].time =
+        currentDataSet.data[lastDataPoint].x;
+
+      latestMeasurements[allStationIndex][stationType].value =
+        currentDataSet.data[lastDataPoint].y;
+    }
+
+    /*
+    allStations[allStationIndex].latestData[stationType].time =
+      currentDataSet.data[lastDataPoint].x;
+    allStations[allStationIndex].latestData[
+      parseInt(currentStation.stationType)
+    ].value = currentDataSet.data[lastDataPoint].y;
+    */
   });
 
   updateLegendTable();
@@ -210,8 +214,25 @@ function updateLegendTable() {
   <button onclick="toggleTableVisibility('legend-table')">Show/Hide Legend</button> `;
 
   legendTableHTML += "<table id='legend-table' border='1' cellpadding='5'>";
-  legendTableHTML +=
-    "<tr><th>ID</th><th>Dist (mi)</th><th>Name</th><th>Elevation</th></tr>";
+  legendTableHTML += "<tr>";
+
+  var headings = [
+    "ID",
+    "Dist (mi)",
+    "Name",
+    "Elev (ft)",
+    "Temp (f)",
+    "Snow (in)",
+    "Wind (mph)",
+  ];
+
+  // Iterate over the headings and print each one
+  headings.forEach((heading) => {
+    legendTableHTML += "<th>" + heading + "</th>";
+  });
+
+  legendTableHTML += "</tr>";
+  // ("<tr><th>ID</th><th>Dist (mi)</th><th>Name</th><th>Elevation</th></tr>");
 
   stationsWithDistance.forEach((station, index) => {
     const color = rgbArrayToString(clickWeatherColors[station.originalIndex]);
@@ -221,6 +242,17 @@ function updateLegendTable() {
     legendTableHTML += `<td>${station.distance_mi}</td>`;
     legendTableHTML += `<td>${station.name}</td>`;
     legendTableHTML += `<td>${station.elevation}</td>`;
+
+    // Iterate over the chartTypes object
+    for (const key in chartTypes) {
+      const colIndex = chartTypes[key];
+      legendTableHTML += printNiceWeatherCell(
+        latestMeasurements[station.originalIndex][colIndex]
+      );
+
+      // Do something with the key and value
+    }
+
     legendTableHTML += "</tr>";
   });
 
@@ -229,13 +261,28 @@ function updateLegendTable() {
   legendElement.innerHTML = legendTableHTML;
 }
 
-function clickWeatherClickListener(position) {
+function printNiceWeatherCell(measurement) {
+  if (!measurement.value) {
+    return "<td>&nbsp</td>";
+  } else {
+    var cellString = "<td>";
+    cellString += parseFloat(measurement.value).toFixed(0);
+    cellString += " <sub>@" + timeUTCToLocalString(measurement.time);
+    cellString += "</sub></td>";
+    return cellString;
+  }
+}
+
+function clickWeatherClickListener(position, realClick = true) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
   displayMapClickView();
 
   myMapManager.setMapCenter(position.lat, position.lng);
-  myMapManager.setZoom(10);
+
+  if (realClick) {
+    myMapManager.setZoom(10);
+  }
 
   // Clear the list of weather stations
   allStations = [];
@@ -285,7 +332,7 @@ function clickWeatherClickListener(position) {
     radiusInfo.lat = locationObject.lat;
     radiusInfo.lon = locationObject.lon;
     radiusInfo.radius = 20;
-    radiusInfo.limit = 6;
+    radiusInfo.limit = 5;
     var returnedStations;
 
     returnedStations = displayWeatherData2(

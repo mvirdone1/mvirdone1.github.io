@@ -111,6 +111,7 @@ function displayWeatherData2(
         station.stid = data.STATION[dataSetIdx].STID;
         station.elevation = data.STATION[dataSetIdx].ELEVATION;
         station.stationType = stationType;
+        station.displayOffset = displayOffset;
 
         maxChange = 0;
 

@@ -277,7 +277,7 @@ function clickWeatherClickListener(position, realClick = true) {
   myMapManager.setMapCenter(position.lat, position.lng);
 
   if (realClick) {
-    myMapManager.setZoom(10);
+    myMapManager.setZoom(12);
   }
 
   // Clear the list of weather stations
@@ -379,7 +379,7 @@ function initMap() {
 
   console.log("Init Map Callback from Google");
   const initialCenter = { lat: lat, lng: lon };
-  const initialZoom = 7;
+  const initialZoom = 10;
   const myMapManager = new MapManager("map", initialCenter, initialZoom);
   myMapManager.addMarker(initialCenter, "Forecast Location", "Wx");
 

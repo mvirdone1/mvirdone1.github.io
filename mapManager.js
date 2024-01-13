@@ -3,6 +3,7 @@ class MapManager {
     this.map = new google.maps.Map(document.getElementById(mapId), {
       center: initialCenter || { lat: 40.7128, lng: -74.006 },
       zoom: initialZoom || 12,
+      mapTypeId: google.maps.MapTypeId.TERRAIN, // Set the default map type to terrain
     });
 
     this.markers = [];

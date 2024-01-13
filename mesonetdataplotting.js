@@ -137,7 +137,7 @@ function displayWeatherData2(
         // Clean up the data removing null and doing the offsets if needed
         fixZeroAndNull(tempData);
 
-        tempData = fixBadDataOnMaxChange(tempData, 10);
+        tempData = fixBadDataOnMaxChange(tempData, maxChange);
 
         if (displayOffset) {
           var offset = tempData[0];

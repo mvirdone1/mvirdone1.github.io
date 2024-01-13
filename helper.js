@@ -89,7 +89,10 @@ function fixBadDataOnMaxChange(data, maxChange) {
   const average = data.reduce((sum, value) => sum + value, 0) / data.length;
 
   // Process the array
-  for (let i = 0; i < data.length; i++) {
+  // Changed so we always assume the first data point is good, we're not doing the average anymore.
+  // This average functionality seemed to be breaking things
+  for (let i = 1; i < data.length; i++) {
+    // This first clause will never fire since I changed the index.
     if (i === 0) {
       // For the first value, use the average of all values
       data[i] = average;

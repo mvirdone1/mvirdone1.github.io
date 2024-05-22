@@ -298,7 +298,7 @@ function clickWeatherClickListener(position, realClick = true) {
   var locationObject = {
     lat: lat,
     lon: lon,
-    locationName: "Forecast at Map Click",
+    locationName: "Conditions at Map Click",
     // weatherOffice: "SLC",
     chartObjects: [],
   };

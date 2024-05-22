@@ -3,6 +3,7 @@ class DriveWeather {
 }
 
 let locationList = [];
+let displayForecastTruePlotsFalse = true;
 
 function appendLatLon(lat, lon) {
   locationList.push([lat, lon]);
@@ -85,7 +86,7 @@ function getDriveURLParameters(driveString) {
   }
 }
 
-function initMapManager() {
+function driveWeatherInit() {
   // Usage example
   const initialCenter = { lat: 41.69, lng: -111.8 };
   const initialZoom = 8;
@@ -122,6 +123,10 @@ function initMapManager() {
 
   // appendLatLon(41.73, -111.83);
 
+  if (urlParams.has("showPlots")) {
+    displayForecastTruePlotsFalse = false;
+  }
+
   if (urlParams.has("drive")) {
     console.log("Found a drive parameter");
     getDriveURLParameters(urlParams.get("drive"));
@@ -134,6 +139,7 @@ function initMapManager() {
   }, 1000);
 }
 
+/*
 function driveWeatherInit() {
   var reverseButton = $('<button id="reverseButton">Reverse List</button>');
 
@@ -161,6 +167,7 @@ function driveWeatherInit() {
     updateWeatherImages();
   }, 1000);
 }
+*/
 
 function reverseList() {
   locationList.reverse();
@@ -168,17 +175,20 @@ function reverseList() {
 }
 
 function updateWeatherImages() {
-  $("#dynamic-div")
-    .find("img")
-    .each(function (index) {
-      if ($(this).attr("class") != "fixed") {
-        var $imgsrc = $(this).attr("src");
-        var $imgsrc2 = "https://forecast.weather.gov/" + $imgsrc;
-        $(this).attr("src", $imgsrc2);
-        $(this).attr("class", "fixed");
-        // $img.attr('alt',imgalt);
-      }
-    });
+  // Only do this if we're doing embedded forecasts
+  if (displayForecastTruePlotsFalse) {
+    $("#dynamic-div")
+      .find("img")
+      .each(function (index) {
+        if ($(this).attr("class") != "fixed") {
+          var $imgsrc = $(this).attr("src");
+          var $imgsrc2 = "https://forecast.weather.gov/" + $imgsrc;
+          $(this).attr("src", $imgsrc2);
+          $(this).attr("class", "fixed");
+          // $img.attr('alt',imgalt);
+        }
+      });
+  }
 }
 
 function liveWeatherInit() {

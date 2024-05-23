@@ -50,7 +50,13 @@ function getWeatherOverview(lat, lon, idx) {
   console.log(lat, lon, idx);
 
   var printIdx = idx + 1;
-  $("#dynamic-div").append("<h1> Location " + printIdx + "</h1>");
+  $("#dynamic-div").append(
+    '<a target="_blank" href="' +
+      localURL +
+      '"><h1> Location ' +
+      printIdx +
+      "</h1></a>"
+  );
 
   var deleteButton = $(
     '<button id="deleteButton-' +

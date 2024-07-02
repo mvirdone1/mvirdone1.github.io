@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Table to JSON</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      function fetchTableToJson(url) {
+        $.get(url, function (data) {
+          // Create a DOM element to hold the fetched page content
+          var $page = $("<div>").html(data);
+
+          // Initialize an array to store the JSON objects
+          var tableData = [];
+
+          // Select all rows of the table except the header
+          $page.find("table tr").each(function (index) {
+            if (index === 0) return; // Skip the header row
+
+            // Select all cells in the current row
+            var cells = $(this).find("td");
+
+            // Create an object to store the cell data
+            var rowData = {
+              wban: cells.eq(0).text().trim(),
+              stationId: cells.eq(1).text().trim(),
+              stationName: cells.eq(2).text().trim(),
+              latLon: cells.eq(3).text().trim(),
+              elevationFt: cells.eq(4).text().trim(),
+              towerHeightM: cells.eq(5).text().trim(),
+            };
+
+            // Add the row data object to the array
+            tableData.push(rowData);
+          });
+
+          // Convert the array to JSON
+          var json = JSON.stringify(tableData, null, 2);
+
+          // Output the JSON to the console
+          console.log(json);
+
+          // Display the JSON on the page
+          $("#output").text(json);
+        });
+      }
+
+      $(document).ready(function () {
+        fetchTableToJson(
+          "https://apollo.nvu.vsc.edu/classes/remote/lecture_notes/radar/88d/88D_locations.html"
+        );
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Table to JSON</h1>
+    <p>
+      Scrape content from
+      <a
+        href="https://apollo.nvu.vsc.edu/classes/remote/lecture_notes/radar/88d/88D_locations.html"
+        >https://apollo.nvu.vsc.edu/classes/remote/lecture_notes/radar/88d/88D_locations.html</a
+      >
+      and convert the UTM to Lat Lon and export as JSON
+    </p>
+    <pre id="output"></pre>
+  </body>
+</html>

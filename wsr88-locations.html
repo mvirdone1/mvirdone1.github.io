@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Table to JSON</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+
     <script>
       function fetchTableToJson(url) {
         $.get(url, function (data) {
@@ -21,12 +23,18 @@
             // Select all cells in the current row
             var cells = $(this).find("td");
 
+            var latLonArray = splitLatLonStringAndConvert(
+              cells.eq(3).text().trim()
+            );
+            console.log(latLonArray);
+
             // Create an object to store the cell data
             var rowData = {
               wban: cells.eq(0).text().trim(),
               stationId: cells.eq(1).text().trim(),
               stationName: cells.eq(2).text().trim(),
-              latLon: cells.eq(3).text().trim(),
+              lat: latLonArray.lat,
+              lon: latLonArray.lon,
               elevationFt: cells.eq(4).text().trim(),
               towerHeightM: cells.eq(5).text().trim(),
             };
@@ -44,6 +52,38 @@
           // Display the JSON on the page
           $("#output").text(json);
         });
+      }
+
+      function splitLatLonStringAndConvert(cellText) {
+        var utmArray = cellText.split(" / ");
+        var northing = parseInt(utmArray[0]);
+        var easting = parseInt(utmArray[1]);
+
+        const zone = Math.floor((easting - 100000) / 100000) + 1;
+        console.log(`Estimated UTM Zone: ${zone}`);
+        console.log(northing);
+        console.log(easting);
+        var returnValue = utmToLatLon(zone, northing, easting);
+
+        // console.log(returnValue);
+        return returnValue;
+      }
+
+      function utmToLatLon(zone, easting, northing, northernHemisphere = true) {
+        // Define the UTM projection for the given zone
+        const utmProjection = `+proj=utm +zone=${zone} +datum=WGS84 ${
+          northernHemisphere ? "" : "+south"
+        }`;
+        // Define the WGS84 projection
+        const wgs84Projection = "+proj=longlat +datum=WGS84 +no_defs";
+
+        // Perform the transformation
+        const [lon, lat] = proj4(utmProjection, wgs84Projection, [
+          easting,
+          northing,
+        ]);
+
+        return { lat, lon };
       }
 
       $(document).ready(function () {

@@ -26,7 +26,7 @@
             var latLonArray = splitLatLonStringAndConvert(
               cells.eq(3).text().trim()
             );
-            console.log(latLonArray);
+            //console.log(latLonArray);
 
             // Create an object to store the cell data
             var rowData = {
@@ -47,42 +47,33 @@
           var json = JSON.stringify(tableData, null, 2);
 
           // Output the JSON to the console
-          console.log(json);
+          // console.log(json);
 
           // Display the JSON on the page
-          $("#output").text(json);
+          // $("#output").text(json);
         });
       }
 
       function splitLatLonStringAndConvert(cellText) {
-        var utmArray = cellText.split(" / ");
-        var northing = parseInt(utmArray[0]);
-        var easting = parseInt(utmArray[1]);
+        var latLonArray = cellText.split(" / ");
+        var lat = parseInt(latLonArray[0]);
+        var lon = parseInt(latLonArray[1]);
 
-        const zone = Math.floor((easting - 100000) / 100000) + 1;
-        console.log(`Estimated UTM Zone: ${zone}`);
-        console.log(northing);
-        console.log(easting);
-        var returnValue = utmToLatLon(zone, northing, easting);
+        const numDecimals = 4;
+        const divisor = 10 ** numDecimals;
 
-        // console.log(returnValue);
-        return returnValue;
-      }
+        // The longitude is an integer that is unsigned
+        var lonDirection = -1;
 
-      function utmToLatLon(zone, easting, northing, northernHemisphere = true) {
-        // Define the UTM projection for the given zone
-        const utmProjection = `+proj=utm +zone=${zone} +datum=WGS84 ${
-          northernHemisphere ? "" : "+south"
-        }`;
-        // Define the WGS84 projection
-        const wgs84Projection = "+proj=longlat +datum=WGS84 +no_defs";
+        // A few of the list items are in the eastern hemisphere
+        if (
+          latLonArray[1].charAt(latLonArray[1].length - 1).toUpperCase() === "E"
+        ) {
+          lonDirection = 1;
+        }
 
-        // Perform the transformation
-        const [lon, lat] = proj4(utmProjection, wgs84Projection, [
-          easting,
-          northing,
-        ]);
-
+        lat = lat / divisor;
+        lon = lonDirection * (lon / divisor);
         return { lat, lon };
       }
 
@@ -103,6 +94,1791 @@
       >
       and convert the UTM to Lat Lon and export as JSON
     </p>
+    <table
+      hidden="hidden"
+      id="parseme"
+      border="2"
+      cellpadding="5"
+      cellspacing="1"
+    >
+      <tbody>
+        <tr valign="top">
+          <td align="center" class="ResultHead">
+            <b>NEXRAD SITENAME&nbsp; </b>
+          </td>
+
+          <td align="center" class="ResultHead"><b>SITE ID&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>SERIAL #&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>ORG CODE&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>TODO&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>CLIN&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>SYS NO.&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>ESA ID&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>RADAR ID&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>DEPARTMENT&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>ICAO&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>CITY&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>STATE&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>COUNTY&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>TOWER HEIGHT&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>ELEVATION&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>COMMISH DATE&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>REGION&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>LATITUDE&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>LONGITUDE&nbsp; </b></td>
+
+          <td align="center" class="ResultHead"><b>FREQUENCY&nbsp; </b></td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KENAI FAA (RDA 1)</td>
+          <td class="data">AHG</td>
+          <td class="data">RDA-181</td>
+          <td class="data">6901AJ</td>
+          <td class="data">690140</td>
+          <td class="data">01DN</td>
+          <td class="data">129</td>
+          <td class="data">ENA</td>
+          <td class="data">AHG</td>
+          <td class="data">DOT</td>
+          <td class="data">PAHG</td>
+          <td class="data">KENAI</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">73.76</td>
+          <td class="data">12/18/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+60 43 33.29</td>
+          <td class="data">-151 21 05.28</td>
+          <td class="data">2875</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KENAI FAA (RDA 2)</td>
+          <td class="data">AHG</td>
+          <td class="data">RDA-182</td>
+          <td class="data">6901AJ</td>
+          <td class="data">690140</td>
+          <td class="data">01DN</td>
+          <td class="data">129</td>
+          <td class="data">ENA</td>
+          <td class="data">AHG</td>
+          <td class="data">DOT</td>
+          <td class="data">PAHG</td>
+          <td class="data">KENAI</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">73.76</td>
+          <td class="data">12/18/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+60 43 33.29</td>
+          <td class="data">-151 21 05.28</td>
+          <td class="data">2840</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KENAI FAA (RPG 1)</td>
+          <td class="data">AHG</td>
+          <td class="data">DC138</td>
+          <td class="data">6901AJ</td>
+          <td class="data">690140</td>
+          <td class="data">N/A</td>
+          <td class="data">129</td>
+          <td class="data">ENA</td>
+          <td class="data">AHG</td>
+          <td class="data">DOT</td>
+          <td class="data">PAHG</td>
+          <td class="data">KENAI</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">12/18/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KENAI FAA (RPG 2)</td>
+          <td class="data">AHG</td>
+          <td class="data">DC141</td>
+          <td class="data">6901AJ</td>
+          <td class="data">690140</td>
+          <td class="data">N/A</td>
+          <td class="data">129</td>
+          <td class="data">ENA</td>
+          <td class="data">AHG</td>
+          <td class="data">DOT</td>
+          <td class="data">PAHG</td>
+          <td class="data">KENAI</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">12/18/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">BETHEL FAA (RDA 1)</td>
+          <td class="data">ABC</td>
+          <td class="data">RDA-179</td>
+          <td class="data">690112</td>
+          <td class="data">WV9219</td>
+          <td class="data">01GO</td>
+          <td class="data">83</td>
+          <td class="data">BET</td>
+          <td class="data">ABC</td>
+          <td class="data">DOT</td>
+          <td class="data">PABC</td>
+          <td class="data">BETHEL</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">5</td>
+          <td class="data">49.07</td>
+          <td class="data">10/3/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+60 47 31</td>
+          <td class="data">-161 52 35</td>
+          <td class="data">2800</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">BETHEL FAA (RDA 2)</td>
+          <td class="data">ABC</td>
+          <td class="data">RDA-180</td>
+          <td class="data">690112</td>
+          <td class="data">WV9219</td>
+          <td class="data">01GO</td>
+          <td class="data">83</td>
+          <td class="data">BET</td>
+          <td class="data">ABC</td>
+          <td class="data">DOT</td>
+          <td class="data">PABC</td>
+          <td class="data">BETHEL</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">5</td>
+          <td class="data">49.07</td>
+          <td class="data">10/3/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+60 47 31</td>
+          <td class="data">-161 52 35</td>
+          <td class="data">2880</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">BETHEL FAA (RPG 1)</td>
+          <td class="data">ABC</td>
+          <td class="data">DC153</td>
+          <td class="data">690112</td>
+          <td class="data">WV9219</td>
+          <td class="data">01GO</td>
+          <td class="data">83</td>
+          <td class="data">BET</td>
+          <td class="data">ABC</td>
+          <td class="data">DOT</td>
+          <td class="data">PABC</td>
+          <td class="data">BETHEL</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/3/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">BETHEL FAA (RPG 2)</td>
+          <td class="data">ABC</td>
+          <td class="data">DC155</td>
+          <td class="data">690112</td>
+          <td class="data">WV9219</td>
+          <td class="data">01GO</td>
+          <td class="data">83</td>
+          <td class="data">BET</td>
+          <td class="data">ABC</td>
+          <td class="data">DOT</td>
+          <td class="data">PABC</td>
+          <td class="data">BETHEL</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/3/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">CEDAR CITY (RDA 1)</td>
+          <td class="data">ICX</td>
+          <td class="data">RDA-162</td>
+          <td class="data">CONCDC</td>
+          <td class="data">WT9932</td>
+          <td class="data">01CY</td>
+          <td class="data">133</td>
+          <td class="data">SLC</td>
+          <td class="data">ICX</td>
+          <td class="data">DOC</td>
+          <td class="data">KICX</td>
+          <td class="data">CEDAR CITY</td>
+          <td class="data">UT</td>
+          <td class="data">IRON</td>
+          <td class="data">30</td>
+          <td class="data">3244</td>
+          <td class="data">3/5/1997</td>
+          <td class="data">Western</td>
+          <td class="data">+37 35 27.78</td>
+          <td class="data">-112 51 43.86</td>
+          <td class="data">2848</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">CEDAR CITY (RDA 2)</td>
+          <td class="data">ICX</td>
+          <td class="data">RDA-163</td>
+          <td class="data">CONCDC</td>
+          <td class="data">WT9932</td>
+          <td class="data">01CY</td>
+          <td class="data">133</td>
+          <td class="data">SLC</td>
+          <td class="data">ICX</td>
+          <td class="data">DOC</td>
+          <td class="data">KICX</td>
+          <td class="data">CEDAR CITY</td>
+          <td class="data">UT</td>
+          <td class="data">IRON</td>
+          <td class="data">30</td>
+          <td class="data">3244</td>
+          <td class="data">3/5/1997</td>
+          <td class="data">Western</td>
+          <td class="data">+37 35 27.78</td>
+          <td class="data">-112 51 43.86</td>
+          <td class="data">2880</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ELKO (RDA 1)</td>
+          <td class="data">LRX</td>
+          <td class="data">RDA-138</td>
+          <td class="data">WT9903</td>
+          <td class="data">WT9903</td>
+          <td class="data">01IR</td>
+          <td class="data">135</td>
+          <td class="data">LKN</td>
+          <td class="data">LRX</td>
+          <td class="data">DOC</td>
+          <td class="data">KLRX</td>
+          <td class="data">ELKO</td>
+          <td class="data">NV</td>
+          <td class="data">LANDER</td>
+          <td class="data">30</td>
+          <td class="data">2067</td>
+          <td class="data">4/29/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+40 44 22.38</td>
+          <td class="data">-116 48 09.72</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ELKO (RDA 2)</td>
+          <td class="data">LRX</td>
+          <td class="data">RDA-139</td>
+          <td class="data">WT9903</td>
+          <td class="data">WT9903</td>
+          <td class="data">01IR</td>
+          <td class="data">135</td>
+          <td class="data">LKN</td>
+          <td class="data">LRX</td>
+          <td class="data">DOC</td>
+          <td class="data">KLRX</td>
+          <td class="data">ELKO</td>
+          <td class="data">NV</td>
+          <td class="data">LANDER</td>
+          <td class="data">30</td>
+          <td class="data">2067</td>
+          <td class="data">4/29/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+40 44 22.38</td>
+          <td class="data">-116 48 09.72</td>
+          <td class="data">2770</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FAIRBANKS FAA (RDA 1)</td>
+          <td class="data">APD</td>
+          <td class="data">RDA-123</td>
+          <td class="data">690178</td>
+          <td class="data">FAAFAI</td>
+          <td class="data">01HA</td>
+          <td class="data">142</td>
+          <td class="data">PDQ</td>
+          <td class="data">APD</td>
+          <td class="data">DOT</td>
+          <td class="data">PAPD</td>
+          <td class="data">FAIRBANKS</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">790.35</td>
+          <td class="data">3/20/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+65 02 06.41</td>
+          <td class="data">-147 30 05.15</td>
+          <td class="data">2865</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FAIRBANKS FAA (RDA 2)</td>
+          <td class="data">APD</td>
+          <td class="data">RDA-124</td>
+          <td class="data">690178</td>
+          <td class="data">FAAFAI</td>
+          <td class="data">01HA</td>
+          <td class="data">142</td>
+          <td class="data">PDQ</td>
+          <td class="data">APD</td>
+          <td class="data">DOT</td>
+          <td class="data">PAPD</td>
+          <td class="data">FAIRBANKS</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">790.35</td>
+          <td class="data">3/20/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+65 02 06.41</td>
+          <td class="data">-147 30 05.15</td>
+          <td class="data">2805</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FAIRBANKS FAA (RPG 1)</td>
+          <td class="data">APD</td>
+          <td class="data">DC142</td>
+          <td class="data">690178</td>
+          <td class="data">FAAFAI</td>
+          <td class="data">N/A</td>
+          <td class="data">142</td>
+          <td class="data">PDQ</td>
+          <td class="data">APD</td>
+          <td class="data">DOT</td>
+          <td class="data">PAPD</td>
+          <td class="data">FAIRBANKS</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">3/20/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FAIRBANKS FAA (RPG 2)</td>
+          <td class="data">APD</td>
+          <td class="data">DC145</td>
+          <td class="data">690178</td>
+          <td class="data">FAAFAI</td>
+          <td class="data">N/A</td>
+          <td class="data">142</td>
+          <td class="data">PDQ</td>
+          <td class="data">APD</td>
+          <td class="data">DOT</td>
+          <td class="data">PAPD</td>
+          <td class="data">FAIRBANKS</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">3/20/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FLAGSTAFF (RDA 1)</td>
+          <td class="data">FSX</td>
+          <td class="data">RDA-090</td>
+          <td class="data">WT9375</td>
+          <td class="data">WT9375</td>
+          <td class="data">01EF</td>
+          <td class="data">140</td>
+          <td class="data">FGZ</td>
+          <td class="data">FSX</td>
+          <td class="data">DOC</td>
+          <td class="data">KFSX</td>
+          <td class="data">FLAGSTAFF</td>
+          <td class="data">AZ</td>
+          <td class="data">COCONINO</td>
+          <td class="data">25</td>
+          <td class="data">2260.7</td>
+          <td class="data">5/22/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+34 34 27.6</td>
+          <td class="data">-111 11 54.4</td>
+          <td class="data">2890</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">FLAGSTAFF (RDA 2)</td>
+          <td class="data">FSX</td>
+          <td class="data">RDA-091</td>
+          <td class="data">WT9375</td>
+          <td class="data">WT9375</td>
+          <td class="data">01EF</td>
+          <td class="data">140</td>
+          <td class="data">FGZ</td>
+          <td class="data">FSX</td>
+          <td class="data">DOC</td>
+          <td class="data">KFSX</td>
+          <td class="data">FLAGSTAFF</td>
+          <td class="data">AZ</td>
+          <td class="data">COCONINO</td>
+          <td class="data">25</td>
+          <td class="data">2260.7</td>
+          <td class="data">5/22/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+34 34 27.6</td>
+          <td class="data">-111 11 54.4</td>
+          <td class="data">2760</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">GRAND JUNCTION (RDA 1)</td>
+          <td class="data">GJX</td>
+          <td class="data">RDA-147</td>
+          <td class="data">WR9476</td>
+          <td class="data">WR9476</td>
+          <td class="data">01EN</td>
+          <td class="data">141</td>
+          <td class="data">GJT</td>
+          <td class="data">GJX</td>
+          <td class="data">DOC</td>
+          <td class="data">KGJX</td>
+          <td class="data">GRAND JUNCTION</td>
+          <td class="data">CO</td>
+          <td class="data">MESA</td>
+          <td class="data">15</td>
+          <td class="data">3059</td>
+          <td class="data">6/5/1996</td>
+          <td class="data">Central</td>
+          <td class="data">+39 03 43.81</td>
+          <td class="data">-108 12 49.54</td>
+          <td class="data">2885</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">GRAND JUNCTION (RDA 2)</td>
+          <td class="data">GJX</td>
+          <td class="data">RDA-148</td>
+          <td class="data">WR9476</td>
+          <td class="data">WR9476</td>
+          <td class="data">01EN</td>
+          <td class="data">141</td>
+          <td class="data">GJT</td>
+          <td class="data">GJX</td>
+          <td class="data">DOC</td>
+          <td class="data">KGJX</td>
+          <td class="data">GRAND JUNCTION</td>
+          <td class="data">CO</td>
+          <td class="data">MESA</td>
+          <td class="data">15</td>
+          <td class="data">3059</td>
+          <td class="data">6/5/1996</td>
+          <td class="data">Central</td>
+          <td class="data">+39 03 43.81</td>
+          <td class="data">-108 12 49.54</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KAMUELA/KOHALA APT (RDA 1)</td>
+          <td class="data">HKM</td>
+          <td class="data">RDA-087</td>
+          <td class="data">699235</td>
+          <td class="data">699234</td>
+          <td class="data">01EX</td>
+          <td class="data">120</td>
+          <td class="data">UPP</td>
+          <td class="data">HKM</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKM</td>
+          <td class="data">KAMUELA</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">30</td>
+          <td class="data">1174</td>
+          <td class="data">10/19/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">+20 07 31</td>
+          <td class="data">-155 46 40</td>
+          <td class="data">2760</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KAMUELA/KOHALA APT (RDA 2)</td>
+          <td class="data">HKM</td>
+          <td class="data">RDA-088</td>
+          <td class="data">699235</td>
+          <td class="data">699234</td>
+          <td class="data">01EX</td>
+          <td class="data">120</td>
+          <td class="data">UPP</td>
+          <td class="data">HKM</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKM</td>
+          <td class="data">KAMUELA</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">30</td>
+          <td class="data">1174</td>
+          <td class="data">10/19/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">+20 07 31</td>
+          <td class="data">-155 46 40</td>
+          <td class="data">2840</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KAMUELA/KOHALA APT(RPG 1)</td>
+          <td class="data">HKM</td>
+          <td class="data">DC102</td>
+          <td class="data">699235</td>
+          <td class="data">699234</td>
+          <td class="data">N/A</td>
+          <td class="data">120</td>
+          <td class="data">UPP</td>
+          <td class="data">HKM</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKM</td>
+          <td class="data">KAMUELA</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/19/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KAMUELA/KOHALA APT(RPG 2)</td>
+          <td class="data">HKM</td>
+          <td class="data">DC106</td>
+          <td class="data">699235</td>
+          <td class="data">699234</td>
+          <td class="data">N/A</td>
+          <td class="data">120</td>
+          <td class="data">UPP</td>
+          <td class="data">HKM</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKM</td>
+          <td class="data">KAMUELA</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/19/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KING SALMON FAA (RDA 1)</td>
+          <td class="data">AKC</td>
+          <td class="data">RDA-174</td>
+          <td class="data">690137</td>
+          <td class="data">AKNFFO</td>
+          <td class="data">01IV</td>
+          <td class="data">172</td>
+          <td class="data">AKN</td>
+          <td class="data">AKC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAKC</td>
+          <td class="data">KING SALMON</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">20</td>
+          <td class="data">19.2</td>
+          <td class="data">12/16/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+58 40 46</td>
+          <td class="data">-156 37 46</td>
+          <td class="data">2705</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KING SALMON FAA (RDA 2)</td>
+          <td class="data">AKC</td>
+          <td class="data">RDA-175</td>
+          <td class="data">690137</td>
+          <td class="data">AKNFFO</td>
+          <td class="data">01IV</td>
+          <td class="data">172</td>
+          <td class="data">AKN</td>
+          <td class="data">AKC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAKC</td>
+          <td class="data">KING SALMON</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">20</td>
+          <td class="data">19.2</td>
+          <td class="data">12/16/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+58 40 46</td>
+          <td class="data">-156 37 46</td>
+          <td class="data">2800</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KING SALMON FAA (RPG 1)</td>
+          <td class="data">AKC</td>
+          <td class="data">DC150</td>
+          <td class="data">690137</td>
+          <td class="data">AKNFFO</td>
+          <td class="data">N/A</td>
+          <td class="data">172</td>
+          <td class="data">AKN</td>
+          <td class="data">AKC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAKC</td>
+          <td class="data">KING SALMON</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">KING SALMON FAA (RPG 2)</td>
+          <td class="data">AKC</td>
+          <td class="data">DC151</td>
+          <td class="data">690137</td>
+          <td class="data">AKNFFO</td>
+          <td class="data">N/A</td>
+          <td class="data">172</td>
+          <td class="data">AKN</td>
+          <td class="data">AKC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAKC</td>
+          <td class="data">KING SALMON</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">12/16/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MEDFORD (RDA 1)</td>
+          <td class="data">MAX</td>
+          <td class="data">RDA-145</td>
+          <td class="data">WT9597</td>
+          <td class="data">WT9597</td>
+          <td class="data">01FY</td>
+          <td class="data">139</td>
+          <td class="data">MFR</td>
+          <td class="data">MAX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMAX</td>
+          <td class="data">MEDFORD</td>
+          <td class="data">OR</td>
+          <td class="data">JACKSON</td>
+          <td class="data">10</td>
+          <td class="data">2289.96</td>
+          <td class="data">4/30/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+42 04 52.21</td>
+          <td class="data">-122 43 02.53</td>
+          <td class="data">2885</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MEDFORD (RDA 2)</td>
+          <td class="data">MAX</td>
+          <td class="data">RDA-146</td>
+          <td class="data">WT9597</td>
+          <td class="data">WT9597</td>
+          <td class="data">01FY</td>
+          <td class="data">139</td>
+          <td class="data">MFR</td>
+          <td class="data">MAX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMAX</td>
+          <td class="data">MEDFORD</td>
+          <td class="data">OR</td>
+          <td class="data">JACKSON</td>
+          <td class="data">10</td>
+          <td class="data">2289.96</td>
+          <td class="data">4/30/1996</td>
+          <td class="data">Western</td>
+          <td class="data">+42 04 52.21</td>
+          <td class="data">-122 43 02.53</td>
+          <td class="data">2840</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MIDDLETON ISLAND (RDA 1)</td>
+          <td class="data">AIH</td>
+          <td class="data">RDA-169</td>
+          <td class="data">690140</td>
+          <td class="data">690140</td>
+          <td class="data">01GD</td>
+          <td class="data">134</td>
+          <td class="data">MDO</td>
+          <td class="data">AIH</td>
+          <td class="data">DOT</td>
+          <td class="data">PAIH</td>
+          <td class="data">MIDDLETON ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">15</td>
+          <td class="data">20.42</td>
+          <td class="data">9/8/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+59 27 38.76</td>
+          <td class="data">-146 18 12.41</td>
+          <td class="data">2885</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MIDDLETON ISLAND (RDA 2)</td>
+          <td class="data">AIH</td>
+          <td class="data">RDA-170</td>
+          <td class="data">690140</td>
+          <td class="data">690140</td>
+          <td class="data">01GD</td>
+          <td class="data">134</td>
+          <td class="data">MDO</td>
+          <td class="data">AIH</td>
+          <td class="data">DOT</td>
+          <td class="data">PAIH</td>
+          <td class="data">MIDDLETON ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">15</td>
+          <td class="data">20.42</td>
+          <td class="data">9/8/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+59 27 38.76</td>
+          <td class="data">-146 18 12.41</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MIDDLETON ISLAND (RPG 1)</td>
+          <td class="data">AIH</td>
+          <td class="data">DC144</td>
+          <td class="data">690140</td>
+          <td class="data">690140</td>
+          <td class="data">N/A</td>
+          <td class="data">134</td>
+          <td class="data">MDO</td>
+          <td class="data">AIH</td>
+          <td class="data">DOT</td>
+          <td class="data">PAIH</td>
+          <td class="data">MIDDLETON ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">9/8/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MIDDLETON ISLAND (RPG 2)</td>
+          <td class="data">AIH</td>
+          <td class="data">DC147</td>
+          <td class="data">690140</td>
+          <td class="data">690140</td>
+          <td class="data">N/A</td>
+          <td class="data">134</td>
+          <td class="data">MDO</td>
+          <td class="data">AIH</td>
+          <td class="data">DOT</td>
+          <td class="data">PAIH</td>
+          <td class="data">MIDDLETON ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">9/8/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MISSOULA (RDA 1)</td>
+          <td class="data">MSX</td>
+          <td class="data">RDA-136</td>
+          <td class="data">WT9773</td>
+          <td class="data">WT9773</td>
+          <td class="data">01GG</td>
+          <td class="data">92</td>
+          <td class="data">MSO</td>
+          <td class="data">MSX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMSX</td>
+          <td class="data">MISSOULA</td>
+          <td class="data">MT</td>
+          <td class="data">MISSOULA</td>
+          <td class="data">10</td>
+          <td class="data">2417</td>
+          <td class="data">6/1/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+47 02 27.6</td>
+          <td class="data">-113 59 10.4</td>
+          <td class="data">2865</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MISSOULA (RDA 2)</td>
+          <td class="data">MSX</td>
+          <td class="data">RDA-137</td>
+          <td class="data">WT9773</td>
+          <td class="data">WT9773</td>
+          <td class="data">01GG</td>
+          <td class="data">92</td>
+          <td class="data">MSO</td>
+          <td class="data">MSX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMSX</td>
+          <td class="data">MISSOULA</td>
+          <td class="data">MT</td>
+          <td class="data">MISSOULA</td>
+          <td class="data">10</td>
+          <td class="data">2417</td>
+          <td class="data">6/1/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+47 02 27.6</td>
+          <td class="data">-113 59 10.4</td>
+          <td class="data">2895</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MOLOKAI FAA (RDA 1)</td>
+          <td class="data">HMO</td>
+          <td class="data">RDA-059</td>
+          <td class="data">6992AQ</td>
+          <td class="data">6992AQ</td>
+          <td class="data">01DE</td>
+          <td class="data">122</td>
+          <td class="data">HMO</td>
+          <td class="data">HMO</td>
+          <td class="data">DOT</td>
+          <td class="data">PHMO</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">HI</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">20</td>
+          <td class="data">415.44</td>
+          <td class="data">10/16/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">+21 07 58</td>
+          <td class="data">-157 10 49</td>
+          <td class="data">2848</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MOLOKAI FAA (RDA 2)</td>
+          <td class="data">HMO</td>
+          <td class="data">RDA-060</td>
+          <td class="data">6992AQ</td>
+          <td class="data">6992AQ</td>
+          <td class="data">01DE</td>
+          <td class="data">122</td>
+          <td class="data">HMO</td>
+          <td class="data">HMO</td>
+          <td class="data">DOT</td>
+          <td class="data">PHMO</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">HI</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">20</td>
+          <td class="data">415.44</td>
+          <td class="data">10/16/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">+21 07 58</td>
+          <td class="data">-157 10 49</td>
+          <td class="data">2750</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MOLOKAI FAA (RPG 1)</td>
+          <td class="data">HMO</td>
+          <td class="data">DC052</td>
+          <td class="data">6992AQ</td>
+          <td class="data">6992AQ</td>
+          <td class="data">N/A</td>
+          <td class="data">122</td>
+          <td class="data">HMO</td>
+          <td class="data">HMO</td>
+          <td class="data">DOT</td>
+          <td class="data">PHMO</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">HI</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/16/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">MOLOKAI FAA (RPG 2)</td>
+          <td class="data">HMO</td>
+          <td class="data">DC057</td>
+          <td class="data">6992AQ</td>
+          <td class="data">6992AQ</td>
+          <td class="data">N/A</td>
+          <td class="data">122</td>
+          <td class="data">HMO</td>
+          <td class="data">HMO</td>
+          <td class="data">DOT</td>
+          <td class="data">PHMO</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">HI</td>
+          <td class="data">MOLOKAI</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">10/16/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">NOME FAA (RDA 1)</td>
+          <td class="data">AEC</td>
+          <td class="data">RDA-143</td>
+          <td class="data">690147</td>
+          <td class="data">690147</td>
+          <td class="data">01DP</td>
+          <td class="data">173</td>
+          <td class="data">OME</td>
+          <td class="data">AEC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAEC</td>
+          <td class="data">NOME</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">5</td>
+          <td class="data">17.68</td>
+          <td class="data">3/21/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+64 30 41</td>
+          <td class="data">-165 17 42</td>
+          <td class="data">2885</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">NOME FAA (RDA 2)</td>
+          <td class="data">AEC</td>
+          <td class="data">RDA-144</td>
+          <td class="data">690147</td>
+          <td class="data">690147</td>
+          <td class="data">01DP</td>
+          <td class="data">173</td>
+          <td class="data">OME</td>
+          <td class="data">AEC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAEC</td>
+          <td class="data">NOME</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">5</td>
+          <td class="data">17.68</td>
+          <td class="data">3/21/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+64 30 41</td>
+          <td class="data">-165 17 42</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">NOME FAA (RPG 1)</td>
+          <td class="data">AEC</td>
+          <td class="data">DC148</td>
+          <td class="data">690147</td>
+          <td class="data">690147</td>
+          <td class="data">N/A</td>
+          <td class="data">173</td>
+          <td class="data">OME</td>
+          <td class="data">AEC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAEC</td>
+          <td class="data">NOME</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">NOME FAA (RPG 2)</td>
+          <td class="data">AEC</td>
+          <td class="data">DC149</td>
+          <td class="data">690147</td>
+          <td class="data">690147</td>
+          <td class="data">N/A</td>
+          <td class="data">173</td>
+          <td class="data">OME</td>
+          <td class="data">AEC</td>
+          <td class="data">DOT</td>
+          <td class="data">PAEC</td>
+          <td class="data">NOME</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ROC FAA REDUNDANT (RDA 2)</td>
+          <td class="data">CRIO2</td>
+          <td class="data">RDA-185</td>
+          <td class="data">WG9410</td>
+          <td class="data">WG9410</td>
+          <td class="data">01GV</td>
+          <td class="data">121</td>
+          <td class="data">OSFO2</td>
+          <td class="data">ROC</td>
+          <td class="data">DOC</td>
+          <td class="data">KCRI</td>
+          <td class="data">NORMAN</td>
+          <td class="data">OK</td>
+          <td class="data">CLEVELAND</td>
+          <td class="data">30</td>
+          <td class="data">366</td>
+          <td class="data">N/A</td>
+          <td class="data">HQ</td>
+          <td class="data">+35 14 18</td>
+          <td class="data">-97 27 36</td>
+          <td class="data">2995</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ROC FAA REDUNDANT (RDA 1)</td>
+          <td class="data">CRIO2</td>
+          <td class="data">RDA-183</td>
+          <td class="data">WG9410</td>
+          <td class="data">WG9410</td>
+          <td class="data">01GV</td>
+          <td class="data">121</td>
+          <td class="data">OSFO2</td>
+          <td class="data">ROC</td>
+          <td class="data">DOC</td>
+          <td class="data">KCRI</td>
+          <td class="data">NORMAN</td>
+          <td class="data">OK</td>
+          <td class="data">CLEVELAND</td>
+          <td class="data">30</td>
+          <td class="data">366</td>
+          <td class="data">N/A</td>
+          <td class="data">HQ</td>
+          <td class="data">+35 14 18</td>
+          <td class="data">-97 27 36</td>
+          <td class="data">2950</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">RENO (RDA 1)</td>
+          <td class="data">RGX</td>
+          <td class="data">RDA-109</td>
+          <td class="data">WT9488</td>
+          <td class="data">WT9488</td>
+          <td class="data">01HI</td>
+          <td class="data">88</td>
+          <td class="data">REV</td>
+          <td class="data">RGX</td>
+          <td class="data">DOC</td>
+          <td class="data">KRGX</td>
+          <td class="data">NIXON</td>
+          <td class="data">NV</td>
+          <td class="data">WASHOE</td>
+          <td class="data">25</td>
+          <td class="data">2529.54</td>
+          <td class="data">6/14/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+39 45 14.6</td>
+          <td class="data">-119 27 43.3</td>
+          <td class="data">2895</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">RENO (RDA 2)</td>
+          <td class="data">RGX</td>
+          <td class="data">RDA-110</td>
+          <td class="data">WT9488</td>
+          <td class="data">WT9488</td>
+          <td class="data">01HI</td>
+          <td class="data">88</td>
+          <td class="data">REV</td>
+          <td class="data">RGX</td>
+          <td class="data">DOC</td>
+          <td class="data">KRGX</td>
+          <td class="data">NIXON</td>
+          <td class="data">NV</td>
+          <td class="data">WASHOE</td>
+          <td class="data">25</td>
+          <td class="data">2529.54</td>
+          <td class="data">6/14/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+39 45 14.6</td>
+          <td class="data">-119 27 43.3</td>
+          <td class="data">2905</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SALT LAKE CITY (RDA 1)</td>
+          <td class="data">MTX</td>
+          <td class="data">RDA-135</td>
+          <td class="data">WT9932</td>
+          <td class="data">WT9932</td>
+          <td class="data">01HM</td>
+          <td class="data">91</td>
+          <td class="data">SLC</td>
+          <td class="data">MTX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMTX</td>
+          <td class="data">SALT LAKE CITY</td>
+          <td class="data">UT</td>
+          <td class="data">SALT LAKE</td>
+          <td class="data">30</td>
+          <td class="data">1975</td>
+          <td class="data">6/1/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+41 15 46</td>
+          <td class="data">-112 26 52</td>
+          <td class="data">2705</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SALT LAKE CITY (RDA 2)</td>
+          <td class="data">MTX</td>
+          <td class="data">RDA-126</td>
+          <td class="data">WT9932</td>
+          <td class="data">WT9932</td>
+          <td class="data">01HM</td>
+          <td class="data">91</td>
+          <td class="data">SLC</td>
+          <td class="data">MTX</td>
+          <td class="data">DOC</td>
+          <td class="data">KMTX</td>
+          <td class="data">SALT LAKE CITY</td>
+          <td class="data">UT</td>
+          <td class="data">SALT LAKE</td>
+          <td class="data">30</td>
+          <td class="data">1975</td>
+          <td class="data">6/1/1995</td>
+          <td class="data">Western</td>
+          <td class="data">+41 15 46</td>
+          <td class="data">-112 26 52</td>
+          <td class="data">2760</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SAN JUAN FAA (RDA 1)</td>
+          <td class="data">JUA</td>
+          <td class="data">RDA-111</td>
+          <td class="data">69F364</td>
+          <td class="data">69F300</td>
+          <td class="data">01KG</td>
+          <td class="data">117</td>
+          <td class="data">SJU</td>
+          <td class="data">JUA</td>
+          <td class="data">DOT</td>
+          <td class="data">TJUA</td>
+          <td class="data">SAN JUAN</td>
+          <td class="data">PR</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">867</td>
+          <td class="data">7/7/1997</td>
+          <td class="data">ASO</td>
+          <td class="data">+18 06 56.4</td>
+          <td class="data">-66 04 41.4</td>
+          <td class="data">2810</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SAN JUAN FAA (RDA 2)</td>
+          <td class="data">JUA</td>
+          <td class="data">RDA-112</td>
+          <td class="data">69F364</td>
+          <td class="data">69F300</td>
+          <td class="data">01KG</td>
+          <td class="data">117</td>
+          <td class="data">SJU</td>
+          <td class="data">JUA</td>
+          <td class="data">DOT</td>
+          <td class="data">TJUA</td>
+          <td class="data">SAN JUAN</td>
+          <td class="data">PR</td>
+          <td class="data">N/A</td>
+          <td class="data">30</td>
+          <td class="data">867</td>
+          <td class="data">7/7/1997</td>
+          <td class="data">ASO</td>
+          <td class="data">+18 06 56.4</td>
+          <td class="data">-66 04 41.4</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SAN JUAN FAA (RPG 1)</td>
+          <td class="data">JUA</td>
+          <td class="data">DC114</td>
+          <td class="data">69F364</td>
+          <td class="data">69F300</td>
+          <td class="data">N/A</td>
+          <td class="data">117</td>
+          <td class="data">SJU</td>
+          <td class="data">JUA</td>
+          <td class="data">DOT</td>
+          <td class="data">TJUA</td>
+          <td class="data">SAN JUAN</td>
+          <td class="data">PR</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">7/7/1997</td>
+          <td class="data">ASO</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SAN JUAN FAA (RPG 2)</td>
+          <td class="data">JUA</td>
+          <td class="data">DC118</td>
+          <td class="data">69F364</td>
+          <td class="data">69F300</td>
+          <td class="data">N/A</td>
+          <td class="data">117</td>
+          <td class="data">SJU</td>
+          <td class="data">JUA</td>
+          <td class="data">DOT</td>
+          <td class="data">TJUA</td>
+          <td class="data">SAN JUAN</td>
+          <td class="data">PR</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">7/7/1997</td>
+          <td class="data">ASO</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SITKA FAA (RDA 1)</td>
+          <td class="data">ACG</td>
+          <td class="data">RDA-153</td>
+          <td class="data">690141</td>
+          <td class="data">690141</td>
+          <td class="data">01ID</td>
+          <td class="data">138</td>
+          <td class="data">BKA</td>
+          <td class="data">ACG</td>
+          <td class="data">DOT</td>
+          <td class="data">PACG</td>
+          <td class="data">BIORKA ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">15</td>
+          <td class="data">63.09</td>
+          <td class="data">8/27/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+56 51 10</td>
+          <td class="data">-135 31 45</td>
+          <td class="data">2800</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SITKA FAA (RDA 2)</td>
+          <td class="data">ACG</td>
+          <td class="data">RDA-154</td>
+          <td class="data">690141</td>
+          <td class="data">690141</td>
+          <td class="data">01ID</td>
+          <td class="data">138</td>
+          <td class="data">BKA</td>
+          <td class="data">ACG</td>
+          <td class="data">DOT</td>
+          <td class="data">PACG</td>
+          <td class="data">BIORKA ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">15</td>
+          <td class="data">63.09</td>
+          <td class="data">8/27/1997</td>
+          <td class="data">AAL</td>
+          <td class="data">+56 51 10</td>
+          <td class="data">-135 31 45</td>
+          <td class="data">2880</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SITKA FAA (RPG 1)</td>
+          <td class="data">ACG</td>
+          <td class="data">DC152</td>
+          <td class="data">690141</td>
+          <td class="data">690141</td>
+          <td class="data">N/A</td>
+          <td class="data">138</td>
+          <td class="data">BKA</td>
+          <td class="data">ACG</td>
+          <td class="data">DOT</td>
+          <td class="data">PACG</td>
+          <td class="data">BIORKA ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SITKA FAA (RPG 2)</td>
+          <td class="data">ACG</td>
+          <td class="data">DC154</td>
+          <td class="data">690141</td>
+          <td class="data">690141</td>
+          <td class="data">N/A</td>
+          <td class="data">138</td>
+          <td class="data">BKA</td>
+          <td class="data">ACG</td>
+          <td class="data">DOT</td>
+          <td class="data">PACG</td>
+          <td class="data">BIORKA ISLAND</td>
+          <td class="data">AK</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">AAL</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH KAUAI FAA (RDA 1)</td>
+          <td class="data">HKI</td>
+          <td class="data">RDA-018</td>
+          <td class="data">699211</td>
+          <td class="data">WW9165</td>
+          <td class="data">01IA</td>
+          <td class="data">127</td>
+          <td class="data">SOK</td>
+          <td class="data">HKI</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKI</td>
+          <td class="data">SOUTH KAUAI</td>
+          <td class="data">HI</td>
+          <td class="data">KAUAI</td>
+          <td class="data">30</td>
+          <td class="data">69</td>
+          <td class="data">12/3/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">+21 53 38</td>
+          <td class="data">-159 33 09</td>
+          <td class="data">2760</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH KAUAI FAA (RDA 2)</td>
+          <td class="data">HKI</td>
+          <td class="data">RDA-019</td>
+          <td class="data">699211</td>
+          <td class="data">WW9165</td>
+          <td class="data">01IA</td>
+          <td class="data">127</td>
+          <td class="data">SOK</td>
+          <td class="data">HKI</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKI</td>
+          <td class="data">SOUTH KAUAI</td>
+          <td class="data">HI</td>
+          <td class="data">KAUAI</td>
+          <td class="data">30</td>
+          <td class="data">69</td>
+          <td class="data">12/3/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">+21 53 38</td>
+          <td class="data">-159 33 09</td>
+          <td class="data">2860</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH KAUAI FAA (RPG 1)</td>
+          <td class="data">HKI</td>
+          <td class="data">DC085</td>
+          <td class="data">699211</td>
+          <td class="data">WW9165</td>
+          <td class="data">N/A</td>
+          <td class="data">127</td>
+          <td class="data">SOK</td>
+          <td class="data">HKI</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKI</td>
+          <td class="data">SOUTH KAUAI</td>
+          <td class="data">HI</td>
+          <td class="data">KAUAI</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">12/3/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH KAUAI FAA (RPG 2)</td>
+          <td class="data">HKI</td>
+          <td class="data">DC088</td>
+          <td class="data">699211</td>
+          <td class="data">WW9165</td>
+          <td class="data">N/A</td>
+          <td class="data">127</td>
+          <td class="data">SOK</td>
+          <td class="data">HKI</td>
+          <td class="data">DOT</td>
+          <td class="data">PHKI</td>
+          <td class="data">SOUTH KAUAI</td>
+          <td class="data">HI</td>
+          <td class="data">KAUAI</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">12/3/1997</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH SHORE FAA (RDA 1)</td>
+          <td class="data">HWA</td>
+          <td class="data">RDA-084</td>
+          <td class="data">699201</td>
+          <td class="data">699201</td>
+          <td class="data">01IX</td>
+          <td class="data">174</td>
+          <td class="data">HWC</td>
+          <td class="data">HWA</td>
+          <td class="data">DOT</td>
+          <td class="data">PHWA</td>
+          <td class="data">NAALEHU</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">20</td>
+          <td class="data">420.62</td>
+          <td class="data">3/8/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">+19 05 42</td>
+          <td class="data">-155 34 08</td>
+          <td class="data">2855</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH SHORE FAA (RDA 2)</td>
+          <td class="data">HWA</td>
+          <td class="data">RDA-085</td>
+          <td class="data">699201</td>
+          <td class="data">699201</td>
+          <td class="data">01IX</td>
+          <td class="data">174</td>
+          <td class="data">HWC</td>
+          <td class="data">HWA</td>
+          <td class="data">DOT</td>
+          <td class="data">PHWA</td>
+          <td class="data">NAALEHU</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">20</td>
+          <td class="data">420.62</td>
+          <td class="data">3/8/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">+19 05 42</td>
+          <td class="data">-155 34 08</td>
+          <td class="data">2890</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH SHORE FAA (RPG 1)</td>
+          <td class="data">HWA</td>
+          <td class="data">DC093</td>
+          <td class="data">699201</td>
+          <td class="data">699201</td>
+          <td class="data">N/A</td>
+          <td class="data">174</td>
+          <td class="data">HWC</td>
+          <td class="data">HWA</td>
+          <td class="data">DOT</td>
+          <td class="data">PHWA</td>
+          <td class="data">NAALEHU</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">3/8/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">SOUTH SHORE FAA (RPG 2)</td>
+          <td class="data">HWA</td>
+          <td class="data">DC097</td>
+          <td class="data">699201</td>
+          <td class="data">699201</td>
+          <td class="data">N/A</td>
+          <td class="data">174</td>
+          <td class="data">HWC</td>
+          <td class="data">HWA</td>
+          <td class="data">DOT</td>
+          <td class="data">PHWA</td>
+          <td class="data">NAALEHU</td>
+          <td class="data">HI</td>
+          <td class="data">HAWAII</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">3/8/1998</td>
+          <td class="data">AWP</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">YUMA (RDA 1)</td>
+          <td class="data">YUX</td>
+          <td class="data">RDA-052</td>
+          <td class="data">WT9278</td>
+          <td class="data">WT9278</td>
+          <td class="data">01IT</td>
+          <td class="data">148</td>
+          <td class="data">PSR</td>
+          <td class="data">YUX</td>
+          <td class="data">DOC</td>
+          <td class="data">KYUX</td>
+          <td class="data">YUMA</td>
+          <td class="data">AZ</td>
+          <td class="data">PIMA</td>
+          <td class="data">15</td>
+          <td class="data">53.04</td>
+          <td class="data">1/15/1997</td>
+          <td class="data">Western</td>
+          <td class="data">+32 29 43.01</td>
+          <td class="data">-114 39 24.16</td>
+          <td class="data">2835</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">YUMA (RDA 2)</td>
+          <td class="data">YUX</td>
+          <td class="data">RDA-053</td>
+          <td class="data">WT9278</td>
+          <td class="data">WT9278</td>
+          <td class="data">01IT</td>
+          <td class="data">148</td>
+          <td class="data">PSR</td>
+          <td class="data">YUX</td>
+          <td class="data">DOC</td>
+          <td class="data">KYUX</td>
+          <td class="data">YUMA</td>
+          <td class="data">AZ</td>
+          <td class="data">PIMA</td>
+          <td class="data">15</td>
+          <td class="data">53.04</td>
+          <td class="data">1/15/1997</td>
+          <td class="data">Western</td>
+          <td class="data">+32 29 43.01</td>
+          <td class="data">-114 39 24.16</td>
+          <td class="data">2750</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ROC FAA REDUNDANT (RPG 2)</td>
+          <td class="data">CRIO2</td>
+          <td class="data">DC184</td>
+          <td class="data">WG9410</td>
+          <td class="data">WG9410</td>
+          <td class="data">N/A</td>
+          <td class="data">121</td>
+          <td class="data">OSFO2</td>
+          <td class="data">ROC</td>
+          <td class="data">DOT</td>
+          <td class="data">FOP1</td>
+          <td class="data">NORMAN</td>
+          <td class="data">OK</td>
+          <td class="data">CLEVELAND</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">HQ</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+        <tr valign="top">
+          <td class="data">ROC FAA REDUNDANT (RPG 1)</td>
+          <td class="data">CRIO2</td>
+          <td class="data">DC183</td>
+          <td class="data">WG9410</td>
+          <td class="data">WG9410</td>
+          <td class="data">N/A</td>
+          <td class="data">121</td>
+          <td class="data">OSFO2</td>
+          <td class="data">ROC</td>
+          <td class="data">DOT</td>
+          <td class="data">FOP1</td>
+          <td class="data">NORMAN</td>
+          <td class="data">OK</td>
+          <td class="data">CLEVELAND</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">HQ</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+          <td class="data">N/A</td>
+        </tr>
+      </tbody>
+    </table>
+
     <pre id="output"></pre>
+
+    <h2>JSON Output</h2>
+    <pre id="json-output"></pre>
+
+    <script>
+      function parseLatLonFromTable() {
+        var data = [];
+        $("#parseme tr:gt(0)").each(function () {
+          // Skip the header row
+          const tds = $(this).find("td");
+          const stationId = $(tds[10]).text().trim();
+          const latitudeStr = $(tds[18]).text().trim();
+          const longitudeStr = $(tds[19]).text().trim();
+
+          var plusMinus = 1;
+          if (longitudeStr.charAt(0) === "-") {
+            plusMinus = -1;
+          }
+
+          const latArray = latitudeStr.split(" ");
+          const lonArray = latitudeStr.split(" ");
+
+          const minutes = 60;
+          const seconds = minutes * 60;
+
+          const latitude = (
+            parseInt(latArray[0]) +
+            parseInt(latArray[1]) / minutes +
+            parseInt(latArray[2]) / seconds
+          ).toFixed(5);
+
+          const longitude = (
+            parseInt(lonArray[0]) +
+            parseInt(lonArray[1]) / minutes +
+            parseInt(lonArray[2]) / seconds
+          ).toFixed(5);
+
+          // Skip any elements that have NaN Lat or Lon
+          if (!(isNaN(latitude) || isNaN(longitude))) {
+            // Push the first row that has valid Lat Lon
+            if (data.length == 0) {
+              data.push({
+                stationId: stationId,
+                latitude: latitude,
+                longitude: longitude,
+              });
+              // Don't push if the station ID already exists
+            } else if (stationId !== data[data.length - 1].stationId) {
+              data.push({
+                stationId: stationId,
+                latitude: latitude,
+                longitude: longitude,
+              });
+            } else {
+              console.log("Duplicat Station " + stationId);
+            }
+          }
+        });
+
+        // https://documentation.sas.com/doc/en/etsug/15.2/etsug_sasenoaa_details02.htm
+
+        // Remove duplicates
+        // data = Array.from(new Set(data));
+        // data = Array.from(new Set(data.map((e) => JSON.stringify(e))));
+        return data;
+      }
+
+      $(document).ready(function () {
+        const parsedData = parseLatLonFromTable();
+        console.log(parsedData.length);
+
+        //$("#json-output").text(JSON.stringify(parsedData, null, 2));
+      });
+    </script>
+
+    <h2>JSON Output</h2>
+    <pre id="json-output"></pre>
+
+    <script>
+      $(document).ready(function () {
+        // URL of the page to scrape
+        const url =
+          "https://documentation.sas.com/doc/en/etsug/15.2/etsug_sasenoaa_details02.htm";
+
+        // Fetch the page
+        $.get(url, function (response) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(response, "text/html");
+
+          const data = [];
+          const rows = doc.querySelectorAll("table.aa-tabular tbody tr"); // Adjust selector to target the correct table
+
+          rows.forEach((row, index) => {
+            console.log(index);
+            if (index === 0) return; // Skip header row
+
+            const cells = row.querySelectorAll("td");
+            if (cells.length === 0) return;
+
+            const city = cells[3].textContent.trim();
+            const state = cells[4].textContent.trim();
+            const icao = cells[2].textContent.trim();
+            const latitude = cells[9].textContent.trim();
+            const longitude = cells[10].textContent.trim();
+
+            data.push({
+              city: city,
+              state: state,
+              icao: icao,
+              latitude: latitude,
+              longitude: longitude,
+            });
+          });
+
+          $("#json-output").text(JSON.stringify(data, null, 2));
+          console.log(data);
+        });
+      });
+    </script>
   </body>
 </html>

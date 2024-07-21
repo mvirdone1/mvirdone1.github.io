@@ -393,6 +393,6 @@ function initMap() {
   });
 
   updateLinkURL();
-  displayMapClickView();
   parseURL();
+  displayMapClickView();
 }

@@ -392,7 +392,8 @@ function initMap() {
     clickWeatherClickListener(position);
   });
 
-  updateLinkURL();
+  // updateLinkURL();
   parseURL();
   displayMapClickView();
+  parseURL();
 }

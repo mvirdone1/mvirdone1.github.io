@@ -1,3 +1,6 @@
+// Sourced from here, cleaned up and made into a nice array
+// https://apollo.nvu.vsc.edu/classes/remote/lecture_notes/radar/88d/88D_locations.html
+
 const stations = [
   {
     stationId: "KABR",
@@ -949,6 +952,10 @@ const stations = [
   },
 ];
 
+// Requires helper.js for calculating distance
+// Given a lat lon, give the nearest numStaions from the list
+// If I were more motivated I'd do something about getting a bearing to the weather station so you could
+// prioritize looking at ones to your west (for my weather patterns at least...)
 function findNearestStations(lat, lon, numStations) {
   const distances = stations.map((station) => {
     const distance = calculateLatLonDistance(

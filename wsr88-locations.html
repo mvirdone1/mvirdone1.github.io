@@ -7,6 +7,9 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
 
+    <script src="helper.js"></script>
+    <script src="findwsr88radars.js"></script>
+
     <script>
       function fetchTableToJson(url) {
         $.get(url, function (data) {
@@ -94,13 +97,8 @@
       >
       and convert the UTM to Lat Lon and export as JSON
     </p>
-    <table
-      hidden="hidden"
-      id="parseme"
-      border="2"
-      cellpadding="5"
-      cellspacing="1"
-    >
+    <!--    hidden="hidden"-->
+    <table id="parseme" border="2" cellpadding="5" cellspacing="1">
       <tbody>
         <tr valign="top">
           <td align="center" class="ResultHead">
@@ -1775,13 +1773,13 @@
           const latitudeStr = $(tds[18]).text().trim();
           const longitudeStr = $(tds[19]).text().trim();
 
-          var plusMinus = 1;
+          var latPlusMinus = 1;
           if (longitudeStr.charAt(0) === "-") {
-            plusMinus = -1;
+            latPlusMinus = -1;
           }
 
           const latArray = latitudeStr.split(" ");
-          const lonArray = latitudeStr.split(" ");
+          const lonArray = longitudeStr.split(" ");
 
           const minutes = 60;
           const seconds = minutes * 60;
@@ -1807,6 +1805,7 @@
                 latitude: latitude,
                 longitude: longitude,
               });
+              console.log("First Entry");
               // Don't push if the station ID already exists
             } else if (stationId !== data[data.length - 1].stationId) {
               data.push({
@@ -1814,8 +1813,9 @@
                 latitude: latitude,
                 longitude: longitude,
               });
+              console.log("Pushing station " + stationId);
             } else {
-              console.log("Duplicat Station " + stationId);
+              console.log("Duplicate Station " + stationId);
             }
           }
         });
@@ -1829,9 +1829,14 @@
       }
 
       $(document).ready(function () {
+        /* 
         const parsedData = parseLatLonFromTable();
         console.log(parsedData.length);
-
+        console.log(parsedData);
+        */
+        console.log("Hi");
+        var myStations = findNearestStations(41.7472, -111.7435, 4);
+        console.log(myStations);
         //$("#json-output").text(JSON.stringify(parsedData, null, 2));
       });
     </script>

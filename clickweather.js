@@ -272,6 +272,8 @@ function printNiceWeatherCell(measurement) {
 function clickWeatherClickListener(position, realClick = true) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
+
+  // This function does all the addition of everything except the weather plots
   displayMapClickView();
 
   myMapManager.setMapCenter(position.lat, position.lng);
@@ -310,8 +312,30 @@ function clickWeatherClickListener(position, realClick = true) {
   // Update the URL for the image element
   updateWeatherPlot(locationObject);
   updateWeatherPlot(locationObject, 49, "weather-plot-2");
-  const contentElement = document.getElementById("dynamic-div");
 
+  // Get the dynamic div where we put all the forecast stuff.
+  // Inside of that we're going to put a button, and two div, the inner most div
+  // will contain all our content (contentElement)
+  // const dynamicDivElement = document.getElementById("dynamic-div");
+
+  // const contentElement = createToggleChildElements("dynamic_div","Historical Charts")
+
+  const contentElement = createToggleChildElements(
+    "dynamic-div",
+    "Historical Charts"
+  );
+
+  /*
+  var showHideHistoryParent = document.createElement("div");
+  showHideHistoryParent.setAttribute("id", "hide-show-history-parent");
+
+  var contentElement = document.createElement("div");
+  contentElement.setAttribute("id", "hide-show-history-child");
+
+  dynamicDivElement.appendChild(showHideHistoryParent);
+  showHideHistoryParent.appendChild(contentElement);
+
+  */
   for (const chartObject of locationObject.chartObjects) {
     newHeading = document.createElement("h2");
     newHeading.textContent = chartObject.title;

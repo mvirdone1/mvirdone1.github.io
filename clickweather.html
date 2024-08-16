@@ -21,6 +21,8 @@
     <script src="mesonetdataplotting.js"></script>
     <script src="weatherhelper.js"></script>
     <script src="clickweather.js"></script>
+    <script src="findwsr88radars.js"></script>
+    <script src="imagetabs.js"></script>
 
 
     <style>
@@ -50,6 +52,56 @@
         overflow: auto; /* Add overflow:auto to enable scrolling if content exceeds max-height */
       }
 
+
+      body {
+        font-family: Arial, sans-serif;
+      }
+
+      .tab-container {
+        width: 600px;
+        margin: 50px auto;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 2px solid #ccc;
+      }
+
+      .tab {
+        flex: 1;
+        padding: 10px;
+        background-color: #f1f1f1;
+        border: none;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.3s;
+      }
+
+      .tab:hover {
+        background-color: #ddd;
+      }
+
+      .tab.active {
+        background-color: #ccc;
+        border-bottom: 2px solid white;
+      }
+
+      .tab-content {
+        border: 2px solid #ccc;
+        border-top: none;
+        padding: 20px;
+        background-color: #f9f9f9;
+      }
+
+      .tab-pane {
+        display: none;
+      }
+
+      .tab-pane.active {
+        display: block;
+      }
+
+    </style>
 
     </style>
   </head>

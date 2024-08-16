@@ -87,40 +87,6 @@ function displayMapClickView() {
     "dynamic-div",
     "Forecast Charts"
   );
-  /*
-  const button = document.createElement("button");
-  button.textContent = "Show/Hide Forecast Charts";
-  button.onclick = function () {
-    toggleChildVisibility("hide-show-forecast-parent");
-  };
-
-  // Create the parent div
-  const parentDiv = document.createElement("div");
-  parentDiv.id = "hide-show-forecast-parent";
-  parentDiv.style.display = "none"; // Start hidden
-
-  // Create the child div
-  const childDiv = document.createElement("div");
-  childDiv.id = "hide-show-forecast-child";
-
-  // Append the child div to the parent div
-  parentDiv.appendChild(childDiv);
-
-  // Append the button and parent div to the content div
-  const dynamicDivElement = document.getElementById("dynamic-div");
-  dynamicDivElement.appendChild(button);
-  dynamicDivElement.appendChild(parentDiv);
-
-  const hideShowHTML = ` 
-  <button onclick="toggleChildVisibility('hide-show-forecast-parent')">Show/Hide Forecast Charts</button>
-
-    <div id="hide-show-forecast-parent">
-      <div id="hide-show-forecast-child"></div>
-    </div>
-    `;
-
-  const contentElement = document.getElementById("hide-show-forecast-child");
-  */
   // Create the heading
   var newHeading = document.createElement("h1");
   newHeading.textContent = "Map Click Forecast";

@@ -965,8 +965,13 @@ function findNearestStations(lat, lon, numStations) {
       parseFloat(station.longitude)
     );
 
-    const distance_miles = distance.miles;
-    return { ...station, distance_miles };
+    const stationDistanceMiles = distance.miles;
+    const stationHeading = distance.heading;
+    return {
+      ...station,
+      distance_miles: stationDistanceMiles,
+      station_heading: stationHeading,
+    };
   });
 
   distances.sort((a, b) => a.distance_miles - b.distance_miles);
@@ -977,5 +982,6 @@ function findNearestStations(lat, lon, numStations) {
     latitude: station.latitude,
     longitude: station.longitude,
     distance: station.distance_miles.toFixed(2), // Optional: to round the distance
+    heading: station.station_heading,
   }));
 }

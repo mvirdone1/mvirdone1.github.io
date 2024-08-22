@@ -319,7 +319,15 @@ function clickWeatherClickListener(position, realClick = true) {
 
   for (var idx = 0; idx < myStations.length; idx++) {
     const stationId = myStations[idx].stationId;
-    const stationText = myStations[idx].stationName + " (" + stationId + ")";
+
+    const stationText =
+      myStations[idx].stationName +
+      " (" +
+      stationId +
+      ") " +
+      Math.round(myStations[idx].distance) +
+      " mi " +
+      bearingToCompass(myStations[idx].heading);
     const stationImage =
       "https://radar.weather.gov/ridge/standard/" + stationId + "_loop.gif";
     setTabProperties(idx, stationText, stationImage, stationId);

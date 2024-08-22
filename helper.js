@@ -476,14 +476,41 @@ function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
   const distance_km = R_km * c;
   const distance_miles = R_miles * c;
 
+  // Calculate the initial bearing (heading) from point 1 to point 2
+  let y = Math.sin(dLon) * Math.cos(lat2Rad);
+  let x =
+    Math.cos(lat1Rad) * Math.sin(lat2Rad) -
+    Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
+  let initialBearingRad = Math.atan2(y, x);
+
+  // Convert bearing from radians to degrees
+  let initialBearingDeg = toDegrees(initialBearingRad);
+
+  // Normalize the bearing to be within the range 0 to 360 degrees
+  const bearing = (initialBearingDeg + 360) % 360;
+
   return {
     km: distance_km,
     miles: distance_miles,
+    heading: bearing, // Heading from point 1 to point 2 in degrees
   };
+}
+
+function bearingToCompass(bearing_deg) {
+  const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+  const bearing_corrected = (bearing_deg + 360 / (directions.length * 2)) % 360;
+
+  const index = Math.floor(bearing_corrected / 45) % 8;
+  return directions[index];
 }
 
 function toRadians(degrees) {
   return degrees * (Math.PI / 180);
+}
+
+function toDegrees(radians) {
+  return radians * (180 / Math.PI);
 }
 
 function timeUTCToLocalString(timeIn) {

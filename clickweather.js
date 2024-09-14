@@ -269,6 +269,25 @@ function printNiceWeatherCell(measurement) {
   }
 }
 
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(updateLocationFromBrowser);
+  } else {
+    alert("Cannot get location");
+  }
+}
+
+function updateLocationFromBrowser(position) {
+  var lat = position.coords.latitude;
+  var lon = position.coords.longitude;
+
+  document.getElementById("lat").value = Math.round(lat * 1000) / 1000;
+  document.getElementById("lon").value = Math.round(lon * 1000) / 1000;
+
+  const myPosition = { lat: lat, lng: lon };
+  clickWeatherClickListener(myPosition, false);
+}
+
 function clickWeatherClickListener(position, realClick = true) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
@@ -382,7 +401,9 @@ function clickWeatherClickListener(position, realClick = true) {
 }
 
 function initMap() {
-  const mapHTML = `    <div id="map"></div>
+  const mapHTML = `    
+    <hr>
+    <div id="map"></div>
     <form>
       <label for="lat">Latitude:</label>
       <input type="text" id="lat" name="lat" />
@@ -390,7 +411,9 @@ function initMap() {
       <label for="lon">Longitude:</label>
       <input type="text" id="lon" name="lon" />
     </form>
-    
+
+
+    <hr>
     <div id="map-legend"></div>
     </br>
     `;
@@ -403,6 +426,10 @@ function initMap() {
   linkHeader.href = "#"; // Link to nowhere since it will be dynamically updated
   linkHeader.innerHTML = "<h4>Link to this page</h4>";
   document.getElementById("my-header").appendChild(linkHeader);
+
+  document.getElementById("my-header").innerHTML =
+    document.getElementById("my-header").innerHTML +
+    '<button onclick="getLocation()">Use My Location</button>';
 
   // Default map center for Logan
   lat = 41.7713;

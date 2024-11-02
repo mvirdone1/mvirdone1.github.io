@@ -87,10 +87,26 @@ function displayMapClickView() {
     "dynamic-div",
     "Forecast Charts"
   );
+
+  lat = document.getElementById("lat").value;
+  lon = document.getElementById("lon").value;
+
+  /*
   // Create the heading
   var newHeading = document.createElement("h1");
   newHeading.textContent = "Map Click Forecast";
   contentElement.append(newHeading);
+
+  */
+
+  var forecastAddress = "https://forecast.weather.gov/MapClick.php?";
+  forecastAddress += "lat=" + lat;
+  forecastAddress += "&lon=" + lon;
+  var linkHeader = document.createElement("a");
+  linkHeader.id = "forecast-weathergov-link";
+  linkHeader.href = forecastAddress;
+  linkHeader.innerHTML = "<h1>Map Click Forecast</h1>";
+  contentElement.append(linkHeader);
 
   var plotId = "weather-plot";
 
@@ -99,9 +115,6 @@ function displayMapClickView() {
   var plotId = "weather-plot-2";
 
   createWeatherPlotImageElement(plotId, contentElement);
-
-  lat = document.getElementById("lat").value;
-  lon = document.getElementById("lon").value;
 
   var locationObject = {
     lat: lat,

@@ -1,245 +1,317 @@
 <html>
-<head>
-<title>Success Factors SRCTec Competency Generator</title>
-<!-- Doing things with scripts so our teammates don't have to -->
+  <head>
+    <link rel="icon" type="image/png" href="mv-favicon.png" />
+    <title>Success Factors SRCTec Competency Generator</title>
+    <!-- Doing things with scripts so our teammates don't have to -->
+  </head>
+  <body>
+    <h1>Self Review Competency Generator</h1>
+    <p>
+      The goal of this tool is to save all of us a little time when doing our
+      self reviews rather than having to hand copy each of the competencies
+    </p>
+    <p>
+      This form is run entirely client side, it is pure HTML and javascript
+      (check the source code if you don't believe me)
+    </p>
 
-</head>
-<body>
-<h1>Self Review Competency Generator</h1>
-<p>The goal of this tool is to save all of us a little time when doing our self reviews rather than having to hand copy each of the competencies</p>
-<p>This form is run entirely client side, it is pure HTML and javascript (check the source code if you don't believe me)</p>
+    <form>
+      <table border="1" cellpadding="10">
+        <tr>
+          <td><b>Core Competency</b></td>
+          <td><b>Rating</b></td>
+          <td><b>Examples</b></td>
+        </tr>
 
-<form>
+        <!-- ethAndComp -->
+        <tr>
+          <td id="ethAndComp_name">Ethics and Compliance</td>
+          <td>
+            <select id="ethAndComp_rating" name="ethAndComp_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<table border="1" cellpadding="10">
+          <td>
+            <textarea
+              id="ethAndComp_text"
+              name="ethAndComp_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
-<tr>
-   <td><b>Core Competency</b></td>
-   <td><b>Rating</b></td>
-   <td><b>Examples</b></td>
-</tr>
+        <!-- jobKnow -->
+        <tr>
+          <td id="jobKnow_name">Job Knowledge</td>
+          <td>
+            <select id="jobKnow_rating" name="jobKnow_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- ethAndComp -->
-<tr>
-   <td id="ethAndComp_name">Ethics and Compliance</td>
-   <td>
-      <select id="ethAndComp_rating" name="ethAndComp_rating">
-          <option value="Below">Below Expectations</option>
-          <option selected="selected" value="Meets">Meets Expectations</option>
-          <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="ethAndComp_text" name="ethAndComp_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="jobKnow_text"
+              name="jobKnow_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
+        <!-- safety -->
+        <tr>
+          <td id="safety_name">Safety</td>
+          <td>
+            <select id="safety_rating" name="safety_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- jobKnow -->
-<tr>
-   <td id="jobKnow_name">Job Knowledge</td>
-   <td>
-      <select id="jobKnow_rating" name="jobKnow_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="jobKnow_text" name="jobKnow_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="safety_text"
+              name="safety_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
-<!-- safety -->
-<tr>
-   <td id="safety_name">Safety</td>
-   <td>
-      <select id="safety_rating" name="safety_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="safety_text" name="safety_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+        <!-- adaptability -->
+        <tr>
+          <td id="adaptability_name">Adaptability</td>
+          <td>
+            <select id="adaptability_rating" name="adaptability_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- adaptability -->
-<tr>
-   <td id="adaptability_name">Adaptability</td>
-   <td>
-      <select id="adaptability_rating" name="adaptability_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="adaptability_text" name="adaptability_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="adaptability_text"
+              name="adaptability_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
-<!-- ci -->
-<tr>
-   <td id="ci_name">Continuous Improvement</td>
-   <td>
-      <select id="ci_rating" name="ci_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="ci_text" name="ci_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+        <!-- ci -->
+        <tr>
+          <td id="ci_name">Continuous Improvement</td>
+          <td>
+            <select id="ci_rating" name="ci_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- dependability -->
-<tr>
-   <td id="dependability_name">Dependability</td>
-   <td>
-      <select id="dependability_rating" name="dependability_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="dependability_text" name="dependability_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="ci_text"
+              name="ci_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
-<!-- qow -->
-<tr>
-   <td id="qow_name">Quality of Work</td>
-   <td>
-      <select id="qow_rating" name="qow_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="qow_text" name="qow_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+        <!-- dependability -->
+        <tr>
+          <td id="dependability_name">Dependability</td>
+          <td>
+            <select id="dependability_rating" name="dependability_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- workHabits -->
-<tr>
-   <td id="workHabits_name">Work Habits</td>
-   <td>
-      <select id="workHabits_rating" name="workHabits_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="workHabits_text" name="workHabits_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="dependability_text"
+              name="dependability_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
+        <!-- qow -->
+        <tr>
+          <td id="qow_name">Quality of Work</td>
+          <td>
+            <select id="qow_rating" name="qow_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<!-- workPerformance -->
-<tr>
-   <td id="workPerformance_name">Work Performance</td>
-   <td>
-      <select id="workPerformance_rating" name="workPerformance_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="workPerformance_text" name="workPerformance_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+          <td>
+            <textarea
+              id="qow_text"
+              name="qow_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
-<!-- teamwork -->
-<tr>
-   <td id="teamwork_name">Teamwork</td>
-   <td>
-      <select id="teamwork_rating" name="teamwork_rating">
-         <option value="Below">Below Expectations</option>
-         <option selected="selected" value="Meets">Meets Expectations</option>
-         <option value="Exceeds">Exceeds Expectations</option>
-         <option value="unable">Unable to Rate</option>
-      </select>
-   </td>
-   
-   <td>
-      <textarea id="teamwork_text" name="teamwork_text" rows="10" cols="40"></textarea>
-   </td>
-</tr>
+        <!-- workHabits -->
+        <tr>
+          <td id="workHabits_name">Work Habits</td>
+          <td>
+            <select id="workHabits_rating" name="workHabits_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<tr>
-   <td colspan="3"><button type="button" onclick="generateOutput()">Generate Text</button></td>
-</tr>
+          <td>
+            <textarea
+              id="workHabits_text"
+              name="workHabits_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
+        <!-- workPerformance -->
+        <tr>
+          <td id="workPerformance_name">Work Performance</td>
+          <td>
+            <select id="workPerformance_rating" name="workPerformance_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-</table>
+          <td>
+            <textarea
+              id="workPerformance_text"
+              name="workPerformance_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
+        <!-- teamwork -->
+        <tr>
+          <td id="teamwork_name">Teamwork</td>
+          <td>
+            <select id="teamwork_rating" name="teamwork_rating">
+              <option value="Below">Below Expectations</option>
+              <option selected="selected" value="Meets">
+                Meets Expectations
+              </option>
+              <option value="Exceeds">Exceeds Expectations</option>
+              <option value="unable">Unable to Rate</option>
+            </select>
+          </td>
 
-<hr>
-<h3>Auto Generated Result</h3>
-<textarea id="outputBox" name="outputBox" rows="100" cols="80"> </textarea>
+          <td>
+            <textarea
+              id="teamwork_text"
+              name="teamwork_text"
+              rows="10"
+              cols="40"
+            ></textarea>
+          </td>
+        </tr>
 
+        <tr>
+          <td colspan="3">
+            <button type="button" onclick="generateOutput()">
+              Generate Text
+            </button>
+          </td>
+        </tr>
+      </table>
 
+      <hr />
+      <h3>Auto Generated Result</h3>
+      <textarea id="outputBox" name="outputBox" rows="100" cols="80">
+      </textarea>
+    </form>
 
-</form>
+    <script>
+      function generateOutput() {
+        // Define each of the competency base names
+        var compNames = [
+          "ethAndComp",
+          "jobKnow",
+          "safety",
+          "adaptability",
+          "ci",
+          "dependability",
+          "qow",
+          "workHabits",
+          "workPerformance",
+          "teamwork",
+        ];
 
-<script>
-function generateOutput() {
+        var outputString = "";
 
-// Define each of the competency base names
-var compNames = [ "ethAndComp",
-                  "jobKnow",
-                  "safety",
-                  "adaptability",
-                  "ci",
-                  "dependability",
-                  "qow",
-                  "workHabits",
-                  "workPerformance",
-                  "teamwork"];
-            
-var outputString = "";
-            
-// Loop over the names and concatenate into our output string.
+        // Loop over the names and concatenate into our output string.
 
-compNames.forEach(function(element) {
-    outputString += document.getElementById(element+"_name").innerText;
-    outputString += " - ";
-    outputString += document.getElementById(element+"_rating").options[document.getElementById(element+"_rating").selectedIndex].text;
-    outputString += " - ";
-    outputString += document.getElementById(element+"_text").value;
-    outputString += "\n";
-    outputString += "\n";
-});
+        compNames.forEach(function (element) {
+          outputString += document.getElementById(element + "_name").innerText;
+          outputString += " - ";
+          outputString += document.getElementById(element + "_rating").options[
+            document.getElementById(element + "_rating").selectedIndex
+          ].text;
+          outputString += " - ";
+          outputString += document.getElementById(element + "_text").value;
+          outputString += "\n";
+          outputString += "\n";
+        });
 
-    document.getElementById("outputBox").value = outputString;
-}
-</script>
-
-
-</body>
+        document.getElementById("outputBox").value = outputString;
+      }
+    </script>
+  </body>
 </html>

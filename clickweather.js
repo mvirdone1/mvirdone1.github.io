@@ -453,7 +453,7 @@ function initMap() {
   });
 
   // updateLinkURL();
-  parseURL();
+  // parseURL();
   displayMapClickView();
   parseURL();
 }

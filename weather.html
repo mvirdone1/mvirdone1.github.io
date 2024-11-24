@@ -1,67 +1,104 @@
 <html>
+  <head>
+    <link rel="icon" type="image/png" href="mv-favicon.png" />
+    <title>Drive Weather Experiment</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
-    <head>
-        <title>Drive Weather Experiment</title>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/bootstrap-3.2.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/bootstrap-theme-3.2.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/font-awesome-4.3.0.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="http://forecast.weather.gov/css/ol-4.6.4.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/mapclick.css"
+    />
+    <!--[if lte IE 7
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/bootstrap-ie7.css"
+    /><![endif]-->
+    <!--[if lte IE 9
+      ]><link
+        rel="stylesheet"
+        type="text/css"
+        href="http://forecast.weather.gov/css/mapclick-ie.css"
+    /><![endif]-->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/print.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="http://forecast.weather.gov/css/search.css"
+    />
+    <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
+    <script>
+      $(document).ready(function () {
+        // Make an AJAX request to get the HTML of the search results page
+        $.ajax({
+          url: "https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96",
+          method: "GET",
+          success: function (data) {
+            // Convert the response data to a jQuery object
+            var $html = $(data);
 
+            // Find all of the classified ad elements on the page
+            var $ads = $html.find(".classifieds-list-item");
 
+            // Loop through the ad elements and display them on the page
+            $ads.each(function () {
+              // Get the title, price, image, and description of the ad
+              var title = $(this).find(".item-info-title").text();
+              var url = $(this).find(".item-info-title a").attr("href");
+              var price = $(this).find(".item-info-price").text();
+              var imgSrc = $(this).find(".item-image img").attr("src");
+              var description = $(this).find(".item-info-description").text();
 
-                <!-- CSS -->
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-3.2.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/bootstrap-theme-3.2.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/font-awesome-4.3.0.min.css">
-        <link rel="stylesheet" href="http://forecast.weather.gov/css/ol-4.6.4.css" type="text/css">
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/mapclick.css" />
-        <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/bootstrap-ie7.css" /><![endif]-->
-        <!--[if lte IE 9]><link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/mapclick-ie.css" /><![endif]-->
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/print.css" />
-        <link rel="stylesheet" type="text/css" href="http://forecast.weather.gov/css/search.css" />
-        <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
-        <script>
+              // Create a new element to display the ad
+              var $ad = $('<div class="classified-ad"></div>');
+              $ad.append(
+                '<h2 class="ad-title"><a href="' +
+                  url +
+                  '">' +
+                  title +
+                  "</a></h2>"
+              );
+              $ad.append('<p class="ad-price">' + price + "</p>");
+              $ad.append('<img class="ad-image" src="' + imgSrc + '">');
+              $ad.append('<p class="ad-description">' + description + "</p>");
 
-            $(document).ready(function() {
-            // Make an AJAX request to get the HTML of the search results page
-            $.ajax({
-                url: 'https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96',
-                method: 'GET',
-                success: function(data) {
-                // Convert the response data to a jQuery object
-                var $html = $(data);
-                
-                // Find all of the classified ad elements on the page
-                var $ads = $html.find('.classifieds-list-item');
-                
-                // Loop through the ad elements and display them on the page
-                $ads.each(function() {
-                    // Get the title, price, image, and description of the ad
-                    var title = $(this).find('.item-info-title').text();
-                    var url = $(this).find('.item-info-title a').attr('href');
-                    var price = $(this).find('.item-info-price').text();
-                    var imgSrc = $(this).find('.item-image img').attr('src');
-                    var description = $(this).find('.item-info-description').text();
-                    
-                    // Create a new element to display the ad
-                    var $ad = $('<div class="classified-ad"></div>');
-                    $ad.append('<h2 class="ad-title"><a href="' + url + '">' + title + '</a></h2>');
-                    $ad.append('<p class="ad-price">' + price + '</p>');
-                    $ad.append('<img class="ad-image" src="' + imgSrc + '">');
-                    $ad.append('<p class="ad-description">' + description + '</p>');
-                    
-                    // Append the ad element to the page
-                    $('#classifieds-container').append($ad);
-                });
-                }
+              // Append the ad element to the page
+              $("#classifieds-container").append($ad);
             });
-            });
+          },
+        });
+      });
 
-            
-            $(document).ready(function(){
-                console.log("Before Load 1");
-                // $('#weather').load('https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast');
-                
-                console.log("After Load 1");
+      $(document).ready(function () {
+        console.log("Before Load 1");
+        // $('#weather').load('https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast');
 
-                /*
+        console.log("After Load 1");
+
+        /*
                 
                 $("img").each(function(index) {
                 
@@ -74,16 +111,16 @@
 
                 */
 
-                // $('#weather').html('https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast');
+        // $('#weather').html('https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast');
 
-                /*var iframe   = $("#weatherFrame").contents(),
+        /*var iframe   = $("#weatherFrame").contents(),
                 forecast = iframe.find("#seven-day-forecast").clone();
 
                 iframe.find("*").remove();
                 iframe.append(forecast);
                 */
 
-                /* var iframe   = $("iframe").contents(),
+        /* var iframe   = $("iframe").contents(),
                 loginBox = iframe.find("#seven-day-forecast").clone();
 
                 iframe.find("*").remove();
@@ -91,9 +128,9 @@
 
                 */
 
-                // https://stackoverflow.com/questions/9031779/change-all-image-sources-jquery
+        // https://stackoverflow.com/questions/9031779/change-all-image-sources-jquery
 
-                /*
+        /*
                 $("img").each(function(index) {
                       
                       var $imgsrc = $(this).attr('src');
@@ -107,28 +144,29 @@
                   });
                 console.log("After Update Images")
                 */
+      });
 
-            });
+      $(window).on("load", function () {
+        console.log("Before 2");
+        $("#weather").load(
+          "https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast"
+        );
+        $("#ksl").load(
+          "https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96"
+        );
+        console.log("After 2");
 
-        $(window).on('load', function() {
-            console.log("Before 2")
-            $('#weather').load('https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558 #seven-day-forecast');
-            $('#ksl').load('https://classifieds.ksl.com/search/Winter-Sports/keyword/29.5/expandSearch/1/zip/84341/miles/150/priceFrom/10/priceTo/550/Private/Sale/perPage/96');
-            console.log("After 2")
-            
-            $("img").each(function(index) {
-                
-                    
-                var $imgsrc = $(this).attr('src');
-                console.log( index + ": " + $( this ).attr('src') );
-                var $imgsrc2 ='http://forecast.weather.gov/' + $imgsrc;
-                $(this).attr('src',$imgsrc2);
-                });
-            console.log("After Update Images")
+        $("img").each(function (index) {
+          var $imgsrc = $(this).attr("src");
+          console.log(index + ": " + $(this).attr("src"));
+          var $imgsrc2 = "http://forecast.weather.gov/" + $imgsrc;
+          $(this).attr("src", $imgsrc2);
+        });
+        console.log("After Update Images");
 
-            // https://stackoverflow.com/questions/5667880/simple-screen-scraping-using-jquery
+        // https://stackoverflow.com/questions/5667880/simple-screen-scraping-using-jquery
 
-            /*
+        /*
 
             $.ajax({
                 url: "https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558",
@@ -143,45 +181,40 @@
                 }
             });
             */
-
-        });
-        </script>
-    </head>
-    <body>
-        <h3> Test </h3>
-        <div id="weather"></div>
-        <h3> KSL Start</h3>
-        <div id="classifieds-container"></div>
-        <!-- <iframe src="https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558" 
+      });
+    </script>
+  </head>
+  <body>
+    <h3>Test</h3>
+    <div id="weather"></div>
+    <h3>KSL Start</h3>
+    <div id="classifieds-container"></div>
+    <!-- <iframe src="https://forecast.weather.gov/MapClick.php?lat=41.9641&lon=-111.558" 
             width="1000" height="500" 
             id="weatherFrame" title="Forecast"></iframe>
         -->
-        <h3> End Test </h3>
+    <h3>End Test</h3>
 
+    <div>
+      <input id="btn" type="button" value="button" />
+    </div>
 
-        <div>
-            <input id="btn" type="button" value="button" />
-        </div>
-
-        <!--<img src="newimages/medium/nsn.png" alt="Tuesday Night: Snow likely, mainly after 11pm. The snow could be heavy at times.  Mostly cloudy, with a low around 9." title="Tuesday Night: Snow likely, mainly after 11pm. The snow could be heavy at times.  Mostly cloudy, with a low around 9." class="forecast-icon">
+    <!--<img src="newimages/medium/nsn.png" alt="Tuesday Night: Snow likely, mainly after 11pm. The snow could be heavy at times.  Mostly cloudy, with a low around 9." title="Tuesday Night: Snow likely, mainly after 11pm. The snow could be heavy at times.  Mostly cloudy, with a low around 9." class="forecast-icon">
         -->
 
-        <script>
-            $(function(){
-                $('#btn').click(function() {
-                    $("img").each(function(index) {
-                      
-                        var $imgsrc = $(this).attr('src');
-                        console.log( index + ": " + $( this ).attr('src') );
-                       
+    <script>
+      $(function () {
+        $("#btn").click(function () {
+          $("img").each(function (index) {
+            var $imgsrc = $(this).attr("src");
+            console.log(index + ": " + $(this).attr("src"));
 
-                    
-                        var $imgsrc2 ='http://forecast.weather.gov/' + $imgsrc;
-                        $(this).attr('src',$imgsrc2);
-                        // $img.attr('alt',imgalt);
-                    });
-                    
-                    /*
+            var $imgsrc2 = "http://forecast.weather.gov/" + $imgsrc;
+            $(this).attr("src", $imgsrc2);
+            // $img.attr('alt',imgalt);
+          });
+
+          /*
                     $('#weather').each(function() {
                         var $img = $('img')
                         //var $img = $(this);
@@ -194,11 +227,8 @@
                         }
                     });
                     */
-                
-                });
-            })
-
-        </script>
-
-    </body>
+        });
+      });
+    </script>
+  </body>
 </html>

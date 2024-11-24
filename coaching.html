@@ -1,130 +1,159 @@
 <html>
-<head>
-<title>Coaching CYOA</title>
-</head>
-<body>
-<h2> Welcome to your coaching adventure </h2>
-<p> Read the text below and then chose your path </p>
-<hr>
+  <head>
+    <link rel="icon" type="image/png" href="mv-favicon.png" />
+    <title>Coaching CYOA</title>
+  </head>
+  <body>
+    <h2>Welcome to your coaching adventure</h2>
+    <p>Read the text below and then chose your path</p>
+    <hr />
 
-<!--<textarea rows="20" cols="80" id="textInput">The journey starts with you in your office, one of your teammates stops by and asks you for help solving a personal/professional challenge. You are currently very busy.</textarea></br>
+    <!--<textarea rows="20" cols="80" id="textInput">The journey starts with you in your office, one of your teammates stops by and asks you for help solving a personal/professional challenge. You are currently very busy.</textarea></br>
 -->
-<div id="textInput">The journey starts with you in your office, one of your teammates stops by and asks you for help solving a personal/professional challenge.</div>
+    <div id="textInput">
+      The journey starts with you in your office, one of your teammates stops by
+      and asks you for help solving a personal/professional challenge.
+    </div>
 
-<hr>
-<form>
-<table id="gameTable">
-<tr> 
-<td>1) Tell the employee exactly how to solve their problem </td>
-<td> <button id="topButton" onclick="nextStep('top')" type="button">Choose</button></td>
-</tr>
+    <hr />
+    <form>
+      <table id="gameTable">
+        <tr>
+          <td>1) Tell the employee exactly how to solve their problem</td>
+          <td>
+            <button id="topButton" onclick="nextStep('top')" type="button">
+              Choose
+            </button>
+          </td>
+        </tr>
 
-<tr>
-<td>2) You see an opportuntity to help your teammate solve their own problem</td>
-<td><button id="bottomButton" onclick="nextStep('bottom')" type="button">Choose</button></td>
-</tr>
+        <tr>
+          <td>
+            2) You see an opportuntity to help your teammate solve their own
+            problem
+          </td>
+          <td>
+            <button
+              id="bottomButton"
+              onclick="nextStep('bottom')"
+              type="button"
+            >
+              Choose
+            </button>
+          </td>
+        </tr>
+      </table>
 
-</table>
+      <!--<button id="topButton" onclick="nextStep('top')" type="button"></button>-->
 
-<!--<button id="topButton" onclick="nextStep('top')" type="button"></button>-->
+      <input type="hidden" id="currentState" value="start" />
+      <br />
+      <input type="hidden" id="numLoops" value="0" />
+      <br />
+      <input type="hidden" id="bottomID" value="0" />
+      <!-- <p id="debug"> </p> -->
+    </form>
 
+    <script>
+      function nextStep(buttonID) {
+        var Buttons = [];
+        var Results = [];
 
-<input type="hidden" id="currentState" value="start">
-<br>
-<input type="hidden" id="numLoops" value="0">
-<br>
-<input type="hidden" id="bottomID" value="0">
-<!-- <p id="debug"> </p> -->
-</form>
+        // AWE
+        Buttons[0] =
+          "Seeing that your teammate is a little stuck, you ask 'and what else'";
+        Results[0] =
+          "After thinking about 'what else' the teammate starts to dig deeper into their own problem solving, finding a root cause, rather than a symptom. <br><br>To bring additional focus, you ask 'what is important right now'";
 
-<script>
-function nextStep(buttonID) {
-	var Buttons = []
-	var Results = []	
+        // Trap
+        Buttons[1] =
+          "You think you can solve one of the teammates problems, so to coach them, you ask 'have you considered ...'";
+        Results[1] =
+          "Uh-oh, the advise monster is hiding inside of that fake question. Luckily you reign it back in and the teammate continues to discuss their challenge";
 
-	// AWE
-	Buttons[0] = "Seeing that your teammate is a little stuck, you ask 'and what else'";
-	Results[0] = "After thinking about 'what else' the teammate starts to dig deeper into their own problem solving, finding a root cause, rather than a symptom. <br><br>To bring additional focus, you ask 'what is important right now'";
-	
-	// Trap
-	Buttons[1] = "You think you can solve one of the teammates problems, so to coach them, you ask 'have you considered ...'";
-	Results[1] = "Uh-oh, the advise monster is hiding inside of that fake question. Luckily you reign it back in and the teammate continues to discuss their challenge";
-	
-	// Focus Question
-	Buttons[2] = "The teammate's challenge is vague and might be outside their sphere of influence, so you decide to ask them 'what is the real challenge <b>for you</b>?'";
-	Results[2] = "The teammate brings some focus from the greater issue, to the part which they can personally solve and the discussion continues. <br> <br> When asking these questions, avoid 'why did you' and instead focus on 'what did you want to accomplish' it avoids the negative reaction to 'why'";
-	
-	// Foundation
-	Buttons[3] = "The teammate is identifying some areas where they might want to try a solution, but it doesn't seem to tie back to their core motivation, you ask 'What do you want'";
-	Results[3] = "The teammate better identifies what they're after, but they start to struggle with identifying their root desire. <br><br> In an attempt to re-focus, you ask about 'imagine if this got 10x better, magically, today, how would you know it's working?' <br><br> Sometimes people will not feel fully comfortable opening up with their true wants without enough emotional safety.";
-	
+        // Focus Question
+        Buttons[2] =
+          "The teammate's challenge is vague and might be outside their sphere of influence, so you decide to ask them 'what is the real challenge <b>for you</b>?'";
+        Results[2] =
+          "The teammate brings some focus from the greater issue, to the part which they can personally solve and the discussion continues. <br> <br> When asking these questions, avoid 'why did you' and instead focus on 'what did you want to accomplish' it avoids the negative reaction to 'why'";
 
-	// Lazy
-	Buttons[4] = "Seeing the teammate reach a point where they cannot solve their problem, you use the 'lazy question' and ask 'how can I help'?";
-	Results[4] = "The employee immediately wants you to solve their problem, but you realize that jumping into the 'rescuer' role in the Karpman Drama Triangle (Victim, Persecutor, Rescuer), and instead you re-focus the discussion around helping the employee solve their own problem'";
-	
-	// Strategic
-	Buttons[5] = "As the employee identifies their possible courses of action, it seems like the solution to their problem is going to add more work to their over-burdened work load. You ask 'if you say yes to this, what are you saying no to?'";
-	Results[5] = "The teammate reconsiders the opportunity cost of taking on any assignments and looks at it through a lens of maximizing the work which is important. <br><br> You briefly discuss the five strategic questions <ol><li>What is our winning aspiration</li><li>Where will we play (focus)</li><li>How will we win</li><li>What capabilities do we need</li><li>What systems are required </li></ol>";
-	
-	// Learning
-	Buttons[6] = "As it appears the discussion with the teammate is nearing completion, you look to ensure this was a helpful activity and you ask 'What was most useful for you?'";
-	Results[6] = "The teammate acknowledges that some of the discussion points have helped them re-frame their challenge and they are now feeling empowered to solve their own challenge. <br><br> Together you work to identify concrete next steps.";
-	
-	// Wrap Up
-	Buttons[7] = "Upon the completion of the discussion, you ask the wrap up question 'Is there anything else?'";
-	Results[7] = "7 - Wrap Up Result";
-    
-    state = document.getElementById("currentState").value
-    switch(state)
-    {
-        case "start":
-            if (buttonID == 'top')
-            {
-                
-                updateGame("You have been slayed by the advice monster, your coaching adventure has come to an end",
-                "Start Over", 
-                "Start Over", 
-                "endGame");
-            }
-            else
-            {
-                // If randomize if we're busy or not
-				if (Math.random()*2 > 1)
-				{
-					updateGame("You want to help the teammate solve their problem, but you can't clear your current tasks",
-					"You ask the employee if they can reschedule to a later time where you can give them all your focus", 
-					"You stay seated firmly behind your computer/keyboard, engaging in conversation while simultaneously keeping an eye on your emails", 
-					"nowOrLater");
-				}
-				else
-				{
-					updateGame("You can  give your teammate your undivided attention and begin an engaged conversation with the employee",
-					"You ask the employee 'what's on your mind'",
-					"Based on your past experience with the employee, you list out a few topics for discussion",
-					"offTopic");			
-				}
-				
+        // Foundation
+        Buttons[3] =
+          "The teammate is identifying some areas where they might want to try a solution, but it doesn't seem to tie back to their core motivation, you ask 'What do you want'";
+        Results[3] =
+          "The teammate better identifies what they're after, but they start to struggle with identifying their root desire. <br><br> In an attempt to re-focus, you ask about 'imagine if this got 10x better, magically, today, how would you know it's working?' <br><br> Sometimes people will not feel fully comfortable opening up with their true wants without enough emotional safety.";
+
+        // Lazy
+        Buttons[4] =
+          "Seeing the teammate reach a point where they cannot solve their problem, you use the 'lazy question' and ask 'how can I help'?";
+        Results[4] =
+          "The employee immediately wants you to solve their problem, but you realize that jumping into the 'rescuer' role in the Karpman Drama Triangle (Victim, Persecutor, Rescuer), and instead you re-focus the discussion around helping the employee solve their own problem'";
+
+        // Strategic
+        Buttons[5] =
+          "As the employee identifies their possible courses of action, it seems like the solution to their problem is going to add more work to their over-burdened work load. You ask 'if you say yes to this, what are you saying no to?'";
+        Results[5] =
+          "The teammate reconsiders the opportunity cost of taking on any assignments and looks at it through a lens of maximizing the work which is important. <br><br> You briefly discuss the five strategic questions <ol><li>What is our winning aspiration</li><li>Where will we play (focus)</li><li>How will we win</li><li>What capabilities do we need</li><li>What systems are required </li></ol>";
+
+        // Learning
+        Buttons[6] =
+          "As it appears the discussion with the teammate is nearing completion, you look to ensure this was a helpful activity and you ask 'What was most useful for you?'";
+        Results[6] =
+          "The teammate acknowledges that some of the discussion points have helped them re-frame their challenge and they are now feeling empowered to solve their own challenge. <br><br> Together you work to identify concrete next steps.";
+
+        // Wrap Up
+        Buttons[7] =
+          "Upon the completion of the discussion, you ask the wrap up question 'Is there anything else?'";
+        Results[7] = "7 - Wrap Up Result";
+
+        state = document.getElementById("currentState").value;
+        switch (state) {
+          case "start":
+            if (buttonID == "top") {
+              updateGame(
+                "You have been slayed by the advice monster, your coaching adventure has come to an end",
+                "Start Over",
+                "Start Over",
+                "endGame"
+              );
+            } else {
+              // If randomize if we're busy or not
+              if (Math.random() * 2 > 1) {
+                updateGame(
+                  "You want to help the teammate solve their problem, but you can't clear your current tasks",
+                  "You ask the employee if they can reschedule to a later time where you can give them all your focus",
+                  "You stay seated firmly behind your computer/keyboard, engaging in conversation while simultaneously keeping an eye on your emails",
+                  "nowOrLater"
+                );
+              } else {
+                updateGame(
+                  "You can  give your teammate your undivided attention and begin an engaged conversation with the employee",
+                  "You ask the employee 'what's on your mind'",
+                  "Based on your past experience with the employee, you list out a few topics for discussion",
+                  "offTopic"
+                );
+              }
             }
             break;
-        case "nowOrLater":
-            if (buttonID == 'top')
-            {
-                updateGame("After rescheduling to a later time, you can now give your teammate your undivided attention <br> <b>Later:</b> <br> Upon returning at the agreed upon time, you begin an engaged conversation with the employee",
+          case "nowOrLater":
+            if (buttonID == "top") {
+              updateGame(
+                "After rescheduling to a later time, you can now give your teammate your undivided attention <br> <b>Later:</b> <br> Upon returning at the agreed upon time, you begin an engaged conversation with the employee",
                 "You ask the employee 'what's on your mind'",
                 "Based on your past experience with the employee, you list out a few topics for discussion",
-                "offTopic");
-            }
-            else
-            {
-                updateGame("The lack of engagement during the conversation leaves your teammate uneasy, they decide to look elsewhere for help solving their problem",
+                "offTopic"
+              );
+            } else {
+              updateGame(
+                "The lack of engagement during the conversation leaves your teammate uneasy, they decide to look elsewhere for help solving their problem",
                 "Start Over",
                 "Start Over",
-                "endGame");
+                "endGame"
+              );
             }
             break;
-			
-		/*
+
+          /*
         case "whatsOnYourMind":
             if (buttonID == 'top')
             {
@@ -143,110 +172,124 @@ function nextStep(buttonID) {
                 "offTopic");
             }
 		*/
-        case "offTopic":
-        if (buttonID == 'top')
-            {
-				// Create a non-zero random number less than the max of the array length
-				var randNum = (Math.floor(Math.random()*(Buttons.length-2)))+1
-				updateGame("The teammate begins discussing what's on their mind. <br> If multiple topics are identified, help narrow down the focus of the conversation (Projects, people, patterns) <br> The teammate begins to identify some of their challenges, but it seems like they are identifying symptoms and not a root cause.", Buttons[0], Buttons[randNum], "coachingLoop");
-                
-            }
-            else
-            {
-                updateGame("Realizing that your identified topics might not be the real reason your teammate stopped by, you decide to",
+          case "offTopic":
+            if (buttonID == "top") {
+              // Create a non-zero random number less than the max of the array length
+              var randNum =
+                Math.floor(Math.random() * (Buttons.length - 2)) + 1;
+              updateGame(
+                "The teammate begins discussing what's on their mind. <br> If multiple topics are identified, help narrow down the focus of the conversation (Projects, people, patterns) <br> The teammate begins to identify some of their challenges, but it seems like they are identifying symptoms and not a root cause.",
+                Buttons[0],
+                Buttons[randNum],
+                "coachingLoop"
+              );
+            } else {
+              updateGame(
+                "Realizing that your identified topics might not be the real reason your teammate stopped by, you decide to",
                 "You ask the employee 'what's on your mind'",
                 "Stay the course, you know what's best",
-                "offTopicRecover");
+                "offTopicRecover"
+              );
             }
             break;
-			
-		case "offTopicRecover":
-        if (buttonID == 'top')
-            {
-				// Create a non-zero random number less than the max of the array length
-				var randNum = (Math.floor(Math.random()*(Buttons.length-2)))+1
-				updateGame("The teammate begins discussing what's on their mind. <br> If multiple topics are identified, help narrow down the focus of the conversation (Projects, people, patterns) <br> The teammate begins to identify some of their challenges, but it seems like they are identifying symptoms and not a root cause.", Buttons[0], Buttons[randNum], "coachingLoop");
-                
-            }
-            else
-            {
-                updateGame("The lack of shared understanding during the conversation leaves your teammate uneasy, they decide to look elsewhere for help solving their problem.",
+
+          case "offTopicRecover":
+            if (buttonID == "top") {
+              // Create a non-zero random number less than the max of the array length
+              var randNum =
+                Math.floor(Math.random() * (Buttons.length - 2)) + 1;
+              updateGame(
+                "The teammate begins discussing what's on their mind. <br> If multiple topics are identified, help narrow down the focus of the conversation (Projects, people, patterns) <br> The teammate begins to identify some of their challenges, but it seems like they are identifying symptoms and not a root cause.",
+                Buttons[0],
+                Buttons[randNum],
+                "coachingLoop"
+              );
+            } else {
+              updateGame(
+                "The lack of shared understanding during the conversation leaves your teammate uneasy, they decide to look elsewhere for help solving their problem.",
                 "Start Over",
                 "Start Over",
-                "endGame");
+                "endGame"
+              );
             }
             break;
-            
-        case "coachingLoop":
-			var loopNum = parseInt(document.getElementById("numLoops").value,10);
-			
-			var randNum = Math.floor(Math.random()*(Buttons.length-1));
-			while (randNum == loopNum+1)
-			{
-				randNum = Math.floor(Math.random()*(Buttons.length-1));
-			}
-			
-			
-			
-			
-			if(buttonID == 'top')
-			{
-				var state = "coachingLoop";
-				if(loopNum == Buttons.length-1)
-				{
-					updateGame("<h3><i>Congratulations, you have successfully completed the coaching challenge</i></h3>", "Start Over", "Start Over", "endGame");
-				}
-				else
-				{
-					updateGame(Results[loopNum], Buttons[loopNum+1], Buttons[randNum], state);
-				}
-							
-				// Only increment if you pick the top/linear path
-				loopNum = loopNum + 1;
-			}
-			else
-			{
-				var bottomNum = parseInt(document.getElementById("bottomID").value,10);
-				updateGame(Results[bottomNum], Buttons[loopNum], Buttons[randNum], state);
-			
-			}
-			
-			document.getElementById("bottomID").value = randNum;
-			
-			
-			// Only continue to iterate when we have not reached the end of the list
-			if(loopNum < Buttons.length)
-			{
-				document.getElementById("numLoops").value = loopNum;
-			}
-		
+
+          case "coachingLoop":
+            var loopNum = parseInt(
+              document.getElementById("numLoops").value,
+              10
+            );
+
+            var randNum = Math.floor(Math.random() * (Buttons.length - 1));
+            while (randNum == loopNum + 1) {
+              randNum = Math.floor(Math.random() * (Buttons.length - 1));
+            }
+
+            if (buttonID == "top") {
+              var state = "coachingLoop";
+              if (loopNum == Buttons.length - 1) {
+                updateGame(
+                  "<h3><i>Congratulations, you have successfully completed the coaching challenge</i></h3>",
+                  "Start Over",
+                  "Start Over",
+                  "endGame"
+                );
+              } else {
+                updateGame(
+                  Results[loopNum],
+                  Buttons[loopNum + 1],
+                  Buttons[randNum],
+                  state
+                );
+              }
+
+              // Only increment if you pick the top/linear path
+              loopNum = loopNum + 1;
+            } else {
+              var bottomNum = parseInt(
+                document.getElementById("bottomID").value,
+                10
+              );
+              updateGame(
+                Results[bottomNum],
+                Buttons[loopNum],
+                Buttons[randNum],
+                state
+              );
+            }
+
+            document.getElementById("bottomID").value = randNum;
+
+            // Only continue to iterate when we have not reached the end of the list
+            if (loopNum < Buttons.length) {
+              document.getElementById("numLoops").value = loopNum;
+            }
+
             break;
-			
-		case "success":
+
+          case "success":
             break;
-        default:
-        
-            updateGame("The journey starts with you in your office, one of your teammates stops by and asks you for help solving a personal/professional challenge.",
-            "Tell the employee exactly how to solve their problem",
-            "You see an opportunity to help your teammate solve their own problem",
-            "start");
-    }
-  
-  }
+          default:
+            updateGame(
+              "The journey starts with you in your office, one of your teammates stops by and asks you for help solving a personal/professional challenge.",
+              "Tell the employee exactly how to solve their problem",
+              "You see an opportunity to help your teammate solve their own problem",
+              "start"
+            );
+        }
+      }
 
-function updateGame(gameText, upper, lower, state) {
-    document.getElementById("textInput").innerHTML = gameText;
-    document.getElementById("gameTable").rows[0].cells.item(0).innerHTML = "1) ".concat(upper);
-    document.getElementById("gameTable").rows[1].cells.item(0).innerHTML  = "2) ".concat(lower);
-    document.getElementById("currentState").value = state;
-	
-	// Debug only code for troubleshooting the state machine
-	// document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML.concat("<br>", state);
-	
-    }
+      function updateGame(gameText, upper, lower, state) {
+        document.getElementById("textInput").innerHTML = gameText;
+        document.getElementById("gameTable").rows[0].cells.item(0).innerHTML =
+          "1) ".concat(upper);
+        document.getElementById("gameTable").rows[1].cells.item(0).innerHTML =
+          "2) ".concat(lower);
+        document.getElementById("currentState").value = state;
 
-</script>
-
-
-</body>
+        // Debug only code for troubleshooting the state machine
+        // document.getElementById("debug").innerHTML = document.getElementById("debug").innerHTML.concat("<br>", state);
+      }
+    </script>
+  </body>
 </html>

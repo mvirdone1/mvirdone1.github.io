@@ -179,8 +179,10 @@ function displayWeatherData2(
 
       // Create line graph using Chart.js
       const canvas = document.getElementById(canvasId);
+      canvas.style.width = "80%";
+      // canvas.style.height = "50vh";
+      // canvas.style.width = "80vw";
       // canvas.style.width = "80%";
-      canvas.style.height = "50vh";
       const ctx = canvas.getContext("2d");
 
       new Chart(ctx, {

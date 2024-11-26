@@ -456,5 +456,6 @@ function initMap() {
   // parseURL();
   // displayMapClickView();
   parseURL();
-  displayMapClickView();
+  // clickWeatherClickListener({ lat: lat, lng: lon }, false);
+  // displayMapClickView();
 }

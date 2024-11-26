@@ -454,6 +454,7 @@ function initMap() {
 
   // updateLinkURL();
   // parseURL();
-  displayMapClickView();
+  // displayMapClickView();
   parseURL();
+  displayMapClickView();
 }

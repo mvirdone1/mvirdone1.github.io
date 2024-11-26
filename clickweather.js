@@ -29,8 +29,8 @@ function parseURL() {
   console.log(queryString);
   const urlParams = new URLSearchParams(queryString);
 
-  var lat = document.getElementById("lat").value;
-  var lon = document.getElementById("lon").value;
+  var lat = parseFloat(document.getElementById("lat").value);
+  var lon = parseFloat(document.getElementById("lon").value);
 
   if (urlParams.has("lat") && urlParams.has("lon")) {
     console.log("Got lat lon");
@@ -42,7 +42,21 @@ function parseURL() {
   }
 
   const position = { lat: lat, lng: lon };
-  clickWeatherClickListener(position, false);
+
+  //.html?stations=TGLU1,TGSU1,LGS,CRDUT,PRSUT
+  const stations = urlParams.get("stations")?.split(",") || [];
+  console.log(stations);
+  // Output: ["TGLU1", "TGSU1", "LGS", "CRDUT", "PRSUT"]
+
+  /*
+    charts.push("TGLU1");
+  charts.push("TGSU1");
+  charts.push("LGS");
+  charts.push("CRDUT");
+  charts.push("PRSUT");
+  */
+
+  clickWeatherClickListener(position, false, stations);
 }
 
 function updateLinkURL() {
@@ -288,7 +302,15 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
-function clickWeatherClickListener(position, realClick = true) {
+// 11/25/24 - Updating this function to somewhat revert to allow adding a list of named stations.
+//
+// Fortunately I hadn't removed the ability to handle a list of "charts" but really this array of charts
+// is actually a list of weather station IDs. The only place the charts list gets set is in the parseURL()
+// function. This is also the only place that I set the argument to this function.
+//
+// Way-way down in the function calls in displayWeatherData2() does it finally make a decision on precidence
+// for using the chart list over the lat/lon/radius configuration
+function clickWeatherClickListener(position, realClick = true, charts = []) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
   // This function does all the addition of everything except the weather plots
@@ -323,7 +345,14 @@ function clickWeatherClickListener(position, realClick = true) {
     chartObjects: [],
   };
 
-  charts = [];
+  // charts = [];
+  /*
+  charts.push("TGLU1");
+  charts.push("TGSU1");
+  charts.push("LGS");
+  charts.push("CRDUT");
+  charts.push("PRSUT");
+  */
 
   const weatherRadarDiv = createToggleChildElements(
     "dynamic-div",

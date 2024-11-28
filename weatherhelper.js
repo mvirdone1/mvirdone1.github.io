@@ -4,6 +4,8 @@ const chartTypes = {
   windSpeed: 2,
 };
 
+const chartHeadings = ["Temp (f)", "Snow (in)", "Wind (mph)"];
+
 function createChartObject(charts, locationTitle, attributes) {
   console.log("My Title: " + attributes.title);
   return (tempChartObject = {

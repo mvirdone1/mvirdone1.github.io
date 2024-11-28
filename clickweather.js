@@ -9,7 +9,77 @@ class persistentDataModule {
     persistentDataModule.instance = this;
   }
 
+  getStationIndex(newStation) {
+    return 0;
+  }
+
+  addStationData(currentDataSet) {
+    var allStationIndex = this.allStations.findIndex(
+      (station) => station.stid === currentDataSet.station.stid
+    );
+    const currentStation = currentDataSet.station;
+
+    // If the station doesn't currently exist,
+    // then we need to add it to the station list
+    if (allStationIndex === -1) {
+      this.allStations.push(currentStation);
+      allStationIndex = this.allStations.length - 1;
+
+      const latestData = [
+        { time: "", value: "" },
+        { time: "", value: "" },
+        { time: "", value: "" },
+      ];
+
+      this.latestMeasurements.push(latestData);
+
+      /*
+        station.lat = data.STATION[dataSetIdx].LATITUDE;
+        station.lon = data.STATION[dataSetIdx].LONGITUDE;
+        station.name = data.STATION[dataSetIdx].NAME;
+        station.stid = data.STATION[dataSetIdx].STID;
+        station.elevation = data.STATION[dataSetIdx].ELEVATION;
+        station.stationType = stationType;
+        station.displayOffset 
+      // Note the enumeration for stationType is defined in
+      // weatherHealper.js as chartTypes
+      */
+
+      const stationLocation = {
+        lat: parseFloat(currentStation.lat),
+        lng: parseFloat(currentStation.lon),
+      };
+
+      // The map manager should be global...
+      myMapManager.addMarker(
+        stationLocation,
+        currentStation.name,
+        currentStation.stid,
+        clickWeatherColors[allStationIndex]
+      );
+    }
+    // Because this (currentDataSet) is an object that was passed
+    // we are actually modifying the source object in this case
+    currentDataSet.borderColor = rgbArrayToString(
+      clickWeatherColors[allStationIndex]
+    );
+
+    var lastDataPoint = currentDataSet.data.length - 1;
+    var stationType = currentStation.stationType;
+
+    // If it's raw value and not offset, update the latest value table.
+    if (currentStation.displayOffset == false) {
+      // Update the latest measurements
+      this.latestMeasurements[allStationIndex][stationType].time =
+        currentDataSet.data[lastDataPoint].x;
+
+      this.latestMeasurements[allStationIndex][stationType].value =
+        currentDataSet.data[lastDataPoint].y;
+    }
+  }
+
   getAllStations() {
+    console.log(this.allStations);
     return this.allStations;
   }
 
@@ -25,7 +95,7 @@ class persistentDataModule {
   }
 }
 
-const globalStationData = new persistentDataModule();
+// const globalStationData = new persistentDataModule();
 
 const clickWeatherColors = [
   [230, 25, 75], // Red
@@ -157,76 +227,7 @@ function postAPIDataCallback(dataSets) {
   // already has this station id for a different measurement,
   // If found, put the station in at the same index
   dataSets.forEach((currentDataSet) => {
-    let localAllStations = globalStationData.getAllStations();
-    let localLatestMeasurements = globalStationData.getLatestMeasurements();
-    var allStationIndex = localAllStations.findIndex(
-      (station) => station.stid === currentDataSet.station.stid
-    );
-    const currentStation = currentDataSet.station;
-
-    // If not found, add the new station to the array
-    if (allStationIndex === -1) {
-      // Empty 3x2 array
-      const latestData = [
-        { time: "", value: "" },
-        { time: "", value: "" },
-        { time: "", value: "" },
-      ];
-
-      localAllStations.push(currentStation);
-      localLatestMeasurements.push(latestData);
-      // allStations.push({ currentStation, latestData });
-      allStationIndex = localAllStations.length - 1;
-
-      /*
-        station.lat = data.STATION[dataSetIdx].LATITUDE;
-        station.lon = data.STATION[dataSetIdx].LONGITUDE;
-        station.name = data.STATION[dataSetIdx].NAME;
-        station.stid = data.STATION[dataSetIdx].STID;
-        station.elevation = data.STATION[dataSetIdx].ELEVATION;
-        station.stationType = stationType;
-
-      */
-
-      const stationLocation = {
-        lat: parseFloat(currentStation.lat),
-        lng: parseFloat(currentStation.lon),
-      };
-
-      myMapManager.addMarker(
-        stationLocation,
-        currentStation.name,
-        currentStation.stid,
-        clickWeatherColors[allStationIndex]
-      );
-    }
-
-    // Because this (currentDataSet) is an object that was passed
-    // we are actually modifying the source object in this case
-    currentDataSet.borderColor = rgbArrayToString(
-      clickWeatherColors[allStationIndex]
-    );
-
-    var lastDataPoint = currentDataSet.data.length - 1;
-    var stationType = currentStation.stationType;
-
-    // If it's raw value and not offset, update the latest value table.
-    if (currentStation.displayOffset == false) {
-      // Update the latest measurements
-      localLatestMeasurements[allStationIndex][stationType].time =
-        currentDataSet.data[lastDataPoint].x;
-
-      localLatestMeasurements[allStationIndex][stationType].value =
-        currentDataSet.data[lastDataPoint].y;
-    }
-
-    /*
-    allStations[allStationIndex].latestData[stationType].time =
-      currentDataSet.data[lastDataPoint].x;
-    allStations[allStationIndex].latestData[
-      parseInt(currentStation.stationType)
-    ].value = currentDataSet.data[lastDataPoint].y;
-    */
+    globalStationData.addStationData(currentDataSet);
   });
 
   updateLegendTable();
@@ -514,6 +515,9 @@ function initMap() {
 
   // Make this instance of the map manager a global variable
   window.myMapManager = myMapManager;
+
+  const globalStationData = new persistentDataModule();
+  window.globalStationData = globalStationData;
 
   myMapManager.setMapClickListener((position) => {
     // mapManager.addMarker(position, "");

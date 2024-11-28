@@ -1,5 +1,31 @@
-var allStations = [];
-var latestMeasurements = [];
+// var allStations = [];
+// var latestMeasurements = [];
+
+class persistentDataModule {
+  constructor() {
+    if (persistentDataModule.instance) return persistentDataModule.instance;
+    this.allStations = [];
+    this.latestMeasurements = [];
+    persistentDataModule.instance = this;
+  }
+
+  getAllStations() {
+    return this.allStations;
+  }
+
+  setAllStations(newStations) {
+    this.allStations = newStations;
+  }
+  getLatestMeasurements() {
+    return this.latestMeasurements;
+  }
+
+  setLatestMeasurements(newMeasurements) {
+    this.latestMeasurements = newMeasurements;
+  }
+}
+
+const globalStationData = new persistentDataModule();
 
 const clickWeatherColors = [
   [230, 25, 75], // Red
@@ -131,7 +157,9 @@ function postAPIDataCallback(dataSets) {
   // already has this station id for a different measurement,
   // If found, put the station in at the same index
   dataSets.forEach((currentDataSet) => {
-    var allStationIndex = allStations.findIndex(
+    let localAllStations = globalStationData.getAllStations();
+    let localLatestMeasurements = globalStationData.getLatestMeasurements();
+    var allStationIndex = localAllStations.findIndex(
       (station) => station.stid === currentDataSet.station.stid
     );
     const currentStation = currentDataSet.station;
@@ -145,10 +173,10 @@ function postAPIDataCallback(dataSets) {
         { time: "", value: "" },
       ];
 
-      allStations.push(currentStation);
-      latestMeasurements.push(latestData);
+      localAllStations.push(currentStation);
+      localLatestMeasurements.push(latestData);
       // allStations.push({ currentStation, latestData });
-      allStationIndex = allStations.length - 1;
+      allStationIndex = localAllStations.length - 1;
 
       /*
         station.lat = data.STATION[dataSetIdx].LATITUDE;
@@ -185,10 +213,10 @@ function postAPIDataCallback(dataSets) {
     // If it's raw value and not offset, update the latest value table.
     if (currentStation.displayOffset == false) {
       // Update the latest measurements
-      latestMeasurements[allStationIndex][stationType].time =
+      localLatestMeasurements[allStationIndex][stationType].time =
         currentDataSet.data[lastDataPoint].x;
 
-      latestMeasurements[allStationIndex][stationType].value =
+      localLatestMeasurements[allStationIndex][stationType].value =
         currentDataSet.data[lastDataPoint].y;
     }
 
@@ -212,17 +240,19 @@ function updateLegendTable() {
   };
 
   // Calculate distances and add original index to each station
-  const stationsWithDistance = allStations.map((station, index) => {
-    const distance = calculateLatLonDistance(
-      station.lat,
-      station.lon,
-      mapCenter.lat,
-      mapCenter.lon
-    );
+  const stationsWithDistance = globalStationData
+    .getAllStations()
+    .map((station, index) => {
+      const distance = calculateLatLonDistance(
+        station.lat,
+        station.lon,
+        mapCenter.lat,
+        mapCenter.lon
+      );
 
-    var distance_mi = distance.miles.toFixed(1);
-    return { ...station, distance_mi, originalIndex: index };
-  });
+      var distance_mi = distance.miles.toFixed(1);
+      return { ...station, distance_mi, originalIndex: index };
+    });
 
   // Sort stations based on distance
   stationsWithDistance.sort((a, b) => a.distance_mi - b.distance_mi);
@@ -265,7 +295,9 @@ function updateLegendTable() {
     for (const key in chartTypes) {
       const colIndex = chartTypes[key];
       legendTableHTML += printNiceWeatherCell(
-        latestMeasurements[station.originalIndex][colIndex]
+        globalStationData.getLatestMeasurements()[station.originalIndex][
+          colIndex
+        ]
       );
 
       // Do something with the key and value
@@ -331,7 +363,7 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
   }
 
   // Clear the list of weather stations
-  allStations = [];
+  globalStationData.setAllStations([]);
 
   const numDecimals = 4;
   const roundFactor = 10 ** numDecimals;

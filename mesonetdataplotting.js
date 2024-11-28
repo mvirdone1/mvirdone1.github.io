@@ -172,6 +172,8 @@ function displayWeatherData2(
       }
 
       if (customCallbackFunction) {
+        // This is passing by reference, so values of dataSets
+        // is being modified in here, specifically the borderColor
         customCallbackFunction(dataSets);
       }
 

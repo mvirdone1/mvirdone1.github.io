@@ -123,7 +123,13 @@ function createFullMountainSuitePlots(locationObject, charts) {
   );
 }
 
+// This function is a callback from inside displayWeatherData2
+// When the data is returend from the weather stations, this updates
+// the legend table and the latest measurement data in the table
 function postAPIDataCallback(dataSets) {
+  // Iterate over the returned data sets and see if our data-set-of-data-sets
+  // already has this station id for a different measurement,
+  // If found, put the station in at the same index
   dataSets.forEach((currentDataSet) => {
     var allStationIndex = allStations.findIndex(
       (station) => station.stid === currentDataSet.station.stid
@@ -167,6 +173,8 @@ function postAPIDataCallback(dataSets) {
       );
     }
 
+    // Because this (currentDataSet) is an object that was passed
+    // we are actually modifying the source object in this case
     currentDataSet.borderColor = rgbArrayToString(
       clickWeatherColors[allStationIndex]
     );
@@ -199,8 +207,8 @@ function postAPIDataCallback(dataSets) {
 function updateLegendTable() {
   // Sample map center
   const mapCenter = {
-    lat: document.getElementById("lat").value,
-    lon: document.getElementById("lon").value,
+    lat: parseFloat(document.getElementById("lat").value),
+    lon: parseFloat(document.getElementById("lon").value),
   };
 
   // Calculate distances and add original index to each station
@@ -358,11 +366,11 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
     "dynamic-div",
     "Weather Radar"
   );
-  const numStations = 6;
+  const numRadarStations = 6;
   weatherRadarDiv.setAttribute("class", "tab-container");
-  createTabElements(weatherRadarDiv.id, numStations);
+  createTabElements(weatherRadarDiv.id, numRadarStations);
   console.log("Hi");
-  var myStations = findNearestStations(lat, lon, numStations);
+  var myStations = findNearestStations(lat, lon, numRadarStations);
   console.log(myStations);
 
   for (var idx = 0; idx < myStations.length; idx++) {

@@ -139,6 +139,7 @@ function postAPIDataCallback(dataSets) {
   });
 
   updateLegendTable();
+  globalStationData.getChangeInData(chartTypes.snowDepth, 24);
 }
 
 function updateLegendTable() {
@@ -216,7 +217,8 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
   }
 
   // Clear the list of weather stations
-  globalStationData.setAllStations([]);
+  // globalStationData.setAllStations([]);
+  globalStationData.resetPersistentData();
 
   const numDecimals = 4;
   const roundFactor = 10 ** numDecimals;
@@ -318,6 +320,7 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
     console.log(returnedStations);
     // handleStationList(allStations, returnedStations);
   }
+  createToggleChildElements("dynamic-div", "Bonus Content");
 
   updateLinkURL();
 }

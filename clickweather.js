@@ -266,7 +266,7 @@ function tabulateStationMeasurements() {
     });
     attributesToPrint.push({
       attribute: "delta",
-      title: `Change in ${numHours} hours`,
+      title: `Change in ${currentTable.hours} hours`,
       fixed: 1,
     });
 

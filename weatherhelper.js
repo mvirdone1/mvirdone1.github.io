@@ -27,7 +27,7 @@ function createChartObject(charts, locationTitle, attributes) {
       "dy",
     numHours: 24 * attributes.days,
     offset: attributes.offset,
-    dataType: attributes.chartType, // 0 = Temperature, 1 = Snow Depth
+    dataType: attributes.chartType, //See enumeration defined in const chartTypes above
   });
 }
 

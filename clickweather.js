@@ -5,25 +5,26 @@ class persistentDataModule {
   constructor() {
     if (persistentDataModule.instance) return persistentDataModule.instance;
     this.allStations = [];
+    this.allData = {};
     this.latestMeasurements = [];
+
+    // this.stationDataTemplate = [];
     persistentDataModule.instance = this;
   }
 
-  getStationIndex(newStation) {
-    return 0;
-  }
-
   addStationData(currentDataSet) {
-    var allStationIndex = this.allStations.findIndex(
+    var stationArrayIndex = this.allStations.findIndex(
       (station) => station.stid === currentDataSet.station.stid
     );
     const currentStation = currentDataSet.station;
 
     // If the station doesn't currently exist,
     // then we need to add it to the station list
-    if (allStationIndex === -1) {
+    if (stationArrayIndex === -1) {
       this.allStations.push(currentStation);
-      allStationIndex = this.allStations.length - 1;
+      stationArrayIndex = this.allStations.length - 1;
+
+      this.allData[stationArrayIndex] = {};
 
       const latestData = [
         { time: "", value: "" },
@@ -50,36 +51,154 @@ class persistentDataModule {
         lng: parseFloat(currentStation.lon),
       };
 
-      // The map manager should be global...
+      // The map manager is global
       myMapManager.addMarker(
         stationLocation,
         currentStation.name,
         currentStation.stid,
-        clickWeatherColors[allStationIndex]
+        clickWeatherColors[stationArrayIndex]
       );
     }
     // Because this (currentDataSet) is an object that was passed
     // we are actually modifying the source object in this case
     currentDataSet.borderColor = rgbArrayToString(
-      clickWeatherColors[allStationIndex]
+      clickWeatherColors[stationArrayIndex]
     );
 
     var lastDataPoint = currentDataSet.data.length - 1;
     var stationType = currentStation.stationType;
 
-    // If it's raw value and not offset, update the latest value table.
+    // Determine offsetIndex based on displayOffset
+    var offsetIndex = currentStation.displayOffset == true ? 1 : 0;
+
+    /*
+    var offsetIndex = 0;
+    if (currentStation.displayOffset == true) {
+      offsetIndex = 1;
+    }
+      */
+
+    // First see if the sub arrays exist for the needed data types
+    // if they don't initialize them for this station
+    // Once that's done, populate the actual data array
+
+    if (!this.allData[stationArrayIndex][stationType]) {
+      this.allData[stationArrayIndex][stationType] = {};
+    }
+
+    if (!this.allData[stationArrayIndex][stationType][offsetIndex]) {
+      this.allData[stationArrayIndex][stationType][offsetIndex] = [];
+    }
+
+    this.allData[stationArrayIndex][stationType][offsetIndex] =
+      currentDataSet.data;
+
     if (currentStation.displayOffset == false) {
+      // If it's raw value and not offset, update the latest value table.
       // Update the latest measurements
-      this.latestMeasurements[allStationIndex][stationType].time =
+      this.latestMeasurements[stationArrayIndex][stationType].time =
         currentDataSet.data[lastDataPoint].x;
 
-      this.latestMeasurements[allStationIndex][stationType].value =
+      this.latestMeasurements[stationArrayIndex][stationType].value =
         currentDataSet.data[lastDataPoint].y;
     }
   }
 
+  getDataStationTypes() {
+    // This gets the unique keys at the 2nd level where the 3rd level has a key of '0'
+    console.log("********** Getting station data types *********** ");
+
+    const items = Object.values(this.allData);
+
+    const keys = items
+      .map((obj) => {
+        return Object.keys(obj).filter((key) => {
+          return obj[key][0] && obj[key][0].hasOwnProperty(0); // Check if key '0' exists at 3rd level
+        });
+      })
+      .flat(); // Flatten the result into a single array of keys
+
+    // Using Set to ensure uniqueness
+    return [...new Set(keys)];
+  }
+
+  prepareLegendTable(mapCenter) {
+    // Calculate distances and add original index to each station
+    const stationsWithDistance = this.allStations.map((station, index) => {
+      const distance = calculateLatLonDistance(
+        station.lat,
+        station.lon,
+        mapCenter.lat,
+        mapCenter.lon
+      );
+
+      var distance_mi = distance.miles.toFixed(1);
+      return { ...station, distance_mi, originalIndex: index };
+    });
+
+    // Sort stations based on distance
+    stationsWithDistance.sort((a, b) => a.distance_mi - b.distance_mi);
+    let legendTableHTML = "";
+    legendTableHTML += ` 
+  <button onclick="toggleTableVisibility('legend-table')">Show/Hide Legend</button> `;
+
+    legendTableHTML += "<table id='legend-table' border='1' cellpadding='5'>";
+    legendTableHTML += "<tr>";
+
+    let stationTypes = this.getDataStationTypes(this.allData);
+
+    let headings = [
+      "ID",
+      "Dist (mi)",
+      "Name",
+      "Elev (ft)",
+      // "Temp (f)",
+      // "Snow (in)",
+      // "Wind (mph)",
+    ];
+
+    stationTypes.forEach((station) => {
+      headings.push(station);
+    });
+
+    // Iterate over the headings and print each one
+    headings.forEach((heading) => {
+      legendTableHTML += "<th>" + heading + "</th>";
+    });
+
+    legendTableHTML += "</tr>";
+    // ("<tr><th>ID</th><th>Dist (mi)</th><th>Name</th><th>Elevation</th></tr>");
+
+    stationsWithDistance.forEach((station, index) => {
+      const color = rgbArrayToString(clickWeatherColors[station.originalIndex]);
+
+      legendTableHTML += `<tr>`;
+      legendTableHTML += `<td style="background-color: ${color};">${station.stid}</td>`;
+      legendTableHTML += `<td>${station.distance_mi}</td>`;
+      legendTableHTML += `<td>${station.name}</td>`;
+      legendTableHTML += `<td>${station.elevation}</td>`;
+
+      // Iterate over the chartTypes object
+      for (const key in chartTypes) {
+        const colIndex = chartTypes[key];
+        legendTableHTML += printNiceWeatherCell(
+          globalStationData.getLatestMeasurements()[station.originalIndex][
+            colIndex
+          ]
+        );
+
+        // Do something with the key and value
+      }
+
+      legendTableHTML += "</tr>";
+    });
+
+    legendTableHTML += "</table>";
+
+    return legendTableHTML;
+  }
   getAllStations() {
-    console.log(this.allStations);
+    console.log(this);
     return this.allStations;
   }
 
@@ -240,74 +359,10 @@ function updateLegendTable() {
     lon: parseFloat(document.getElementById("lon").value),
   };
 
-  // Calculate distances and add original index to each station
-  const stationsWithDistance = globalStationData
-    .getAllStations()
-    .map((station, index) => {
-      const distance = calculateLatLonDistance(
-        station.lat,
-        station.lon,
-        mapCenter.lat,
-        mapCenter.lon
-      );
+  console.log("Before legend table");
+  let legendTableHTML = globalStationData.prepareLegendTable(mapCenter);
+  console.log("after legend table");
 
-      var distance_mi = distance.miles.toFixed(1);
-      return { ...station, distance_mi, originalIndex: index };
-    });
-
-  // Sort stations based on distance
-  stationsWithDistance.sort((a, b) => a.distance_mi - b.distance_mi);
-
-  let legendTableHTML = "";
-  legendTableHTML += ` 
-  <button onclick="toggleTableVisibility('legend-table')">Show/Hide Legend</button> `;
-
-  legendTableHTML += "<table id='legend-table' border='1' cellpadding='5'>";
-  legendTableHTML += "<tr>";
-
-  var headings = [
-    "ID",
-    "Dist (mi)",
-    "Name",
-    "Elev (ft)",
-    "Temp (f)",
-    "Snow (in)",
-    "Wind (mph)",
-  ];
-
-  // Iterate over the headings and print each one
-  headings.forEach((heading) => {
-    legendTableHTML += "<th>" + heading + "</th>";
-  });
-
-  legendTableHTML += "</tr>";
-  // ("<tr><th>ID</th><th>Dist (mi)</th><th>Name</th><th>Elevation</th></tr>");
-
-  stationsWithDistance.forEach((station, index) => {
-    const color = rgbArrayToString(clickWeatherColors[station.originalIndex]);
-
-    legendTableHTML += `<tr>`;
-    legendTableHTML += `<td style="background-color: ${color};">${station.stid}</td>`;
-    legendTableHTML += `<td>${station.distance_mi}</td>`;
-    legendTableHTML += `<td>${station.name}</td>`;
-    legendTableHTML += `<td>${station.elevation}</td>`;
-
-    // Iterate over the chartTypes object
-    for (const key in chartTypes) {
-      const colIndex = chartTypes[key];
-      legendTableHTML += printNiceWeatherCell(
-        globalStationData.getLatestMeasurements()[station.originalIndex][
-          colIndex
-        ]
-      );
-
-      // Do something with the key and value
-    }
-
-    legendTableHTML += "</tr>";
-  });
-
-  legendTableHTML += "</table>";
   const legendElement = document.getElementById("map-legend");
   legendElement.innerHTML = legendTableHTML;
 }

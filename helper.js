@@ -531,3 +531,14 @@ function timeUTCToLocalString(timeIn) {
 
   return formattedTime;
 }
+
+function buildTableRow(dataArray) {
+  let rowHtml = "<tr>";
+
+  dataArray.forEach((rowValue) => {
+    rowHtml += `<td>${rowValue}</td>`;
+  });
+  rowHtml += "<tr>\n";
+
+  return rowHtml;
+}

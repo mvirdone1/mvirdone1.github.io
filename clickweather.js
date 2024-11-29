@@ -90,7 +90,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.title = "Snow Change";
   attributes.days = 3;
   attributes.offset = true;
-  attributes.chartType = chartTypes.snowDepth;
+  attributes.chartType = CHART_TYPES.snowDepth;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -100,7 +100,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.title = "Temperature";
   attributes.days = 2;
   attributes.offset = false;
-  attributes.chartType = chartTypes.temperature;
+  attributes.chartType = CHART_TYPES.temperature;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -108,7 +108,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
 
   // Plot 2 day wind
   attributes.title = "Wind Speed";
-  attributes.chartType = chartTypes.windSpeed;
+  attributes.chartType = CHART_TYPES.windSpeed;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -119,12 +119,21 @@ function createFullMountainSuitePlots(locationObject, charts) {
     attributes.title = "Total Snow";
     attributes.days = 5;
     attributes.offset = false;
-    attributes.chartType = chartTypes.snowDepth;
+    attributes.chartType = CHART_TYPES.snowDepth;
 
     locationObject.chartObjects.push(
       createChartObject(charts, locationObject.locationName, attributes)
     );
   }
+
+  attributes.title = "SWE";
+  attributes.days = 3;
+  attributes.offset = false;
+  attributes.chartType = CHART_TYPES.SWE;
+
+  locationObject.chartObjects.push(
+    createChartObject(charts, locationObject.locationName, attributes)
+  );
 }
 
 // This function is a callback from inside displayWeatherData2
@@ -139,7 +148,140 @@ function postAPIDataCallback(dataSets) {
   });
 
   updateLegendTable();
-  globalStationData.getChangeInData(chartTypes.snowDepth, 24);
+  // globalStationData.getChangeInData(chartTypes.snowDepth, 2 * 24);
+
+  tabulateStationMeasurements();
+}
+
+function printStationTable(
+  stationMeasurements,
+  sortParameter,
+  attributesToPrint
+) {
+  if (sortParameter.ascending) {
+    stationMeasurements.sort(
+      (a, b) => a[sortParameter.parameter] - b[sortParameter.parameter]
+    );
+  } else {
+    stationMeasurements.sort(
+      (a, b) => b[sortParameter.parameter] - a[sortParameter.parameter]
+    );
+  }
+
+  let myTable = '<table border="1" cellpadding="5">\n';
+
+  // Build the headings
+  myTable += buildTableRow(attributesToPrint.map((obj) => obj.title));
+
+  // Build the sub-table of measurement values only
+  const attributesList = attributesToPrint.map((item) => item.attribute);
+
+  // Filter the stationMeasurements array and return arrays of values
+  const filteredMeasurements = stationMeasurements.map((station) => {
+    return attributesList.map((attribute) => station[attribute]);
+  });
+
+  filteredMeasurements.forEach((station) => {
+    const formattedStation = station.map((value, index) => {
+      // Check if 'fixed' exists for the corresponding attribute in attributesToPrint
+      const fixedDigits = attributesToPrint[index].fixed;
+
+      // Check if the value is a number and 'fixed' is defined
+      if (typeof value === "number" && fixedDigits !== undefined) {
+        return value.toFixed(fixedDigits); // Format to fixed-point string
+      }
+
+      // If no 'fixed' attribute, return the value as is
+      return value;
+    });
+    myTable += buildTableRow(formattedStation);
+  });
+
+  myTable += "</table>";
+  return myTable;
+}
+
+function tabulateStationMeasurements() {
+  const numDays = 1;
+  const numHours = numDays * 24;
+
+  let tabulateDataHtml = "";
+
+  const tableParameters = [];
+  tableParameters.push({
+    type: CHART_TYPES.snowDepth,
+    hours: numHours,
+    title: "Snow Depth",
+  });
+  tableParameters.push({
+    type: CHART_TYPES.snowDepth,
+    hours: 72,
+    title: "Snow Depth",
+  });
+  tableParameters.push({
+    type: CHART_TYPES.SWE,
+    hours: numHours,
+    title: "Snow Water Equivalent",
+  });
+
+  tableParameters.forEach((currentTable) => {
+    let stationMeasurements = globalStationData.getChangeInData(
+      currentTable.type,
+      currentTable.hours
+    );
+
+    tabulateDataHtml +=
+      "<h2>" + currentTable.title + " " + currentTable.hours + " Hours</h2>\n";
+
+    const sortParameters = [];
+    sortParameters.push({
+      parameter: "endValue",
+      ascending: false,
+      title: "Stations By Latest Measurement",
+    });
+    sortParameters.push({
+      parameter: "elevation",
+      ascending: true,
+      title: "Stations By Elevation",
+    });
+    sortParameters.push({
+      parameter: "delta",
+      ascending: true,
+      title: "Stations By Change In Measurement",
+    });
+
+    const attributesToPrint = [];
+    attributesToPrint.push({ attribute: "name", title: "Station" });
+    attributesToPrint.push({
+      attribute: "elevation",
+      title: "Elevation (ft)",
+      fixed: 0,
+    });
+    attributesToPrint.push({ attribute: "min", title: "Min", fixed: 1 });
+    attributesToPrint.push({ attribute: "max", title: "Max", fixed: 1 });
+    attributesToPrint.push({
+      attribute: "endValue",
+      title: "Latest",
+      fixed: 1,
+    });
+    attributesToPrint.push({
+      attribute: "delta",
+      title: `Change in ${numHours} hours`,
+      fixed: 1,
+    });
+
+    sortParameters.forEach((sortParameter) => {
+      tabulateDataHtml += "<h3>" + sortParameter.title + "</h3>\n";
+      tabulateDataHtml += printStationTable(
+        stationMeasurements,
+        sortParameter,
+        attributesToPrint
+      );
+    });
+  });
+
+  const bonusElement = document.getElementById("hide-show-bonus-content-child");
+  bonusElement.innerHTML = tabulateDataHtml;
 }
 
 function updateLegendTable() {

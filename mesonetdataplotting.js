@@ -20,17 +20,23 @@ function displayWeatherData2(
   }
 
   switch (stationType) {
-    case chartTypes.snowDepth:
+    case CHART_TYPES.snowDepth:
       varName = "snow_depth";
       plotType = "Snow Depth" + changeString;
       break;
 
-    case chartTypes.windSpeed:
+    case CHART_TYPES.windSpeed:
       varName = "wind_speed,wind_gust";
       plotType = "Wind Speed and Gust" + changeString;
       break;
 
-    case chartTypes.temperature:
+    case CHART_TYPES.SWE:
+      varName = "snow_water_equiv";
+      // varname = "precip_accum_24_hour";
+      plotType = "SWE" + changeString;
+      break;
+
+    case CHART_TYPES.temperature:
     default:
       varName = "air_temp";
       plotType = "Temperature" + changeString;
@@ -78,6 +84,7 @@ function displayWeatherData2(
   }
 
   const apiUrlWithParams = `${apiURL}?${queryString}`;
+  console.log("Station Type: " + stationType);
   console.log(apiUrlWithParams);
   fetch(apiUrlWithParams)
     .then((response) => response.json())
@@ -117,18 +124,23 @@ function displayWeatherData2(
 
         // Get the data based on what type of request we've sent
         switch (stationType) {
-          case chartTypes.snowDepth: // Snow Depth
+          case CHART_TYPES.snowDepth: // Snow Depth
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.snow_depth_set_1;
             maxChange = 10; // Made up number for 10" won't change
             break;
 
-          case chartTypes.windSpeed:
+          case CHART_TYPES.windSpeed:
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.wind_speed_set_1;
             maxChange = 25; // Made up number for 25 MPH max change
-
             break;
 
-          case chartTypes.temperature: // Air Temp
+          case CHART_TYPES.SWE:
+            tempData =
+              data.STATION[dataSetIdx].OBSERVATIONS.snow_water_equiv_set_1;
+            maxChange = 1; // 1 inch of SWE between measurements
+            break;
+
+          case CHART_TYPES.temperature: // Air Temp
           default: // Default to air temp
             tempData = data.STATION[dataSetIdx].OBSERVATIONS.air_temp_set_1;
             maxChange = 15; // Made up number for 15 degrees max change

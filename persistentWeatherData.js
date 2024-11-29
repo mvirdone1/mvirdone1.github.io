@@ -9,6 +9,11 @@
 //
 // In the future, handling the chart objects may move in here as well
 
+const DATA_TYPES = {
+  absolute: 0,
+  change: 1,
+};
+
 class persistentWeatherData {
   constructor() {
     if (persistentWeatherData.instance) return persistentWeatherData.instance;
@@ -77,7 +82,10 @@ class persistentWeatherData {
     var stationType = currentStation.stationType;
 
     // Determine offsetIndex based on displayOffset
-    var offsetIndex = currentStation.displayOffset == true ? 1 : 0;
+    var offsetIndex =
+      currentStation.displayOffset == true
+        ? DATA_TYPES.change
+        : DATA_TYPES.absolute;
 
     /*
     var offsetIndex = 0;
@@ -102,7 +110,7 @@ class persistentWeatherData {
       currentDataSet.data;
   }
 
-  getStationsWtihDataTypes(stationType) {
+  getStationsWtihAbsDataTypes(stationType) {
     let goodStationIdx = [];
 
     // console.log(this.allStations);
@@ -111,7 +119,8 @@ class persistentWeatherData {
       // console.log("In the loop");
       // console.log(this.allData[thisIndex]);
       if (stationType in this.allData[thisIndex]) {
-        goodStationIdx.push(thisIndex);
+        if (String(DATA_TYPES.absolute) in this.allData[thisIndex][stationType])
+          goodStationIdx.push(thisIndex);
       }
     });
 
@@ -144,7 +153,10 @@ class persistentWeatherData {
     }
 
     // If the absolute data type (0) doesn't exist, return a blank cell
-    if ("0" in this.allData[stationIndex][stationType] == false) {
+    if (
+      String(DATA_TYPES.absolute) in this.allData[stationIndex][stationType] ==
+      false
+    ) {
       return "<td>&nbsp</td>";
     }
 
@@ -244,10 +256,17 @@ class persistentWeatherData {
   stationChangeAnalysis(stationIdx, stationType, timeHrs) {
     // Check to see if we have absolte or relative data
     // Start with our data type as delta, and then change it to absolute if it exists
+
+    // EDIT - Nevermind, I got rid of even allowing use of change data
+    // If we want to do this stuff, we need absolute data
+    /* 
     let dataType = 1;
     if ("0" in this.allData[stationIdx][stationType]) {
       dataType = 0;
     }
+    */
+
+    const dataType = 0;
 
     const thisStationData = this.allData[stationIdx][stationType][dataType];
 
@@ -256,8 +275,8 @@ class persistentWeatherData {
     const endMeasurement = thisStationData[lastDataIdx].y;
     const endTime = new Date(thisStationData[lastDataIdx].x);
 
-    let maxValue = -Infinity;
-    let minValue = Infinity;
+    let maxValue = endMeasurement;
+    let minValue = endMeasurement;
 
     let startValue = 0;
     let finalDataIdx = 0;
@@ -298,18 +317,22 @@ class persistentWeatherData {
       elevation: thisStation.elevation,
       max: maxValue,
       min: minValue,
+      startValue: startValue,
+      endValue: endMeasurement,
       delta: endMeasurement - startValue,
       numDataPoints: lastDataIdx - finalDataIdx,
       elapsedTime: timeDeltaHours,
     };
 
-    console.log(results);
+    //console.log(results);
 
-    return 0;
+    return results;
+
+    // return 0;
   }
 
   getChangeInData(stationType, timeHrs = 24) {
-    const stationList = this.getStationsWtihDataTypes(stationType);
+    const stationList = this.getStationsWtihAbsDataTypes(stationType);
     // console.log("**** STATION LIST ***");
     // console.log(stationList);
 
@@ -321,6 +344,12 @@ class persistentWeatherData {
       );
     });
 
-    // console.log(stationChangeResults);
+    /*console.log(stationChangeResults);
+
+    stationChangeResults.sort((a, b) => a.elevation - b.elevation);
+    console.log(stationChangeResults);
+    */
+
+    return stationChangeResults;
   }
 }

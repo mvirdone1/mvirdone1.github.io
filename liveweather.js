@@ -114,7 +114,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.title = "Snow Change";
   attributes.days = 3;
   attributes.offset = true;
-  attributes.chartType = chartTypes.snowDepth;
+  attributes.chartType = CHART_TYPES.snowDepth;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -130,7 +130,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.title = "Temperature";
   attributes.days = 1;
   attributes.offset = false;
-  attributes.chartType = chartTypes.temperature;
+  attributes.chartType = CHART_TYPES.temperature;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -138,7 +138,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
 
   // Plot 1 day wind
   attributes.title = "Wind Speed";
-  attributes.chartType = chartTypes.windSpeed;
+  attributes.chartType = CHART_TYPES.windSpeed;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -148,7 +148,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.title = "Total Snow";
   attributes.days = 5;
   attributes.offset = false;
-  attributes.chartType = chartTypes.snowDepth;
+  attributes.chartType = CHART_TYPES.snowDepth;
 
   locationObject.chartObjects.push(
     createChartObject(charts, locationObject.locationName, attributes)
@@ -175,13 +175,13 @@ function initLocationObjects() {
   var attributeTitle = "Temperature";
   var days = 1;
   var offset = false;
-  var chartType = chartTypes.temperature;
+  var chartType = CHART_TYPES.temperature;
 
   var attributes = {
     title: "Temperature",
     days: 1,
     offset: false,
-    chartType: chartTypes.temperature,
+    chartType: CHART_TYPES.temperature,
   };
 
   console.log(attributes);

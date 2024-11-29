@@ -1,10 +1,11 @@
-const chartTypes = {
+const CHART_TYPES = {
   temperature: 0,
   snowDepth: 1,
   windSpeed: 2,
+  SWE: 3,
 };
 
-const chartHeadings = ["Temp (f)", "Snow (in)", "Wind (mph)"];
+const chartHeadings = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
 
 function createChartObject(charts, locationTitle, attributes) {
   console.log("My Title: " + attributes.title);
@@ -27,7 +28,7 @@ function createChartObject(charts, locationTitle, attributes) {
       "dy",
     numHours: 24 * attributes.days,
     offset: attributes.offset,
-    dataType: attributes.chartType, //See enumeration defined in const chartTypes above
+    dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above
   });
 }
 

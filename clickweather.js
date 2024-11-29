@@ -1,6 +1,4 @@
-// var allStations = [];
-// var latestMeasurements = [];
-
+// Debug variables
 const removeAbsoluteSnow = false;
 
 class persistentDataModule {
@@ -8,10 +6,12 @@ class persistentDataModule {
     if (persistentDataModule.instance) return persistentDataModule.instance;
     this.allStations = [];
     this.allData = {};
-    this.latestMeasurements = [];
 
     // this.stationDataTemplate = [];
     persistentDataModule.instance = this;
+  }
+  setAllStations(newAllStations) {
+    this.allStations = newAllStations;
   }
 
   addStationData(currentDataSet) {
@@ -27,14 +27,6 @@ class persistentDataModule {
       stationArrayIndex = this.allStations.length - 1;
 
       this.allData[stationArrayIndex] = {};
-
-      const latestData = [
-        { time: "", value: "" },
-        { time: "", value: "" },
-        { time: "", value: "" },
-      ];
-
-      this.latestMeasurements.push(latestData);
 
       /*
         station.lat = data.STATION[dataSetIdx].LATITUDE;
@@ -94,16 +86,6 @@ class persistentDataModule {
 
     this.allData[stationArrayIndex][stationType][offsetIndex] =
       currentDataSet.data;
-
-    if (currentStation.displayOffset == false) {
-      // If it's raw value and not offset, update the latest value table.
-      // Update the latest measurements
-      this.latestMeasurements[stationArrayIndex][stationType].time =
-        currentDataSet.data[lastDataPoint].x;
-
-      this.latestMeasurements[stationArrayIndex][stationType].value =
-        currentDataSet.data[lastDataPoint].y;
-    }
   }
 
   getAbsoluteDataTypes() {
@@ -123,8 +105,8 @@ class persistentDataModule {
   }
 
   getLatestStationData(stationIndex, stationType) {
-    console.log("station Data get: " + stationIndex + " " + stationType);
-    console.log(this.allData);
+    // console.log("station Data get: " + stationIndex + " " + stationType);
+    // console.log(this.allData);
 
     // If the station type doesn't exist, return a blank cell
     if (stationType in this.allData[stationIndex] == false) {
@@ -219,29 +201,7 @@ class persistentDataModule {
           station.originalIndex,
           stationType
         );
-
-        /*legendTableHTML += printNiceWeatherCell(
-          globalStationData.getLatestMeasurements()[station.originalIndex][
-            stationType
-          ]
-        );
-        */
       });
-
-      /*
-
-      // Iterate over the chartTypes object
-      for (const key in chartTypes) {
-        const colIndex = chartTypes[key];
-        legendTableHTML += printNiceWeatherCell(
-          globalStationData.getLatestMeasurements()[station.originalIndex][
-            colIndex
-          ]
-        );
-
-        // Do something with the key and value
-      }
-        */
 
       legendTableHTML += "</tr>";
     });
@@ -249,21 +209,6 @@ class persistentDataModule {
     legendTableHTML += "</table>";
 
     return legendTableHTML;
-  }
-  getAllStations() {
-    console.log(this);
-    return this.allStations;
-  }
-
-  setAllStations(newStations) {
-    this.allStations = newStations;
-  }
-  getLatestMeasurements() {
-    return this.latestMeasurements;
-  }
-
-  setLatestMeasurements(newMeasurements) {
-    this.latestMeasurements = newMeasurements;
   }
 }
 

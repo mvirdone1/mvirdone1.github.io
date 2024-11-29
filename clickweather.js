@@ -148,11 +148,10 @@ function updateLegendTable() {
     lon: parseFloat(document.getElementById("lon").value),
   };
 
-  console.log("Before legend table");
   let legendTableHTML = globalStationData.prepareLegendTable(mapCenter);
-  console.log("after legend table");
 
-  const legendElement = document.getElementById("map-legend");
+  // I don't love how this is tied to me hard-coding the div id, but it'll have to do for now
+  const legendElement = document.getElementById("hide-show-legend-child");
   legendElement.innerHTML = legendTableHTML;
 }
 
@@ -198,8 +197,17 @@ function updateLocationFromBrowser(position) {
 function clickWeatherClickListener(position, realClick = true, charts = []) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
+
+  createToggleChildElements("dynamic-div", "Legend");
+
+  // Create the div for the forecasts from weather.gov
+  const ForecastElement = createToggleChildElements(
+    "dynamic-div",
+    "Forecast Charts"
+  );
+
   // This function does all the addition of everything except the weather plots
-  displayMapClickView();
+  displayWeatherGovHourlyForecast(ForecastElement);
 
   myMapManager.setMapCenter(position.lat, position.lng);
 
@@ -327,9 +335,6 @@ function initMap() {
     </form>
 
 
-    <hr>
-    <div id="map-legend"></div>
-    </br>
     `;
 
   const forecastElement = document.getElementById("map-div");
@@ -369,10 +374,5 @@ function initMap() {
     clickWeatherClickListener(position);
   });
 
-  // updateLinkURL();
-  // parseURL();
-  // displayMapClickView();
   parseURL();
-  // clickWeatherClickListener({ lat: lat, lng: lon }, false);
-  // displayMapClickView();
 }

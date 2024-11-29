@@ -415,6 +415,7 @@ function createToggleChildElements(parentId, title) {
   // Create the child div
   const childDiv = document.createElement("div");
   childDiv.id = divTitle + "-child";
+  childDiv.classList.add("show-hide-class");
 
   // Append the child div to the parent div
   parentDiv.appendChild(childDiv);

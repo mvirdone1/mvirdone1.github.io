@@ -289,7 +289,7 @@ function handleDropDownChange(selectedOption, locationObjects) {
     case -1:
       document.getElementById("map-div").style.display = "block";
       myMapManager.mapResize();
-      displayMapClickView();
+      displayWeatherGovHourlyForecast();
 
       break;
 
@@ -454,7 +454,7 @@ function initMap() {
     updateLinkURL(-1);
   });
 
-  displayMapClickView();
+  displayWeatherGovHourlyForecast();
 
   // Moved from sync init to async init
   locationObjects = initLocationObjects();

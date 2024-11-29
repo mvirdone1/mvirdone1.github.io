@@ -154,9 +154,9 @@ class persistentWeatherData {
     // Sort stations based on distance
     stationsWithDistance.sort((a, b) => a.distance_mi - b.distance_mi);
     let legendTableHTML = "";
-    legendTableHTML += ` 
-  <button onclick="toggleTableVisibility('legend-table')">Show/Hide Legend</button> `;
-
+    /*legendTableHTML += ` 
+        <button onclick="toggleTableVisibility('legend-table')">Show/Hide Legend</button> `;
+    */
     legendTableHTML += "<table id='legend-table' border='1' cellpadding='5'>";
     legendTableHTML += "<tr>";
 

@@ -84,11 +84,8 @@ function createWeatherPlotImageElement(plotId, contentElement) {
   linkElement.appendChild(imageElement);
   contentElement.appendChild(linkElement);
 }
-function displayMapClickView() {
-  const contentElement = createToggleChildElements(
-    "dynamic-div",
-    "Forecast Charts"
-  );
+function displayWeatherGovHourlyForecast(contentElement) {
+  // const contentElement =
 
   lat = document.getElementById("lat").value;
   lon = document.getElementById("lon").value;

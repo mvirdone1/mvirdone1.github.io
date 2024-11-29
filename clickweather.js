@@ -1,6 +1,8 @@
 // var allStations = [];
 // var latestMeasurements = [];
 
+const removeAbsoluteSnow = false;
+
 class persistentDataModule {
   constructor() {
     if (persistentDataModule.instance) return persistentDataModule.instance;
@@ -104,10 +106,8 @@ class persistentDataModule {
     }
   }
 
-  getDataStationTypes() {
+  getAbsoluteDataTypes() {
     // This gets the unique keys at the 2nd level where the 3rd level has a key of '0'
-    console.log("********** Getting station data types *********** ");
-
     const items = Object.values(this.allData);
 
     const keys = items
@@ -120,6 +120,41 @@ class persistentDataModule {
 
     // Using Set to ensure uniqueness
     return [...new Set(keys)];
+  }
+
+  getLatestStationData(stationIndex, stationType) {
+    console.log("station Data get: " + stationIndex + " " + stationType);
+    console.log(this.allData);
+
+    // If the station type doesn't exist, return a blank cell
+    if (stationType in this.allData[stationIndex] == false) {
+      return "<td>&nbsp</td>";
+    }
+
+    // If the absolute data type (0) doesn't exist, return a blank cell
+    if ("0" in this.allData[stationIndex][stationType] == false) {
+      return "<td>&nbsp</td>";
+    }
+
+    const dataSource = this.allData[stationIndex][stationType][0];
+
+    const lastDataIndex = dataSource.length - 1;
+
+    const lastMeasurementTime = timeUTCToLocalString(
+      dataSource[lastDataIndex].x
+    );
+    const lastMeasurementValue = parseFloat(
+      dataSource[lastDataIndex].y
+    ).toFixed(0);
+
+    const cellString =
+      "<td>" +
+      lastMeasurementValue +
+      " <sub>" +
+      lastMeasurementTime +
+      "</sub></td>\n";
+
+    return cellString;
   }
 
   prepareLegendTable(mapCenter) {
@@ -145,8 +180,6 @@ class persistentDataModule {
     legendTableHTML += "<table id='legend-table' border='1' cellpadding='5'>";
     legendTableHTML += "<tr>";
 
-    let stationTypes = this.getDataStationTypes(this.allData);
-
     let headings = [
       "ID",
       "Dist (mi)",
@@ -157,8 +190,11 @@ class persistentDataModule {
       // "Wind (mph)",
     ];
 
-    stationTypes.forEach((station) => {
-      headings.push(station);
+    let availableStationTypes = this.getAbsoluteDataTypes(this.allData);
+
+    // Append the specific headings for the data that is present
+    availableStationTypes.forEach((stationType) => {
+      headings.push(chartHeadings[stationType]);
     });
 
     // Iterate over the headings and print each one
@@ -178,6 +214,22 @@ class persistentDataModule {
       legendTableHTML += `<td>${station.name}</td>`;
       legendTableHTML += `<td>${station.elevation}</td>`;
 
+      availableStationTypes.forEach((stationType) => {
+        legendTableHTML += globalStationData.getLatestStationData(
+          station.originalIndex,
+          stationType
+        );
+
+        /*legendTableHTML += printNiceWeatherCell(
+          globalStationData.getLatestMeasurements()[station.originalIndex][
+            stationType
+          ]
+        );
+        */
+      });
+
+      /*
+
       // Iterate over the chartTypes object
       for (const key in chartTypes) {
         const colIndex = chartTypes[key];
@@ -189,6 +241,7 @@ class persistentDataModule {
 
         // Do something with the key and value
       }
+        */
 
       legendTableHTML += "</tr>";
     });
@@ -328,14 +381,16 @@ function createFullMountainSuitePlots(locationObject, charts) {
   );
 
   // Plot 5 day total snow
-  attributes.title = "Total Snow";
-  attributes.days = 5;
-  attributes.offset = false;
-  attributes.chartType = chartTypes.snowDepth;
+  if (!removeAbsoluteSnow) {
+    attributes.title = "Total Snow";
+    attributes.days = 5;
+    attributes.offset = false;
+    attributes.chartType = chartTypes.snowDepth;
 
-  locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
-  );
+    locationObject.chartObjects.push(
+      createChartObject(charts, locationObject.locationName, attributes)
+    );
+  }
 }
 
 // This function is a callback from inside displayWeatherData2

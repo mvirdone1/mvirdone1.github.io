@@ -211,6 +211,8 @@ function tabulateStationMeasurements() {
 
   let tabulateDataHtml = "";
 
+  const tablesToSort = [];
+
   const tableParameters = [];
   tableParameters.push({
     type: CHART_TYPES.snowDepth,
@@ -242,7 +244,6 @@ function tabulateStationMeasurements() {
     sortParameters.push({
       parameter: "endValue",
       ascending: false,
-      title: "Hi",
     });
     /*
     sortParameters.push({
@@ -278,9 +279,7 @@ function tabulateStationMeasurements() {
       fixed: 1,
     });
 
-    tablesToSort = [];
     sortParameters.forEach((sortParameter) => {
-      tabulateDataHtml += "<h3>" + sortParameter.title + "</h3>\n";
       const tableId = divify(fullTableTitle);
       tabulateDataHtml += printStationTable(
         stationMeasurements,
@@ -296,7 +295,7 @@ function tabulateStationMeasurements() {
   const bonusElement = document.getElementById("hide-show-bonus-content-child");
   bonusElement.innerHTML = tabulateDataHtml;
 
-  tablesToSort.forEach((tableId) => {
+  tablesToSort.forEach((tableId, index) => {
     makeTableSortable(tableId);
   });
 }

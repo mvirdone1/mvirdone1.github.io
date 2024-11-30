@@ -26,49 +26,54 @@ function makeTableSortable(tableId, defaultSortColumn = 1) {
     return;
   }
 
-  const headers = table.querySelectorAll("th");
-  headers.forEach((header, index) => {
-    // Add the arrow span if not already present
-    let arrow = header.querySelector(".arrow");
-    if (!arrow) {
-      arrow = document.createElement("span");
-      arrow.classList.add("arrow");
-      header.appendChild(arrow);
-    }
+  console.log("Found table " + tableId);
 
+  const headers = table.querySelectorAll("tr th");
+  console.log(headers);
+
+  // Set this to the opposite of what I want (ascending)
+  // That way when I call the sortTable function, it'll reverse sort it
+  headers[defaultSortColumn].textContent += " ↑";
+
+  headers.forEach((header, index) => {
     // Add onclick functionality
-    header.onclick = () => sortTable(table, index);
+    header.onclick = () => sortTable(tableId, index);
   });
 
   // Perform an initial sort on the default column (column 1)
-  sortTable(table, defaultSortColumn);
+  sortTable(tableId, defaultSortColumn);
 }
 
-// Sorting logic
-function sortTable(table, columnIndex) {
+function sortTable(tableId, columnIndex) {
+  const table = document.getElementById(tableId);
+  if (!table) {
+    console.error(`Table with id "${tableId}" not found.`);
+    return;
+  }
   const tbody = table.tBodies[0];
-  const rows = Array.from(tbody.rows);
-  console.log(tbody);
-  console.log(rows);
 
-  const headers = table.querySelectorAll("th");
+  // const tbody = table.querySelector("tbody");
+  const headers = tbody.querySelectorAll("tr th");
+  const headerRow = Array.from(tbody.querySelectorAll("tr"))[0];
+  const rows = Array.from(tbody.querySelectorAll("tr")).slice(1);
+
+  // Find the active header for the specified column
   const currentHeader = headers[columnIndex];
-  const arrow = currentHeader.querySelector(".arrow");
 
-  // Determine sort direction from the arrow
-  const sortDirection = arrow.textContent !== "▲"; // Default to ascending if no arrow or "▼"
+  // Determine sort direction based on the arrow content
+  const sortDirection = currentHeader.textContent.slice(-2) !== " ↑"; // Default to ascending if no arrow or "▼"
 
-  // Update arrows in table headers
-  updateHeaderArrows(headers, columnIndex, sortDirection);
+  // Sort rows by the specified column's cell value
+  rows.sort((rowA, rowB) => {
+    const cellA = rowA.children[columnIndex].textContent.trim();
+    const cellB = rowB.children[columnIndex].textContent.trim();
 
-  // Sort rows
-  rows.sort((a, b) => {
-    const cellA = a.cells[columnIndex].textContent.trim();
-    const cellB = b.cells[columnIndex].textContent.trim();
-
-    const isNumeric = !isNaN(cellA) && !isNaN(cellB);
+    // Handle numeric and string sorting
+    const isNumeric = !isNaN(parseFloat(cellA)) && !isNaN(parseFloat(cellB));
     if (isNumeric) {
-      return sortDirection ? cellA - cellB : cellB - cellA;
+      return sortDirection
+        ? parseFloat(cellA) - parseFloat(cellB)
+        : parseFloat(cellB) - parseFloat(cellA);
     } else {
       return sortDirection
         ? cellA.localeCompare(cellB)
@@ -76,18 +81,34 @@ function sortTable(table, columnIndex) {
     }
   });
 
-  // Append sorted rows back to tbody
+  tbody.appendChild(headerRow);
+
+  // Append sorted rows back into the table body
   rows.forEach((row) => tbody.appendChild(row));
+
+  // Update arrows in the header
+  updateHeaderArrows(headers, columnIndex, sortDirection);
 }
 
 // Update arrow indicators
 function updateHeaderArrows(headers, columnIndex, sortDirection) {
   headers.forEach((header, index) => {
-    const arrow = header.querySelector(".arrow");
-    if (index === columnIndex) {
-      arrow.textContent = sortDirection ? "▲" : "▼";
-    } else {
-      arrow.textContent = ""; // Clear arrows for other columns
+    // Remove any existing arrows from textContent
+    let text = header.textContent.trim(); // Get the clean text without arrows
+
+    // Remove any existing arrows by checking if they are in the text
+    text = text.replace(" ↑", "").replace(" ↓", "");
+
+    // Append the new arrow based on the direction
+    if (index == columnIndex) {
+      if (sortDirection) {
+        text += " ↑"; // Add up arrow for ascending
+      } else {
+        text += " ↓"; // Add down arrow for descending
+      }
     }
+
+    // Set the new text content with the arrow
+    header.textContent = text;
   });
 }

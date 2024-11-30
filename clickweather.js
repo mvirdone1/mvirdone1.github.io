@@ -156,7 +156,8 @@ function postAPIDataCallback(dataSets) {
 function printStationTable(
   stationMeasurements,
   sortParameter,
-  attributesToPrint
+  attributesToPrint,
+  tableId
 ) {
   if (sortParameter.ascending) {
     stationMeasurements.sort(
@@ -168,10 +169,13 @@ function printStationTable(
     );
   }
 
-  let myTable = '<table border="1" cellpadding="5">\n';
+  let myTable = `<table id="${tableId}" border="1" cellpadding="5">\n`;
 
   // Build the headings
-  myTable += buildTableRow(attributesToPrint.map((obj) => obj.title));
+  myTable += buildTableRow(
+    attributesToPrint.map((obj) => obj.title),
+    true
+  );
 
   // Build the sub-table of measurement values only
   const attributesList = attributesToPrint.map((item) => item.attribute);
@@ -230,15 +234,17 @@ function tabulateStationMeasurements() {
       currentTable.hours
     );
 
-    tabulateDataHtml +=
-      "<h2>" + currentTable.title + " " + currentTable.hours + " Hours</h2>\n";
+    const fullTableTitle = currentTable.title + " " + currentTable.hours;
+
+    tabulateDataHtml += "<h2>" + fullTableTitle + " Hours</h2>\n";
 
     const sortParameters = [];
     sortParameters.push({
       parameter: "endValue",
       ascending: false,
-      title: "Stations By Latest Measurement",
+      title: "Hi",
     });
+    /*
     sortParameters.push({
       parameter: "elevation",
       ascending: true,
@@ -249,6 +255,8 @@ function tabulateStationMeasurements() {
       ascending: true,
       title: "Stations By Change In Measurement",
     });
+
+    */
 
     const attributesToPrint = [];
     attributesToPrint.push({ attribute: "name", title: "Station" });
@@ -270,18 +278,27 @@ function tabulateStationMeasurements() {
       fixed: 1,
     });
 
+    tablesToSort = [];
     sortParameters.forEach((sortParameter) => {
       tabulateDataHtml += "<h3>" + sortParameter.title + "</h3>\n";
+      const tableId = divify(fullTableTitle);
       tabulateDataHtml += printStationTable(
         stationMeasurements,
         sortParameter,
-        attributesToPrint
+        attributesToPrint,
+        tableId
       );
+
+      tablesToSort.push(tableId);
     });
   });
 
   const bonusElement = document.getElementById("hide-show-bonus-content-child");
   bonusElement.innerHTML = tabulateDataHtml;
+
+  tablesToSort.forEach((tableId) => {
+    makeTableSortable(tableId);
+  });
 }
 
 function updateLegendTable() {

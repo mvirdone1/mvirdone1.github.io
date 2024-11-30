@@ -8,6 +8,7 @@
 
     <!-- custom local scripts -->  
     <script src="helper.js"></script>
+    <script src="tableHelper.js"></script>
     <script src="persistentWeatherData.js"></script>
     <script src="mapManager.js"></script>
     <script src="weatherplotter.js"></script>   
@@ -92,6 +93,29 @@
 
       .tab-pane.active {
         display: block;
+      }
+
+      /********************************************************/
+      /* Table Properties */
+      /********************************************************/
+      table {
+          /*width: 100%;*/
+          border-collapse: collapse;
+      }
+      th, td {
+          border: 1px solid #ccc;
+          padding: 8px;
+          text-align: left;
+      }
+      th {
+          cursor: pointer;
+          background-color: #f4f4f4;
+          position: relative;
+      }
+      th span.arrow {
+          position: absolute;
+          right: 8px;
+          font-size: 0.8em;
       }
 
     </style>

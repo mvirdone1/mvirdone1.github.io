@@ -444,11 +444,6 @@ function toggleChildVisibility(parentId) {
   }
 }
 
-function toggleTableVisibility(tableId) {
-  var table = document.getElementById(tableId);
-  table.style.display = table.style.display === "none" ? "table" : "none";
-}
-
 function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
   // Radius of the Earth in kilometers and miles
   const R_km = 6371;
@@ -530,15 +525,4 @@ function timeUTCToLocalString(timeIn) {
   var formattedTime = localTime.toISOString().slice(11, 16);
 
   return formattedTime;
-}
-
-function buildTableRow(dataArray) {
-  let rowHtml = "<tr>";
-
-  dataArray.forEach((rowValue) => {
-    rowHtml += `<td>${rowValue}</td>`;
-  });
-  rowHtml += "<tr>\n";
-
-  return rowHtml;
 }

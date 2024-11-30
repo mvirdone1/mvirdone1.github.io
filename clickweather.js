@@ -48,15 +48,6 @@ function parseURL() {
   //.html?stations=TGLU1,TGSU1,LGS,CRDUT,PRSUT
   const stations = urlParams.get("stations")?.split(",") || [];
   console.log(stations);
-  // Output: ["TGLU1", "TGSU1", "LGS", "CRDUT", "PRSUT"]
-
-  /*
-    charts.push("TGLU1");
-  charts.push("TGSU1");
-  charts.push("LGS");
-  charts.push("CRDUT");
-  charts.push("PRSUT");
-  */
 
   clickWeatherClickListener(position, false, stations);
 }
@@ -64,7 +55,7 @@ function parseURL() {
 function updateLinkURL() {
   var linkURL = "https://mvirdone1.github.io/clickweather.html?";
 
-  var myPageLink = document.getElementById("page-link");
+  var myPageLink = document.getElementById("page-link-position");
 
   var latValue = parseFloat(document.getElementById("lat").value);
   var lonValue = parseFloat(document.getElementById("lon").value);
@@ -81,6 +72,9 @@ function updateLinkURL() {
   myPageLink.href = linkURL;
 
   document.title = "Map Click Weather" + " (" + latValue + "," + lonValue + ")";
+
+  console.log("Update Link URL");
+  console.log(getAllToggleChildren());
 }
 
 function createFullMountainSuitePlots(locationObject, charts) {
@@ -148,6 +142,7 @@ function postAPIDataCallback(dataSets) {
   });
 
   updateLegendTable();
+  myMapManager.setZoomOnMarkerBounds();
   // globalStationData.getChangeInData(chartTypes.snowDepth, 2 * 24);
 
   tabulateStationMeasurements();
@@ -292,8 +287,10 @@ function tabulateStationMeasurements() {
     });
   });
 
-  const bonusElement = document.getElementById("hide-show-bonus-content-child");
-  bonusElement.innerHTML = tabulateDataHtml;
+  const sortableTablesElement = document.getElementById(
+    "hide-show-sortable-tables-child"
+  );
+  sortableTablesElement.innerHTML = tabulateDataHtml;
 
   tablesToSort.forEach((tableId, index) => {
     makeTableSortable(tableId);
@@ -478,7 +475,7 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
     console.log(returnedStations);
     // handleStationList(allStations, returnedStations);
   }
-  createToggleChildElements("dynamic-div", "Bonus Content");
+  createToggleChildElements("dynamic-div", "Sortable Tables");
 
   updateLinkURL();
 }
@@ -502,7 +499,7 @@ function initMap() {
   forecastElement.innerHTML = mapHTML;
 
   var linkHeader = document.createElement("a");
-  linkHeader.id = "page-link";
+  linkHeader.id = "page-link-position";
   linkHeader.href = "#"; // Link to nowhere since it will be dynamically updated
   linkHeader.innerHTML = "<h4>Link to this page</h4>";
   document.getElementById("my-header").appendChild(linkHeader);

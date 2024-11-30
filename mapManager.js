@@ -21,6 +21,15 @@ class MapManager {
     this.map.setCenter({ lat: lat, lng: lon });
   }
 
+  setZoomOnMarkerBounds() {
+    const bounds = new google.maps.LatLngBounds();
+    this.markers.forEach((marker) => {
+      bounds.extend(marker.position);
+    });
+
+    this.map.fitBounds(bounds);
+  }
+
   setZoom(newZoom) {
     this.map.setZoom(newZoom);
   }

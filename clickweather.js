@@ -77,6 +77,7 @@ function updateLinkURL() {
   console.log(getAllToggleChildren());
 }
 
+/*
 function createFullMountainSuitePlots(locationObject, weatherStations) {
   var attributes = {};
 
@@ -133,6 +134,7 @@ function createFullMountainSuitePlots(locationObject, weatherStations) {
     createChartObject(weatherStations, locationObject.locationName, attributes)
   );
 }
+  */
 
 // This function is a callback from inside displayWeatherData2
 // When the data is returend from the weather stations, this updates
@@ -440,7 +442,9 @@ function clickWeatherClickListener(
     setTabProperties(idx, stationText, stationImage, stationId);
   }
 
-  createFullMountainSuitePlots(locationObject, weatherStations);
+  // createFullMountainSuitePlots(locationObject, weatherStations);
+
+  myClickWeatherManager.createFullMountainSuitePlots();
 
   // Update the URL for the image element
   updateWeatherPlot(locationObject);
@@ -452,7 +456,7 @@ function clickWeatherClickListener(
     "Historical Charts"
   );
 
-  for (const chartObject of locationObject.chartObjects) {
+  for (const chartObject of myClickWeatherManager.getDefinedCharts()) {
     newHeading = document.createElement("h2");
     newHeading.textContent = chartObject.title;
 
@@ -464,15 +468,17 @@ function clickWeatherClickListener(
 
     contentElement.appendChild(newCanvas);
 
+    console.log(chartObject);
+
     const radiusInfo = {};
     radiusInfo.lat = locationObject.lat;
     radiusInfo.lon = locationObject.lon;
-    radiusInfo.radius = 20;
-    radiusInfo.limit = 5;
+    radiusInfo.radius = chartObject.radiusMiles;
+    radiusInfo.limit = chartObject.radiusStations;
     var returnedStations;
 
     returnedStations = displayWeatherData2(
-      chartObject.weatherStations,
+      weatherStations,
       chartObject.divName,
       chartObject.numHours,
       chartObject.dataType,

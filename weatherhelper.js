@@ -14,31 +14,6 @@ const CHART_TYPE_READABLE = {
 
 const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
 
-function createChartObject(weatherStations, locationTitle, attributes) {
-  console.log("My Title: " + attributes.title);
-  return (tempChartObject = {
-    weatherStations: weatherStations,
-    title:
-      locationTitle +
-      " " +
-      attributes.title +
-      " - " +
-      attributes.days +
-      " Day" +
-      addS(attributes.days),
-    divName:
-      divify(locationTitle) +
-      "-" +
-      attributes.title.substring(0, 4) +
-      "-" +
-      attributes.days +
-      "dy",
-    numHours: 24 * attributes.days,
-    offset: attributes.offset,
-    dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above
-  });
-}
-
 function updateWeatherPlot(
   locationObject,
   offsetHours = 0,

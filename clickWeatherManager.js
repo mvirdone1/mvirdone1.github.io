@@ -367,48 +367,41 @@ class clickWeatherManager {
     return stationChangeResults;
   }
 
-  createFullMountainSuitePlots(locationObject, weatherStations) {
+  createFullMountainSuitePlots() {
     var attributes = {};
+
+    const defaultRadiusMi = 20;
+    const defaultRadiusStations = 5;
 
     // Plot 3 day snow change
     attributes.title = "Snow Change";
     attributes.days = 3;
     attributes.offset = true;
     attributes.chartType = CHART_TYPES.snowDepth;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
 
-    locationObject.chartObjects.push(
-      createChartObject(
-        weatherStations,
-        locationObject.locationName,
-        attributes
-      )
-    );
+    this.definedCharts.push(this.createChartObject(attributes));
 
     // Plot 2 day temp
     attributes.title = "Temperature";
     attributes.days = 2;
     attributes.offset = false;
     attributes.chartType = CHART_TYPES.temperature;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
 
-    locationObject.chartObjects.push(
-      createChartObject(
-        weatherStations,
-        locationObject.locationName,
-        attributes
-      )
-    );
+    this.definedCharts.push(this.createChartObject(attributes));
 
     // Plot 2 day wind
     attributes.title = "Wind Speed";
+    attributes.days = 2;
+    attributes.offset = false;
     attributes.chartType = CHART_TYPES.windSpeed;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
 
-    locationObject.chartObjects.push(
-      createChartObject(
-        weatherStations,
-        locationObject.locationName,
-        attributes
-      )
-    );
+    this.definedCharts.push(this.createChartObject(attributes));
 
     // Plot 5 day total snow
     if (!removeAbsoluteSnow) {
@@ -416,27 +409,48 @@ class clickWeatherManager {
       attributes.days = 5;
       attributes.offset = false;
       attributes.chartType = CHART_TYPES.snowDepth;
+      attributes.radiusMiles = defaultRadiusMi;
+      attributes.radiusStations = defaultRadiusStations;
 
-      locationObject.chartObjects.push(
-        createChartObject(
-          weatherStations,
-          locationObject.locationName,
-          attributes
-        )
-      );
+      this.definedCharts.push(this.createChartObject(attributes));
     }
 
     attributes.title = "SWE";
     attributes.days = 3;
     attributes.offset = false;
     attributes.chartType = CHART_TYPES.SWE;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
+    this.definedCharts.push(this.createChartObject(attributes));
+  }
 
-    locationObject.chartObjects.push(
-      createChartObject(
-        weatherStations,
-        locationObject.locationName,
-        attributes
-      )
-    );
+  getDefinedCharts() {
+    return this.definedCharts;
+  }
+
+  createChartObject(attributes) {
+    const fullTitle =
+      attributes.title +
+      " - " +
+      attributes.days +
+      " Day" +
+      addS(attributes.days);
+
+    console.log("My Title: " + fullTitle);
+    const tempChartObject = {
+      title: fullTitle,
+      divName:
+        "weather-chart-" +
+        attributes.title.substring(0, 4) +
+        "-" +
+        attributes.days +
+        "dy",
+      numHours: 24 * attributes.days,
+      offset: attributes.offset,
+      dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above
+      radiusMiles: attributes.radiusMiles,
+      radiusStations: attributes.radiusStations,
+    };
+    return tempChartObject;
   }
 }

@@ -382,7 +382,7 @@ function clickWeatherClickListener(
 
   // Clear the list of weather stations
   // myClickWeatherManager.setAllStations([]);
-  myClickWeatherManager.resetPersistentData();
+  myClickWeatherManager.resetReturnedDataAndStations();
 
   const numDecimals = 4;
   const roundFactor = 10 ** numDecimals;
@@ -464,7 +464,7 @@ function clickWeatherClickListener(
 
     contentElement.appendChild(newCanvas);
 
-    var radiusInfo = {};
+    const radiusInfo = {};
     radiusInfo.lat = locationObject.lat;
     radiusInfo.lon = locationObject.lon;
     radiusInfo.radius = 20;

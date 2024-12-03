@@ -18,28 +18,29 @@ class clickWeatherManager {
   constructor() {
     if (clickWeatherManager.instance) return clickWeatherManager.instance;
     // Returned data variables
-    this.allStations = [];
-    this.allData = {};
+    this.allReturnedStations = [];
+    this.allReturnedData = {};
 
     // Variables for creating different chart types
     this.locationAttributes = {};
-    this.allCharts = [];
+    this.definedCharts = [];
+    this.definedStations = [];
 
     // this.stationDataTemplate = [];
     clickWeatherManager.instance = this;
   }
 
-  resetPersistentData() {
-    this.allStations = [];
-    this.allData = {};
+  resetReturnedDataAndStations() {
+    this.allReturnedStations = [];
+    this.allReturnedData = {};
   }
 
   setAllStations(newAllStations) {
-    this.allStations = newAllStations;
+    this.allReturnedStations = newAllStations;
   }
 
   addStationData(currentDataSet) {
-    var stationArrayIndex = this.allStations.findIndex(
+    var stationArrayIndex = this.allReturnedStations.findIndex(
       (station) => station.stid === currentDataSet.station.stid
     );
     const currentStation = currentDataSet.station;
@@ -47,10 +48,10 @@ class clickWeatherManager {
     // If the station doesn't currently exist,
     // then we need to add it to the station list
     if (stationArrayIndex === -1) {
-      this.allStations.push(currentStation);
-      stationArrayIndex = this.allStations.length - 1;
+      this.allReturnedStations.push(currentStation);
+      stationArrayIndex = this.allReturnedStations.length - 1;
 
-      this.allData[stationArrayIndex] = {};
+      this.allReturnedData[stationArrayIndex] = {};
 
       /*
         station.lat = data.STATION[dataSetIdx].LATITUDE;
@@ -106,15 +107,15 @@ class clickWeatherManager {
     // if they don't initialize them for this station
     // Once that's done, populate the actual data array
 
-    if (!this.allData[stationArrayIndex][stationType]) {
-      this.allData[stationArrayIndex][stationType] = {};
+    if (!this.allReturnedData[stationArrayIndex][stationType]) {
+      this.allReturnedData[stationArrayIndex][stationType] = {};
     }
 
-    if (!this.allData[stationArrayIndex][stationType][offsetIndex]) {
-      this.allData[stationArrayIndex][stationType][offsetIndex] = [];
+    if (!this.allReturnedData[stationArrayIndex][stationType][offsetIndex]) {
+      this.allReturnedData[stationArrayIndex][stationType][offsetIndex] = [];
     }
 
-    this.allData[stationArrayIndex][stationType][offsetIndex] =
+    this.allReturnedData[stationArrayIndex][stationType][offsetIndex] =
       currentDataSet.data;
   }
 
@@ -123,11 +124,14 @@ class clickWeatherManager {
 
     // console.log(this.allStations);
 
-    this.allStations.forEach((thisStation, thisIndex) => {
+    this.allReturnedStations.forEach((thisStation, thisIndex) => {
       // console.log("In the loop");
       // console.log(this.allData[thisIndex]);
-      if (stationType in this.allData[thisIndex]) {
-        if (String(DATA_TYPES.absolute) in this.allData[thisIndex][stationType])
+      if (stationType in this.allReturnedData[thisIndex]) {
+        if (
+          String(DATA_TYPES.absolute) in
+          this.allReturnedData[thisIndex][stationType]
+        )
           goodStationIdx.push(thisIndex);
       }
     });
@@ -137,7 +141,7 @@ class clickWeatherManager {
 
   getAbsoluteDataTypes() {
     // This gets the unique keys at the 2nd level where the 3rd level has a key of '0'
-    const items = Object.values(this.allData);
+    const items = Object.values(this.allReturnedData);
 
     const keys = items
       .map((obj) => {
@@ -156,19 +160,20 @@ class clickWeatherManager {
     // console.log(this.allData);
 
     // If the station type doesn't exist, return a blank cell
-    if (stationType in this.allData[stationIndex] == false) {
+    if (stationType in this.allReturnedData[stationIndex] == false) {
       return "<td>&nbsp</td>";
     }
 
     // If the absolute data type (0) doesn't exist, return a blank cell
     if (
-      String(DATA_TYPES.absolute) in this.allData[stationIndex][stationType] ==
+      String(DATA_TYPES.absolute) in
+        this.allReturnedData[stationIndex][stationType] ==
       false
     ) {
       return "<td>&nbsp</td>";
     }
 
-    const dataSource = this.allData[stationIndex][stationType][0];
+    const dataSource = this.allReturnedData[stationIndex][stationType][0];
 
     const lastDataIndex = dataSource.length - 1;
 
@@ -191,17 +196,19 @@ class clickWeatherManager {
 
   prepareLegendTable(mapCenter) {
     // Calculate distances and add original index to each station
-    const stationsWithDistance = this.allStations.map((station, index) => {
-      const distance = calculateLatLonDistance(
-        station.lat,
-        station.lon,
-        mapCenter.lat,
-        mapCenter.lon
-      );
+    const stationsWithDistance = this.allReturnedStations.map(
+      (station, index) => {
+        const distance = calculateLatLonDistance(
+          station.lat,
+          station.lon,
+          mapCenter.lat,
+          mapCenter.lon
+        );
 
-      var distance_mi = distance.miles.toFixed(1);
-      return { ...station, distance_mi, originalIndex: index };
-    });
+        var distance_mi = distance.miles.toFixed(1);
+        return { ...station, distance_mi, originalIndex: index };
+      }
+    );
 
     // Sort stations based on distance
     stationsWithDistance.sort((a, b) => a.distance_mi - b.distance_mi);
@@ -220,7 +227,7 @@ class clickWeatherManager {
       // "Wind (mph)",
     ];
 
-    let availableStationTypes = this.getAbsoluteDataTypes(this.allData);
+    let availableStationTypes = this.getAbsoluteDataTypes(this.allReturnedData);
 
     // Append the specific headings for the data that is present
     availableStationTypes.forEach((stationType) => {
@@ -274,7 +281,8 @@ class clickWeatherManager {
 
     const dataType = 0;
 
-    const thisStationData = this.allData[stationIdx][stationType][dataType];
+    const thisStationData =
+      this.allReturnedData[stationIdx][stationType][dataType];
 
     const lastDataIdx = thisStationData.length - 1;
 
@@ -316,7 +324,7 @@ class clickWeatherManager {
       }
     }
 
-    const thisStation = this.allStations[stationIdx];
+    const thisStation = this.allReturnedStations[stationIdx];
 
     const results = {
       name: thisStation.name,
@@ -357,5 +365,78 @@ class clickWeatherManager {
     */
 
     return stationChangeResults;
+  }
+
+  createFullMountainSuitePlots(locationObject, weatherStations) {
+    var attributes = {};
+
+    // Plot 3 day snow change
+    attributes.title = "Snow Change";
+    attributes.days = 3;
+    attributes.offset = true;
+    attributes.chartType = CHART_TYPES.snowDepth;
+
+    locationObject.chartObjects.push(
+      createChartObject(
+        weatherStations,
+        locationObject.locationName,
+        attributes
+      )
+    );
+
+    // Plot 2 day temp
+    attributes.title = "Temperature";
+    attributes.days = 2;
+    attributes.offset = false;
+    attributes.chartType = CHART_TYPES.temperature;
+
+    locationObject.chartObjects.push(
+      createChartObject(
+        weatherStations,
+        locationObject.locationName,
+        attributes
+      )
+    );
+
+    // Plot 2 day wind
+    attributes.title = "Wind Speed";
+    attributes.chartType = CHART_TYPES.windSpeed;
+
+    locationObject.chartObjects.push(
+      createChartObject(
+        weatherStations,
+        locationObject.locationName,
+        attributes
+      )
+    );
+
+    // Plot 5 day total snow
+    if (!removeAbsoluteSnow) {
+      attributes.title = "Total Snow";
+      attributes.days = 5;
+      attributes.offset = false;
+      attributes.chartType = CHART_TYPES.snowDepth;
+
+      locationObject.chartObjects.push(
+        createChartObject(
+          weatherStations,
+          locationObject.locationName,
+          attributes
+        )
+      );
+    }
+
+    attributes.title = "SWE";
+    attributes.days = 3;
+    attributes.offset = false;
+    attributes.chartType = CHART_TYPES.SWE;
+
+    locationObject.chartObjects.push(
+      createChartObject(
+        weatherStations,
+        locationObject.locationName,
+        attributes
+      )
+    );
   }
 }

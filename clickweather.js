@@ -1,7 +1,7 @@
 // Debug variables
 const removeAbsoluteSnow = false;
 
-// const globalStationData = new persistentDataModule();
+// const myClickWeatherManager = new persistentDataModule();
 
 const clickWeatherColors = [
   [230, 25, 75], // Red
@@ -138,12 +138,12 @@ function postAPIDataCallback(dataSets) {
   // already has this station id for a different measurement,
   // If found, put the station in at the same index
   dataSets.forEach((currentDataSet) => {
-    globalStationData.addStationData(currentDataSet);
+    myClickWeatherManager.addStationData(currentDataSet);
   });
 
   updateLegendTable();
   myMapManager.setZoomOnMarkerBounds();
-  // globalStationData.getChangeInData(chartTypes.snowDepth, 2 * 24);
+  // myClickWeatherManager.getChangeInData(chartTypes.snowDepth, 2 * 24);
 
   tabulateStationMeasurements();
 }
@@ -226,7 +226,7 @@ function tabulateStationMeasurements() {
   });
 
   tableParameters.forEach((currentTable) => {
-    let stationMeasurements = globalStationData.getChangeInData(
+    let stationMeasurements = myClickWeatherManager.getChangeInData(
       currentTable.type,
       currentTable.hours
     );
@@ -304,7 +304,7 @@ function updateLegendTable() {
     lon: parseFloat(document.getElementById("lon").value),
   };
 
-  let legendTableHTML = globalStationData.prepareLegendTable(mapCenter);
+  let legendTableHTML = myClickWeatherManager.prepareLegendTable(mapCenter);
 
   // I don't love how this is tied to me hard-coding the div id, but it'll have to do for now
   const legendElement = document.getElementById("hide-show-legend-child");
@@ -372,8 +372,8 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
   }
 
   // Clear the list of weather stations
-  // globalStationData.setAllStations([]);
-  globalStationData.resetPersistentData();
+  // myClickWeatherManager.setAllStations([]);
+  myClickWeatherManager.resetPersistentData();
 
   const numDecimals = 4;
   const roundFactor = 10 ** numDecimals;
@@ -523,8 +523,8 @@ function initMap() {
   // Make this instance of the map manager a global variable
   window.myMapManager = myMapManager;
 
-  const globalStationData = new persistentWeatherData();
-  window.globalStationData = globalStationData;
+  const globalClickWeatherManager = new clickWeatherManager();
+  window.myClickWeatherManager = globalClickWeatherManager;
 
   myMapManager.setMapClickListener((position) => {
     // mapManager.addMarker(position, "");

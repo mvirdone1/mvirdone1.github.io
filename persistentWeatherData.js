@@ -14,14 +14,14 @@ const DATA_TYPES = {
   change: 1,
 };
 
-class persistentWeatherData {
+class clickWeatherManager {
   constructor() {
-    if (persistentWeatherData.instance) return persistentWeatherData.instance;
+    if (clickWeatherManager.instance) return clickWeatherManager.instance;
     this.allStations = [];
     this.allData = {};
 
     // this.stationDataTemplate = [];
-    persistentWeatherData.instance = this;
+    clickWeatherManager.instance = this;
   }
 
   resetPersistentData() {
@@ -219,7 +219,7 @@ class persistentWeatherData {
 
     // Append the specific headings for the data that is present
     availableStationTypes.forEach((stationType) => {
-      headings.push(chartHeadings[stationType]);
+      headings.push(CHART_HEADINGS[stationType]);
     });
 
     // Iterate over the headings and print each one
@@ -240,7 +240,7 @@ class persistentWeatherData {
       legendTableHTML += `<td>${station.elevation}</td>`;
 
       availableStationTypes.forEach((stationType) => {
-        legendTableHTML += globalStationData.getLatestStationData(
+        legendTableHTML += this.getLatestStationData(
           station.originalIndex,
           stationType
         );

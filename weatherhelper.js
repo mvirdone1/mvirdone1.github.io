@@ -5,7 +5,14 @@ const CHART_TYPES = {
   SWE: 3,
 };
 
-const chartHeadings = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
+const CHART_TYPE_READABLE = {
+  0: "Temperature",
+  1: "Snow Depth",
+  2: "Wind Speed",
+  3: "Snow Water Eqivalent",
+};
+
+const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
 
 function createChartObject(charts, locationTitle, attributes) {
   console.log("My Title: " + attributes.title);

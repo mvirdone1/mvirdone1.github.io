@@ -14,10 +14,10 @@ const CHART_TYPE_READABLE = {
 
 const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
 
-function createChartObject(charts, locationTitle, attributes) {
+function createChartObject(weatherStations, locationTitle, attributes) {
   console.log("My Title: " + attributes.title);
   return (tempChartObject = {
-    charts: charts,
+    weatherStations: weatherStations,
     title:
       locationTitle +
       " " +

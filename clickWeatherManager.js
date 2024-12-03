@@ -17,8 +17,13 @@ const DATA_TYPES = {
 class clickWeatherManager {
   constructor() {
     if (clickWeatherManager.instance) return clickWeatherManager.instance;
+    // Returned data variables
     this.allStations = [];
     this.allData = {};
+
+    // Variables for creating different chart types
+    this.locationAttributes = {};
+    this.allCharts = [];
 
     // this.stationDataTemplate = [];
     clickWeatherManager.instance = this;

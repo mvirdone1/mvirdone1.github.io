@@ -77,7 +77,7 @@ function updateLinkURL() {
   console.log(getAllToggleChildren());
 }
 
-function createFullMountainSuitePlots(locationObject, charts) {
+function createFullMountainSuitePlots(locationObject, weatherStations) {
   var attributes = {};
 
   // Plot 3 day snow change
@@ -87,7 +87,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.chartType = CHART_TYPES.snowDepth;
 
   locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
+    createChartObject(weatherStations, locationObject.locationName, attributes)
   );
 
   // Plot 2 day temp
@@ -97,7 +97,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.chartType = CHART_TYPES.temperature;
 
   locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
+    createChartObject(weatherStations, locationObject.locationName, attributes)
   );
 
   // Plot 2 day wind
@@ -105,7 +105,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.chartType = CHART_TYPES.windSpeed;
 
   locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
+    createChartObject(weatherStations, locationObject.locationName, attributes)
   );
 
   // Plot 5 day total snow
@@ -116,7 +116,11 @@ function createFullMountainSuitePlots(locationObject, charts) {
     attributes.chartType = CHART_TYPES.snowDepth;
 
     locationObject.chartObjects.push(
-      createChartObject(charts, locationObject.locationName, attributes)
+      createChartObject(
+        weatherStations,
+        locationObject.locationName,
+        attributes
+      )
     );
   }
 
@@ -126,7 +130,7 @@ function createFullMountainSuitePlots(locationObject, charts) {
   attributes.chartType = CHART_TYPES.SWE;
 
   locationObject.chartObjects.push(
-    createChartObject(charts, locationObject.locationName, attributes)
+    createChartObject(weatherStations, locationObject.locationName, attributes)
   );
 }
 
@@ -347,10 +351,15 @@ function updateLocationFromBrowser(position) {
 // Fortunately I hadn't removed the ability to handle a list of "charts" but really this array of charts
 // is actually a list of weather station IDs. The only place the charts list gets set is in the parseURL()
 // function. This is also the only place that I set the argument to this function.
+// 12/2/24 - Renamed "charts" to "weatherStations"
 //
 // Way-way down in the function calls in displayWeatherData2() does it finally make a decision on precidence
 // for using the chart list over the lat/lon/radius configuration
-function clickWeatherClickListener(position, realClick = true, charts = []) {
+function clickWeatherClickListener(
+  position,
+  realClick = true,
+  weatherStations = []
+) {
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
 
@@ -431,7 +440,7 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
     setTabProperties(idx, stationText, stationImage, stationId);
   }
 
-  createFullMountainSuitePlots(locationObject, charts);
+  createFullMountainSuitePlots(locationObject, weatherStations);
 
   // Update the URL for the image element
   updateWeatherPlot(locationObject);
@@ -463,7 +472,7 @@ function clickWeatherClickListener(position, realClick = true, charts = []) {
     var returnedStations;
 
     returnedStations = displayWeatherData2(
-      chartObject.charts,
+      chartObject.weatherStations,
       chartObject.divName,
       chartObject.numHours,
       chartObject.dataType,

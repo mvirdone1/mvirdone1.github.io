@@ -14,6 +14,28 @@ const DATA_TYPES = {
   change: 1,
 };
 
+const CHART_TYPES = {
+  temperature: 0,
+  snowDepth: 1,
+  windSpeed: 2,
+  SWE: 3,
+};
+
+const CHART_TYPE_READABLE = {
+  0: "Temperature",
+  1: "Snow Depth",
+  2: "Wind Speed",
+  3: "Snow Water Eqivalent",
+};
+
+const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
+
+const CHART_MODES = {
+  local: 0,
+  snow: 1,
+  custom: 2,
+};
+
 class clickWeatherManager {
   constructor() {
     if (clickWeatherManager.instance) return clickWeatherManager.instance;
@@ -367,6 +389,77 @@ class clickWeatherManager {
     return stationChangeResults;
   }
 
+  createCustomCharts(chartString) {
+    const chartStringList = chartString?.split("|") || [chartString];
+
+    chartStringList.forEach((chartString) => {
+      const chartAttributeArray = chartString.split(",");
+      if (chartAttributeArray.length != 6) {
+        alert(
+          "Incorrectly formatted chart string, each station must have 6 attributes comma separated"
+        );
+        return 0;
+      }
+
+      let attributes = {};
+
+      attributes.title = decodeURIComponent(chartAttributeArray[0]);
+      attributes.days = parseFloat(chartAttributeArray[1]).toFixed(0);
+      attributes.offset = false;
+      if ((chartAttributeArray[2] = "1")) {
+        attributes.offset = false;
+      }
+
+      // Create a default value, and allow it to be overriden with a valid parsed value
+      attributes.chartType = CHART_TYPES.temperature;
+      var parsedChartType = parseFloat(chartAttributeArray[3]).toFixed(0);
+      // See if the parsed chart type is in the list of valid chart types
+      if (Object.values(CHART_TYPES).includes(parsedChartType)) {
+        attributes.chartType = parsedChartType;
+      }
+
+      attributes.radiusMiles = parseFloat(chartAttributeArray[4]).toFixed(0);
+      attributes.radiusStations = parseFloat(chartAttributeArray[5]).toFixed(0);
+      this.definedCharts.push(this.createChartObject(attributes));
+    });
+  }
+
+  createLocalPlots() {
+    var attributes = {};
+
+    const defaultRadiusMi = 10;
+    const defaultRadiusStations = 5;
+
+    // 2 day snow change
+    attributes.title = "Snow Change";
+    attributes.days = 2;
+    attributes.offset = true;
+    attributes.chartType = CHART_TYPES.snowDepth;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
+
+    this.definedCharts.push(this.createChartObject(attributes));
+
+    // Plot 2 day temp
+    attributes.title = "Temperature";
+    attributes.days = 2;
+    attributes.offset = false;
+    attributes.chartType = CHART_TYPES.temperature;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
+
+    this.definedCharts.push(this.createChartObject(attributes));
+
+    // Plot 2 day wind
+    attributes.title = "Wind Speed";
+    attributes.days = 2;
+    attributes.offset = false;
+    attributes.chartType = CHART_TYPES.windSpeed;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
+
+    this.definedCharts.push(this.createChartObject(attributes));
+  }
   createFullMountainSuitePlots() {
     var attributes = {};
 
@@ -403,17 +496,14 @@ class clickWeatherManager {
 
     this.definedCharts.push(this.createChartObject(attributes));
 
-    // Plot 5 day total snow
-    if (!removeAbsoluteSnow) {
-      attributes.title = "Total Snow";
-      attributes.days = 5;
-      attributes.offset = false;
-      attributes.chartType = CHART_TYPES.snowDepth;
-      attributes.radiusMiles = defaultRadiusMi;
-      attributes.radiusStations = defaultRadiusStations;
+    attributes.title = "Total Snow";
+    attributes.days = 5;
+    attributes.offset = false;
+    attributes.chartType = CHART_TYPES.snowDepth;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
 
-      this.definedCharts.push(this.createChartObject(attributes));
-    }
+    this.definedCharts.push(this.createChartObject(attributes));
 
     attributes.title = "SWE";
     attributes.days = 3;

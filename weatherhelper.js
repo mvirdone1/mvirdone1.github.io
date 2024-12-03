@@ -1,19 +1,3 @@
-const CHART_TYPES = {
-  temperature: 0,
-  snowDepth: 1,
-  windSpeed: 2,
-  SWE: 3,
-};
-
-const CHART_TYPE_READABLE = {
-  0: "Temperature",
-  1: "Snow Depth",
-  2: "Wind Speed",
-  3: "Snow Water Eqivalent",
-};
-
-const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
-
 function updateWeatherPlot(
   locationObject,
   offsetHours = 0,

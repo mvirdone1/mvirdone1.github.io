@@ -49,6 +49,33 @@ function parseURL() {
   const stations = urlParams.get("stations")?.split(",") || [];
   console.log(stations);
 
+  switch (urlParams.get("chartMode")) {
+    case "local":
+      myClickWeatherManager.createLocalPlots();
+      break;
+
+    // If it's the custom type, make sure the custom data exists
+    case "custom":
+      // 12/2 - Tested a very basic case
+      // chartMode=custom&customCharts=Hi,1,1,1,1,1
+      if (urlParams.has("customCharts")) {
+        myClickWeatherManager.createCustomCharts(urlParams.get("customCharts"));
+      } else {
+        alert(
+          "Custom chart type selected, but customCharts parameter not set. Using snow charts"
+        );
+        myClickWeatherManager.createFullMountainSuitePlots();
+      }
+      break;
+
+    case "snow":
+    default:
+      myClickWeatherManager.createFullMountainSuitePlots();
+      break;
+  }
+
+  console.log("Charts: " + urlParams?.get("charts") || "No Charts");
+
   clickWeatherClickListener(position, false, stations);
 }
 
@@ -76,65 +103,6 @@ function updateLinkURL() {
   console.log("Update Link URL");
   console.log(getAllToggleChildren());
 }
-
-/*
-function createFullMountainSuitePlots(locationObject, weatherStations) {
-  var attributes = {};
-
-  // Plot 3 day snow change
-  attributes.title = "Snow Change";
-  attributes.days = 3;
-  attributes.offset = true;
-  attributes.chartType = CHART_TYPES.snowDepth;
-
-  locationObject.chartObjects.push(
-    createChartObject(weatherStations, locationObject.locationName, attributes)
-  );
-
-  // Plot 2 day temp
-  attributes.title = "Temperature";
-  attributes.days = 2;
-  attributes.offset = false;
-  attributes.chartType = CHART_TYPES.temperature;
-
-  locationObject.chartObjects.push(
-    createChartObject(weatherStations, locationObject.locationName, attributes)
-  );
-
-  // Plot 2 day wind
-  attributes.title = "Wind Speed";
-  attributes.chartType = CHART_TYPES.windSpeed;
-
-  locationObject.chartObjects.push(
-    createChartObject(weatherStations, locationObject.locationName, attributes)
-  );
-
-  // Plot 5 day total snow
-  if (!removeAbsoluteSnow) {
-    attributes.title = "Total Snow";
-    attributes.days = 5;
-    attributes.offset = false;
-    attributes.chartType = CHART_TYPES.snowDepth;
-
-    locationObject.chartObjects.push(
-      createChartObject(
-        weatherStations,
-        locationObject.locationName,
-        attributes
-      )
-    );
-  }
-
-  attributes.title = "SWE";
-  attributes.days = 3;
-  attributes.offset = false;
-  attributes.chartType = CHART_TYPES.SWE;
-
-  locationObject.chartObjects.push(
-    createChartObject(weatherStations, locationObject.locationName, attributes)
-  );
-}
-  */
 
 // This function is a callback from inside displayWeatherData2
 // When the data is returend from the weather stations, this updates
@@ -444,7 +412,7 @@ function clickWeatherClickListener(
 
   // createFullMountainSuitePlots(locationObject, weatherStations);
 
-  myClickWeatherManager.createFullMountainSuitePlots();
+  // myClickWeatherManager.createFullMountainSuitePlots();
 
   // Update the URL for the image element
   updateWeatherPlot(locationObject);

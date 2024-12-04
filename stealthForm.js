@@ -1,5 +1,12 @@
+// The callback function must take this instance as the first argument, and then any optional arguments as the second argument
+
 class stealthForm {
-  constructor(parentElement, formButtonTitle) {
+  constructor(
+    parentElement,
+    formButtonTitle,
+    callbackFunction,
+    callbackArguments
+  ) {
     this.stealthFormDivId = divify(parentElement.id) + "-stealth-form";
     // this.stationDataTemplate = [];
     stealthForm.instance = this;
@@ -17,8 +24,9 @@ class stealthForm {
     const stealthFormDivContainerId = this.getStealthFormContainerId();
 
     // Add event listener to dynamically create the form when the button is clicked
-    addChartButton.addEventListener("click", function () {
+    addChartButton.addEventListener("click", () => {
       formContainer.style.display = "block";
+      callbackFunction(this, callbackArguments);
     });
 
     // Create container for the form
@@ -66,21 +74,6 @@ class stealthForm {
     document
       .getElementById(stealthFormDivContainerId)
       .appendChild(customButton);
-  }
-
-  addCustomButton2(buttonTitle, customButtonCallback) {
-    const customButtonId = this.stealthFormDivId + "-" + divify(buttonTitle);
-    const stealthFormDivContainerId = this.getStealthFormContainerId();
-
-    document.getElementById(
-      stealthFormDivContainerId
-    ).innerHTML += ` <button id="${customButtonId}">${buttonTitle}</button>`;
-
-    document
-      .getElementById(customButtonId)
-      .addEventListener("click", function () {
-        customButtonCallback(this);
-      });
   }
 
   getStealthFormContentId() {

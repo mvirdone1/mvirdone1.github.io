@@ -316,6 +316,71 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
+function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
+  const formContentDiv = document.getElementById(
+    stealthFormInstance.getStealthFormContentId()
+  );
+
+  // Reference to the chart form list container
+  // const chartsFormList = document.getElementById("charts-form-list");
+
+  // Function to create a new chart row
+  function addChartRow() {
+    const chartRow = document.createElement("div");
+    chartRow.classList.add("chart-row");
+    chartRow.style.border = "1px dashed #aaa";
+    chartRow.style.padding = "5px";
+    chartRow.style.marginBottom = "5px";
+
+    chartRow.innerHTML = `
+      <label>Title: <input type="text" class="chart-title" required></label><br>
+      <label>Days: <input type="number" class="chart-days" required></label><br>
+      <fieldset>
+        <legend>Offset:</legend>
+        <label>
+          <input type="radio" name="offset-${Date.now()}" value="false" checked>
+          Absolute Value
+        </label>
+        <label>
+          <input type="radio" name="offset-${Date.now()}" value="true">
+          Change in Value
+        </label>
+      </fieldset>
+      <label>Chart Type: 
+        <select class="chart-type">
+          ${Object.keys(CHART_TYPES)
+            .map(
+              (key) =>
+                `<option value="${CHART_TYPES[key]}">${
+                  CHART_TYPE_READABLE[CHART_TYPES[key]]
+                }</option>`
+            )
+            .join("")}
+        </select>
+      </label>
+      <button type="button" class="remove-chart-row">Remove</button>
+    `;
+
+    formContentDiv.appendChild(chartRow);
+
+    // Add event listener to remove row button
+    chartRow
+      .querySelector(".remove-chart-row")
+      .addEventListener("click", function () {
+        chartRow.remove();
+      });
+  }
+
+  // var divHTML = "<ol>\n";
+  clickWeatherManagerInstance.getDefinedCharts().forEach((currentChart) => {
+    addChartRow();
+    // divHTML += "<li>" + currentChart.title + "</li>\n";
+  });
+
+  // divHTML += "</ol>\n";
+  // formContentDiv.innerHTML = divHTML;
+}
+
 function stealthFormAddChartCallback(stealthFormInstance) {
   console.log("Add Chart Click");
   console.log(stealthFormInstance);
@@ -444,11 +509,27 @@ function clickWeatherClickListener(
   // Code for the hideable form/menu for managing charts
   //***********************************/
 
-  const chartStealthForm = new stealthForm(contentElement, "Manage Charts");
+  const chartStealthFormInstance = new stealthForm(
+    contentElement,
+    "Manage Charts",
+    updateChartFormList,
+    myClickWeatherManager
+  );
 
-  chartStealthForm.addCustomButton("Submit", stealthFormSubmitChartCallback);
-  chartStealthForm.addCustomButton("Cancel", stealthFormCancelChartCallback);
-  chartStealthForm.addCustomButton("Add Chart", stealthFormAddChartCallback);
+  chartStealthFormInstance.addCustomButton(
+    "Submit",
+    stealthFormSubmitChartCallback
+  );
+  chartStealthFormInstance.addCustomButton(
+    "Cancel",
+    stealthFormCancelChartCallback
+  );
+  chartStealthFormInstance.addCustomButton(
+    "Add Chart",
+    stealthFormAddChartCallback
+  );
+
+  // updateChartFormList(chartStealthFormInstance, myClickWeatherManager)
 
   //***********************************/
   // Create the charts themselves

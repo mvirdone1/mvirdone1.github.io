@@ -316,6 +316,11 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
+function addChartClickWeatherCallback(stealthFormInstance) {
+  console.log(stealthFormInstance);
+  alert(stealthFormInstance.getStealthFormDivId());
+}
+
 // 11/25/24 - Updating this function to somewhat revert to allow adding a list of named stations.
 //
 // Fortunately I hadn't removed the ability to handle a list of "charts" but really this array of charts
@@ -423,6 +428,14 @@ function clickWeatherClickListener(
     "dynamic-div",
     "Historical Charts"
   );
+
+  const chartStealthForm = new stealthForm(
+    contentElement,
+    "Manage Charts",
+    alert
+  );
+
+  chartStealthForm.addCustomButton("Add Chart", addChartClickWeatherCallback);
 
   for (const chartObject of myClickWeatherManager.getDefinedCharts()) {
     newHeading = document.createElement("h2");

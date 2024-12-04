@@ -392,6 +392,8 @@ class clickWeatherManager {
   createCustomCharts(chartString) {
     const chartStringList = chartString?.split("|") || [chartString];
 
+    console.log(chartStringList);
+
     chartStringList.forEach((chartString) => {
       const chartAttributeArray = chartString.split(",");
       if (chartAttributeArray.length != 6) {
@@ -401,12 +403,14 @@ class clickWeatherManager {
         return 0;
       }
 
+      console.log(chartAttributeArray);
+
       let attributes = {};
 
       attributes.title = decodeURIComponent(chartAttributeArray[0]);
       attributes.days = parseFloat(chartAttributeArray[1]).toFixed(0);
       attributes.offset = false;
-      if ((chartAttributeArray[2] = "1")) {
+      if (parseFloat(chartAttributeArray[2]).toFixed(0) == 1) {
         attributes.offset = false;
       }
 
@@ -521,6 +525,8 @@ class clickWeatherManager {
   createChartObject(attributes) {
     const fullTitle =
       attributes.title +
+      " - " +
+      CHART_TYPE_READABLE[attributes.chartType] +
       " - " +
       attributes.days +
       " Day" +

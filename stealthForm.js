@@ -1,5 +1,5 @@
 class stealthForm {
-  constructor(parentElement, formButtonTitle, submitButtonCallback) {
+  constructor(parentElement, formButtonTitle) {
     this.stealthFormDivId = divify(parentElement.id) + "-stealth-form";
     // this.stationDataTemplate = [];
     stealthForm.instance = this;
@@ -14,7 +14,7 @@ class stealthForm {
     formParentContainer.id = this.stealthFormDivId;
     parentElement.appendChild(formParentContainer);
 
-    const stealthFormDivContainerId = this.stealthFormDivId + "-container";
+    const stealthFormDivContainerId = this.getStealthFormContainerId();
 
     // Add event listener to dynamically create the form when the button is clicked
     addChartButton.addEventListener("click", function () {
@@ -24,7 +24,7 @@ class stealthForm {
     // Create container for the form
     const formContainer = document.createElement("div");
     formContainer.id = stealthFormDivContainerId;
-    // formContainer.style.display = "none";
+    formContainer.style.display = "none";
 
     formContainer.style.border = "1px solid #ccc";
     formContainer.style.padding = "10px";
@@ -35,38 +35,42 @@ class stealthForm {
     const cancelButtonId = this.stealthFormDivId + "-cancel";
 
     // Add initial form HTML
-    formContainer.innerHTML = `
-    <h3>Dashboard Charts</h3>
-    <div id="charts-form-list"></div>
-    <button id="${submitButtonId}">Submit</button>
-    <button id="${cancelButtonId}">Cancel</button>
-  `;
+    formContainer.innerHTML = "    <h3>Dashboard Charts</h3>";
 
-    // Append to parent div
     formParentContainer.appendChild(formContainer);
 
-    // Create the submit button
-    document
-      .getElementById(submitButtonId)
-      .addEventListener("click", function () {
-        submitButtonCallback("Hello");
-        // formContainer.remove();
-        formContainer.style.display = "none";
-      });
+    const formContent = document.createElement("div");
+    formContent.id = this.getStealthFormContentId();
+    formContainer.appendChild(formContent);
+  }
 
-    // Event listener for cancel button
-    document
-      .getElementById(cancelButtonId)
-      .addEventListener("click", function () {
-        // formContainer.remove();
-        console.log("Clicked Cancel");
-        formContainer.style.display = "none";
-      });
+  hideForm() {
+    const stealthFormDivContainerId = this.stealthFormDivId + "-container";
+    document.getElementById(stealthFormDivContainerId).style.display = "none";
+  }
+  showForm() {
+    const stealthFormDivContainerId = this.stealthFormDivId + "-container";
+    document.getElementById(stealthFormDivContainerId).style.display = "block";
   }
 
   addCustomButton(buttonTitle, customButtonCallback) {
+    const customButton = document.createElement("button");
+    customButton.id = this.stealthFormDivId + "-" + divify(buttonTitle);
+    customButton.textContent = buttonTitle;
+    customButton.style.marginRight = "10px";
+    customButton.addEventListener("click", () => {
+      customButtonCallback(this);
+    });
+
+    const stealthFormDivContainerId = this.getStealthFormContainerId();
+    document
+      .getElementById(stealthFormDivContainerId)
+      .appendChild(customButton);
+  }
+
+  addCustomButton2(buttonTitle, customButtonCallback) {
     const customButtonId = this.stealthFormDivId + "-" + divify(buttonTitle);
-    const stealthFormDivContainerId = this.stealthFormDivId + "-container";
+    const stealthFormDivContainerId = this.getStealthFormContainerId();
 
     document.getElementById(
       stealthFormDivContainerId
@@ -75,8 +79,16 @@ class stealthForm {
     document
       .getElementById(customButtonId)
       .addEventListener("click", function () {
-        customButtonCallback(stealthForm.instance);
+        customButtonCallback(this);
       });
+  }
+
+  getStealthFormContentId() {
+    return this.stealthFormDivId + "-content";
+  }
+
+  getStealthFormContainerId() {
+    return this.stealthFormDivId + "-container";
   }
 
   getStealthFormDivId() {

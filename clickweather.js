@@ -316,9 +316,20 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
-function addChartClickWeatherCallback(stealthFormInstance) {
+function stealthFormAddChartCallback(stealthFormInstance) {
+  console.log("Add Chart Click");
   console.log(stealthFormInstance);
   alert(stealthFormInstance.getStealthFormDivId());
+}
+
+function stealthFormCancelChartCallback(stealthFormInstance) {
+  console.log("Cancelled");
+  stealthFormInstance.hideForm();
+}
+
+function stealthFormSubmitChartCallback(stealthFormInstance) {
+  console.log("Submitted");
+  stealthFormInstance.hideForm();
 }
 
 // 11/25/24 - Updating this function to somewhat revert to allow adding a list of named stations.
@@ -429,14 +440,19 @@ function clickWeatherClickListener(
     "Historical Charts"
   );
 
-  const chartStealthForm = new stealthForm(
-    contentElement,
-    "Manage Charts",
-    alert
-  );
+  //***********************************/
+  // Code for the hideable form/menu for managing charts
+  //***********************************/
 
-  chartStealthForm.addCustomButton("Add Chart", addChartClickWeatherCallback);
+  const chartStealthForm = new stealthForm(contentElement, "Manage Charts");
 
+  chartStealthForm.addCustomButton("Submit", stealthFormSubmitChartCallback);
+  chartStealthForm.addCustomButton("Cancel", stealthFormCancelChartCallback);
+  chartStealthForm.addCustomButton("Add Chart", stealthFormAddChartCallback);
+
+  //***********************************/
+  // Create the charts themselves
+  //***********************************/
   for (const chartObject of myClickWeatherManager.getDefinedCharts()) {
     newHeading = document.createElement("h2");
     newHeading.textContent = chartObject.title;

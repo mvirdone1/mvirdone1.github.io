@@ -4,6 +4,7 @@ class stealthForm {
   constructor(
     parentElement,
     formButtonTitle,
+    formHeadingTitle,
     callbackFunction,
     callbackArguments
   ) {
@@ -25,8 +26,14 @@ class stealthForm {
 
     // Add event listener to dynamically create the form when the button is clicked
     addChartButton.addEventListener("click", () => {
-      formContainer.style.display = "block";
-      callbackFunction(this, callbackArguments);
+      // Only add stuff to the form if it's not showing
+      if (formContainer.style.display != "block") {
+        // formContainer.innerHTML = "";
+        document.getElementById(this.getStealthFormContentId()).innerHTML = "";
+        callbackFunction(this, callbackArguments);
+        formContainer.style.display = "block";
+        addChartButton.style.display = "none";
+      }
     });
 
     // Create container for the form
@@ -43,7 +50,7 @@ class stealthForm {
     const cancelButtonId = this.stealthFormDivId + "-cancel";
 
     // Add initial form HTML
-    formContainer.innerHTML = "    <h3>Dashboard Charts</h3>";
+    formContainer.innerHTML = `    <h3>${formHeadingTitle}</h3>`;
 
     formParentContainer.appendChild(formContainer);
 
@@ -54,6 +61,8 @@ class stealthForm {
 
   hideForm() {
     const stealthFormDivContainerId = this.stealthFormDivId + "-container";
+    document.getElementById(this.stealthFormDivId + "-button").style.display =
+      "block";
     document.getElementById(stealthFormDivContainerId).style.display = "none";
   }
   showForm() {
@@ -76,6 +85,9 @@ class stealthForm {
       .appendChild(customButton);
   }
 
+  getStealthFormButtonId() {
+    return this.stealthFormDivId + "-button";
+  }
   getStealthFormContentId() {
     return this.stealthFormDivId + "-content";
   }

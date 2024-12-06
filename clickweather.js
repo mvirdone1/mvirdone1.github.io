@@ -317,6 +317,7 @@ function updateLocationFromBrowser(position) {
 }
 
 function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
+  // Get the div element where the form content is going to reside
   const formContentDiv = document.getElementById(
     stealthFormInstance.getStealthFormContentId()
   );
@@ -324,56 +325,101 @@ function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
   // Reference to the chart form list container
   // const chartsFormList = document.getElementById("charts-form-list");
 
-  // Function to create a new chart row
-  function addChartRow() {
+  function addChartRow(currentChart = {}) {
+    // Create a wrapper div for the chart row
     const chartRow = document.createElement("div");
-    chartRow.classList.add("chart-row");
-    chartRow.style.border = "1px dashed #aaa";
-    chartRow.style.padding = "5px";
-    chartRow.style.marginBottom = "5px";
+    chartRow.style.display = "flex";
+    chartRow.style.gap = "10px";
+    chartRow.style.alignItems = "center";
+    chartRow.style.marginBottom = "10px";
 
-    chartRow.innerHTML = `
-      <label>Title: <input type="text" class="chart-title" required></label><br>
-      <label>Days: <input type="number" class="chart-days" required></label><br>
-      <fieldset>
-        <legend>Offset:</legend>
-        <label>
-          <input type="radio" name="offset-${Date.now()}" value="false" checked>
-          Absolute Value
-        </label>
-        <label>
-          <input type="radio" name="offset-${Date.now()}" value="true">
-          Change in Value
-        </label>
-      </fieldset>
-      <label>Chart Type: 
-        <select class="chart-type">
-          ${Object.keys(CHART_TYPES)
-            .map(
-              (key) =>
-                `<option value="${CHART_TYPES[key]}">${
-                  CHART_TYPE_READABLE[CHART_TYPES[key]]
-                }</option>`
-            )
-            .join("")}
-        </select>
-      </label>
-      <button type="button" class="remove-chart-row">Remove</button>
-    `;
+    // Title input
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.placeholder = "Title";
+    titleInput.style.width = "150px";
+    titleInput.value = currentChart.shortTitle || ""; // Default value
+    chartRow.appendChild(titleInput);
 
+    // Days input
+    const daysInput = document.createElement("input");
+    daysInput.type = "number";
+    daysInput.placeholder = "Days";
+    daysInput.style.width = "60px";
+    daysInput.value = currentChart.days || ""; // Default value
+    chartRow.appendChild(daysInput);
+
+    // Offset radio buttons
+    const offsetWrapper = document.createElement("div");
+
+    const absoluteValueRadio = document.createElement("input");
+    absoluteValueRadio.type = "radio";
+    absoluteValueRadio.name = `offset-${formContentDiv.children.length}`;
+    absoluteValueRadio.value = "false";
+    absoluteValueRadio.checked =
+      currentChart.offset === false || !currentChart.offset;
+    offsetWrapper.appendChild(absoluteValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Absolute Reading"));
+
+    const changeInValueRadio = document.createElement("input");
+    changeInValueRadio.type = "radio";
+    changeInValueRadio.name = `offset-${formContentDiv.children.length}`;
+    changeInValueRadio.value = "true";
+    changeInValueRadio.checked = currentChart.offset === true;
+    offsetWrapper.appendChild(changeInValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Change in Reading"));
+
+    chartRow.appendChild(offsetWrapper);
+
+    // Chart Type dropdown
+    const chartTypeSelect = document.createElement("select");
+
+    console.log("Current Chart Type: " + currentChart.dataType);
+
+    Object.entries(CHART_TYPE_READABLE).forEach(([key, label]) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = label;
+      if (parseInt(key) === currentChart.dataType) {
+        option.selected = true; // Default value
+      }
+      chartTypeSelect.appendChild(option);
+    });
+
+    chartRow.appendChild(chartTypeSelect);
+
+    // Radius Miles input
+    const radiusMilesInput = document.createElement("input");
+    radiusMilesInput.type = "number";
+    radiusMilesInput.placeholder = "Radius Miles";
+    radiusMilesInput.style.width = "60px";
+    radiusMilesInput.value = currentChart.radiusMiles || ""; // Default value
+    chartRow.appendChild(radiusMilesInput);
+
+    // Radius Stations input
+    const radiusStationsInput = document.createElement("input");
+    radiusStationsInput.type = "number";
+    radiusStationsInput.placeholder = "Radius Stations";
+    radiusStationsInput.style.width = "60px";
+    radiusStationsInput.value = currentChart.radiusStations || ""; // Default value
+    chartRow.appendChild(radiusStationsInput);
+
+    // Remove button
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Remove";
+    // removeButton.style.marginLeft = "auto"; // Push to the right
+    removeButton.addEventListener("click", function () {
+      formContentDiv.removeChild(chartRow);
+    });
+    chartRow.appendChild(removeButton);
+
+    // Append the row to the list
     formContentDiv.appendChild(chartRow);
-
-    // Add event listener to remove row button
-    chartRow
-      .querySelector(".remove-chart-row")
-      .addEventListener("click", function () {
-        chartRow.remove();
-      });
   }
 
   // var divHTML = "<ol>\n";
   clickWeatherManagerInstance.getDefinedCharts().forEach((currentChart) => {
-    addChartRow();
+    addChartRow(currentChart);
     // divHTML += "<li>" + currentChart.title + "</li>\n";
   });
 
@@ -512,6 +558,7 @@ function clickWeatherClickListener(
   const chartStealthFormInstance = new stealthForm(
     contentElement,
     "Manage Charts",
+    "Historical Chart Attributes",
     updateChartFormList,
     myClickWeatherManager
   );

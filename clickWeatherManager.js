@@ -25,7 +25,7 @@ const CHART_TYPE_READABLE = {
   0: "Temperature",
   1: "Snow Depth",
   2: "Wind Speed",
-  3: "Snow Water Eqivalent",
+  3: "Snow Water Equivalent",
 };
 
 const CHART_HEADINGS = ["Temp (f)", "Snow (in)", "Wind (mph)", "SWE (in)"];
@@ -535,12 +535,14 @@ class clickWeatherManager {
     console.log("My Title: " + fullTitle);
     const tempChartObject = {
       title: fullTitle,
+      shortTitle: attributes.title,
       divName:
         "weather-chart-" +
         attributes.title.substring(0, 4) +
         "-" +
         attributes.days +
         "dy",
+      days: attributes.days,
       numHours: 24 * attributes.days,
       offset: attributes.offset,
       dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above

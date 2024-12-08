@@ -316,7 +316,148 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
+// Main function
 function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
+  // Get the div element where the form content is going to reside
+  const formContentDiv = document.getElementById(
+    stealthFormInstance.getStealthFormContentId()
+  );
+
+  function addChartRow(currentChart = {}, isFirstRow = false) {
+    // Create a wrapper div for the chart row
+    const chartRow = document.createElement("div");
+    chartRow.style.display = "flex";
+    chartRow.style.gap = "10px";
+    chartRow.style.alignItems = "center";
+    chartRow.style.marginBottom = "10px";
+
+    if (isFirstRow) {
+      // Create a header row with labels
+      const headerRow = document.createElement("div");
+      headerRow.style.display = "flex";
+      headerRow.style.gap = "10px";
+      headerRow.style.alignItems = "center";
+      headerRow.style.fontWeight = "bold";
+      headerRow.style.marginBottom = "10px";
+
+      // Add labels to the header row with consistent widths
+      const headers = [
+        { label: "Chart Subtitle", width: "150px" },
+        { label: "Days", width: "60px" },
+        { label: "Offset Type", width: "180px" },
+        { label: "Chart Type", width: "190px" },
+        { label: "Radius Miles", width: "60px" },
+        { label: "Radius Stations", width: "60px" },
+        { label: "Actions", width: "auto" },
+      ];
+
+      headers.forEach(({ label, width }) => {
+        const labelDiv = document.createElement("div");
+        labelDiv.textContent = label;
+        labelDiv.style.width = width;
+        labelDiv.style.textAlign = "center"; // Align text with inputs
+        headerRow.appendChild(labelDiv);
+      });
+
+      // Append the header row to the form
+      formContentDiv.appendChild(headerRow);
+    }
+
+    // Title input
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.placeholder = "Title";
+    titleInput.style.width = "150px";
+    titleInput.value = currentChart.shortTitle || ""; // Default value
+    chartRow.appendChild(titleInput);
+
+    // Days input
+    const daysInput = document.createElement("input");
+    daysInput.type = "number";
+    daysInput.placeholder = "Days";
+    daysInput.style.width = "60px";
+    daysInput.value = currentChart.days || ""; // Default value
+    chartRow.appendChild(daysInput);
+
+    // Offset radio buttons
+    const offsetWrapper = document.createElement("div");
+    offsetWrapper.style.display = "flex";
+    offsetWrapper.style.gap = "5px";
+    offsetWrapper.style.width = "190px";
+
+    const absoluteValueRadio = document.createElement("input");
+    absoluteValueRadio.type = "radio";
+    absoluteValueRadio.name = `offset-${formContentDiv.children.length}`;
+    absoluteValueRadio.value = "false";
+    absoluteValueRadio.checked =
+      currentChart.offset === false || !currentChart.offset;
+    offsetWrapper.appendChild(absoluteValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Absolute"));
+
+    const changeInValueRadio = document.createElement("input");
+    changeInValueRadio.type = "radio";
+    changeInValueRadio.name = `offset-${formContentDiv.children.length}`;
+    changeInValueRadio.value = "true";
+    changeInValueRadio.checked = currentChart.offset === true;
+    offsetWrapper.appendChild(changeInValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Change"));
+
+    chartRow.appendChild(offsetWrapper);
+
+    // Chart Type dropdown
+    const chartTypeSelect = document.createElement("select");
+    chartTypeSelect.style.width = "150px"; // Match width to header
+    Object.entries(CHART_TYPE_READABLE).forEach(([key, label]) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = label;
+      if (parseInt(key) === currentChart.dataType) {
+        option.selected = true; // Default value
+      }
+      chartTypeSelect.appendChild(option);
+    });
+    chartRow.appendChild(chartTypeSelect);
+
+    // Radius Miles input
+    const radiusMilesInput = document.createElement("input");
+    radiusMilesInput.type = "number";
+    radiusMilesInput.placeholder = "Radius Miles";
+    radiusMilesInput.style.width = "60px";
+    radiusMilesInput.value = currentChart.radiusMiles || ""; // Default value
+    chartRow.appendChild(radiusMilesInput);
+
+    // Radius Stations input
+    const radiusStationsInput = document.createElement("input");
+    radiusStationsInput.type = "number";
+    radiusStationsInput.placeholder = "Radius Stations";
+    radiusStationsInput.style.width = "60px";
+    radiusStationsInput.value = currentChart.radiusStations || ""; // Default value
+    chartRow.appendChild(radiusStationsInput);
+
+    // Remove button
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", function () {
+      formContentDiv.removeChild(chartRow);
+    });
+    chartRow.appendChild(removeButton);
+
+    // Append the row to the list
+    formContentDiv.appendChild(chartRow);
+  }
+
+  let isFirstRow = true;
+
+  clickWeatherManagerInstance.getDefinedCharts().forEach((currentChart) => {
+    addChartRow(currentChart, isFirstRow);
+    isFirstRow = false; // After the first row, no need for headers
+  });
+}
+
+function updateChartFormListOld(
+  stealthFormInstance,
+  clickWeatherManagerInstance
+) {
   // Get the div element where the form content is going to reside
   const formContentDiv = document.getElementById(
     stealthFormInstance.getStealthFormContentId()
@@ -325,7 +466,7 @@ function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
   // Reference to the chart form list container
   // const chartsFormList = document.getElementById("charts-form-list");
 
-  function addChartRow(currentChart = {}) {
+  function addChartRowOld(currentChart = {}) {
     // Create a wrapper div for the chart row
     const chartRow = document.createElement("div");
     chartRow.style.display = "flex";
@@ -417,14 +558,118 @@ function updateChartFormList(stealthFormInstance, clickWeatherManagerInstance) {
     formContentDiv.appendChild(chartRow);
   }
 
+  function addChartRow(currentChart = {}) {
+    // Create a wrapper div for the chart row
+    const chartRow = document.createElement("div");
+    chartRow.style.display = "flex";
+    chartRow.style.flexDirection = "column"; // Stack labels and inputs
+    chartRow.style.gap = "10px";
+    chartRow.style.marginBottom = "20px";
+
+    // Title input with label
+    const titleLabel = document.createElement("label");
+    titleLabel.textContent = "Title";
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.placeholder = "Title";
+    titleInput.style.width = "150px";
+    titleInput.value = currentChart.shortTitle || ""; // Default value
+    chartRow.appendChild(titleLabel);
+    chartRow.appendChild(titleInput);
+
+    // Days input with label
+    const daysLabel = document.createElement("label");
+    daysLabel.textContent = "Days";
+    const daysInput = document.createElement("input");
+    daysInput.type = "number";
+    daysInput.placeholder = "Days";
+    daysInput.style.width = "60px";
+    daysInput.value = currentChart.days || ""; // Default value
+    chartRow.appendChild(daysLabel);
+    chartRow.appendChild(daysInput);
+
+    // Offset radio buttons with label
+    const offsetLabel = document.createElement("label");
+    offsetLabel.textContent = "Offset Type";
+    const offsetWrapper = document.createElement("div");
+    offsetWrapper.style.display = "flex";
+    offsetWrapper.style.gap = "10px";
+
+    const absoluteValueRadio = document.createElement("input");
+    absoluteValueRadio.type = "radio";
+    absoluteValueRadio.name = `offset-${formContentDiv.children.length}`;
+    absoluteValueRadio.value = "false";
+    absoluteValueRadio.checked =
+      currentChart.offset === false || !currentChart.offset;
+    offsetWrapper.appendChild(absoluteValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Absolute Reading"));
+
+    const changeInValueRadio = document.createElement("input");
+    changeInValueRadio.type = "radio";
+    changeInValueRadio.name = `offset-${formContentDiv.children.length}`;
+    changeInValueRadio.value = "true";
+    changeInValueRadio.checked = currentChart.offset === true;
+    offsetWrapper.appendChild(changeInValueRadio);
+    offsetWrapper.appendChild(document.createTextNode("Change in Reading"));
+
+    chartRow.appendChild(offsetLabel);
+    chartRow.appendChild(offsetWrapper);
+
+    // Chart Type dropdown with label
+    const chartTypeLabel = document.createElement("label");
+    chartTypeLabel.textContent = "Chart Type";
+    const chartTypeSelect = document.createElement("select");
+    Object.entries(CHART_TYPE_READABLE).forEach(([key, label]) => {
+      const option = document.createElement("option");
+      option.value = key;
+      option.textContent = label;
+      if (parseInt(key) === currentChart.dataType) {
+        option.selected = true; // Default value
+      }
+      chartTypeSelect.appendChild(option);
+    });
+    chartRow.appendChild(chartTypeLabel);
+    chartRow.appendChild(chartTypeSelect);
+
+    // Radius Miles input with label
+    const radiusMilesLabel = document.createElement("label");
+    radiusMilesLabel.textContent = "Radius Miles";
+    const radiusMilesInput = document.createElement("input");
+    radiusMilesInput.type = "number";
+    radiusMilesInput.placeholder = "Radius Miles";
+    radiusMilesInput.style.width = "60px";
+    radiusMilesInput.value = currentChart.radiusMiles || ""; // Default value
+    chartRow.appendChild(radiusMilesLabel);
+    chartRow.appendChild(radiusMilesInput);
+
+    // Radius Stations input with label
+    const radiusStationsLabel = document.createElement("label");
+    radiusStationsLabel.textContent = "Radius Stations";
+    const radiusStationsInput = document.createElement("input");
+    radiusStationsInput.type = "number";
+    radiusStationsInput.placeholder = "Radius Stations";
+    radiusStationsInput.style.width = "60px";
+    radiusStationsInput.value = currentChart.radiusStations || ""; // Default value
+    chartRow.appendChild(radiusStationsLabel);
+    chartRow.appendChild(radiusStationsInput);
+
+    // Remove button
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", function () {
+      formContentDiv.removeChild(chartRow);
+    });
+    chartRow.appendChild(removeButton);
+
+    // Append the row to the list
+    formContentDiv.appendChild(chartRow);
+  }
+
   // var divHTML = "<ol>\n";
   clickWeatherManagerInstance.getDefinedCharts().forEach((currentChart) => {
     addChartRow(currentChart);
     // divHTML += "<li>" + currentChart.title + "</li>\n";
   });
-
-  // divHTML += "</ol>\n";
-  // formContentDiv.innerHTML = divHTML;
 }
 
 function stealthFormAddChartCallback(stealthFormInstance) {

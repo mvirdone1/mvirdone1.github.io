@@ -45,11 +45,25 @@ function parseURL() {
 
   const position = { lat: lat, lng: lon };
 
+  var stationMode = STATION_LIST_MODES.position;
+
   //.html?stations=TGLU1,TGSU1,LGS,CRDUT,PRSUT
   const stations = urlParams.get("stations")?.split(",") || [];
+
+  if (stations.length > 0) {
+    stationMode = STATION_LIST_MODES.stations;
+  }
+
+  myClickWeatherManager.setPositionAttributes(
+    stationMode,
+    { lat: position.lat, lon: position.lng },
+    stations
+  );
+
   console.log(stations);
 
-  switch (urlParams.get("chartMode")) {
+  // Switch on the chart modes, and also ignore case by making the input all lower
+  switch (urlParams.get("chartMode").toLowerCase()) {
     case "local":
       myClickWeatherManager.createLocalPlots();
       break;
@@ -59,7 +73,9 @@ function parseURL() {
       // 12/2 - Tested a very basic case
       // chartMode=custom&customCharts=Hi,1,1,1,1,1
       if (urlParams.has("customCharts")) {
-        myClickWeatherManager.createCustomCharts(urlParams.get("customCharts"));
+        myClickWeatherManager.setCustomChartsFromURL(
+          urlParams.get("customCharts")
+        );
       } else {
         alert(
           "Custom chart type selected, but customCharts parameter not set. Using snow charts"
@@ -82,8 +98,34 @@ function parseURL() {
 function updateLinkURL() {
   var linkURL = "https://mvirdone1.github.io/clickweather.html?";
 
-  var myPageLink = document.getElementById("page-link-position");
+  const positionAttributes = myClickWeatherManager.getPositionAttributes();
 
+  // Either include the lat lon or the station list, depending on how
+  // the current session is configured
+  if (positionAttributes.stationMode == STATION_LIST_MODES.stations) {
+    linkURL += "stations=" + positionAttributes.stations.join(",");
+    document.title =
+      "Map Click Weather Station List (" +
+      positionAttributes.stations.join(",") +
+      ")";
+  } else {
+    let localLat = positionAttributes.position.lat.toFixed(4);
+    let localLon = positionAttributes.position.lon.toFixed(4);
+    linkURL += "lat=" + localLat;
+    linkURL += "&lon=" + localLon;
+    document.title =
+      "Map Click Weather" + " (" + localLat + "," + localLon + ")";
+  }
+
+  linkURL +=
+    "&chartMode=" + CHART_MODE_FOR_URL[myClickWeatherManager.getChartMode()];
+
+  if (myClickWeatherManager.getChartMode() == CHART_MODES.custom) {
+    linkURL += "&customCharts=" + myClickWeatherManager.getCustomChartsToURL();
+  }
+
+  /*
+ 
   var latValue = parseFloat(document.getElementById("lat").value);
   var lonValue = parseFloat(document.getElementById("lon").value);
 
@@ -94,11 +136,11 @@ function updateLinkURL() {
     linkURL += "lat=" + latValue;
     linkURL += "&lon=" + lonValue;
   }
+    */
 
   // Set the href attribute using JavaScript
+  var myPageLink = document.getElementById("page-link-position");
   myPageLink.href = linkURL;
-
-  document.title = "Map Click Weather" + " (" + latValue + "," + lonValue + ")";
 
   console.log("Update Link URL");
   console.log(getAllToggleChildren());
@@ -316,7 +358,7 @@ function updateLocationFromBrowser(position) {
   clickWeatherClickListener(myPosition, false);
 }
 
-function chartFormAddChartRow(
+function chartFormPrintChartRow(
   formContentDiv,
   currentChart = {},
   isFirstRow = false
@@ -363,7 +405,7 @@ function chartFormAddChartRow(
 
   // Chart title (non-editable)
   const titleDiv = document.createElement("div");
-  titleDiv.textContent = currentChart.title || "New Chart"; // Default value for new rows
+  titleDiv.textContent = currentChart.fullTitle || "New Chart"; // Default value for new rows
   titleDiv.style.width = "350px";
   titleDiv.style.textAlign = "center"; // Align text
   chartRow.appendChild(titleDiv);
@@ -371,9 +413,9 @@ function chartFormAddChartRow(
   // Chart Subtitle (input)
   const titleInput = document.createElement("input");
   titleInput.type = "text";
-  titleInput.placeholder = "Subtitle";
+  titleInput.placeholder = "Title";
   titleInput.style.width = "150px";
-  titleInput.value = currentChart.shortTitle || ""; // Default value
+  titleInput.value = currentChart.title || ""; // Default value
   chartRow.appendChild(titleInput);
 
   // Days input
@@ -412,21 +454,53 @@ function chartFormAddChartRow(
   // Chart Type dropdown
   const chartTypeSelect = document.createElement("select");
   chartTypeSelect.style.width = "150px"; // Match width to header
+
+  let hasSelectedOption = false;
+
   Object.entries(CHART_TYPE_READABLE).forEach(([key, label]) => {
     const option = document.createElement("option");
     option.value = key;
     option.textContent = label;
+
+    // If we don't have a data type for the object,
+    // and we haven't set a default yet, set the first one to default
+    /*
+    if (!currentChart.dataType && !hasSelectedOption) {
+      console.log("Another way to try and set this to not be null");
+      option.selected = true;
+      hasSelectedOption = true;
+    }
+      */
+
+    // Otherwise, update the flag as we find the key
     if (parseInt(key) === currentChart.dataType) {
       option.selected = true; // Default value
+      hasSelectedOption = true;
     }
+
+    console.log(option);
     chartTypeSelect.appendChild(option);
   });
+
+  /*  // If no matching dataType found, select the first option
+  if (!hasSelectedOption) {
+    chartTypeSelect.options[0].selected = true;
+  }
+    */
+
+  /*
+  if (!hasSelectedOption) {
+    console.log("Setting unselected index 1");
+    chartTypeSelect.selectedIndex = 0; // Explicitly set the first option as selected
+  }
+    */
+
   chartRow.appendChild(chartTypeSelect);
 
   // Radius Miles input
   const radiusMilesInput = document.createElement("input");
   radiusMilesInput.type = "number";
-  radiusMilesInput.placeholder = "Radius Miles";
+  radiusMilesInput.placeholder = "Miles";
   radiusMilesInput.style.width = "60px";
   radiusMilesInput.value = currentChart.radiusMiles || ""; // Default value
   chartRow.appendChild(radiusMilesInput);
@@ -434,7 +508,7 @@ function chartFormAddChartRow(
   // Radius Stations input
   const radiusStationsInput = document.createElement("input");
   radiusStationsInput.type = "number";
-  radiusStationsInput.placeholder = "Radius Stations";
+  radiusStationsInput.placeholder = "Num Stations";
   radiusStationsInput.style.width = "60px";
   radiusStationsInput.value = currentChart.radiusStations || ""; // Default value
   chartRow.appendChild(radiusStationsInput);
@@ -461,7 +535,7 @@ function updateChartFormList(stealthFormInstance) {
   let isFirstRow = true;
 
   myClickWeatherManager.getDefinedCharts().forEach((currentChart) => {
-    chartFormAddChartRow(formContentDiv, currentChart, isFirstRow);
+    chartFormPrintChartRow(formContentDiv, currentChart, isFirstRow);
     isFirstRow = false; // After the first row, no need for headers
   });
 }
@@ -469,7 +543,13 @@ function updateChartFormList(stealthFormInstance) {
 function stealthFormAddChartCallback(stealthFormInstance) {
   console.log("Add Chart Click");
   console.log(stealthFormInstance);
-  alert(stealthFormInstance.getStealthFormDivId());
+
+  // Get the div element where the form content is going to reside
+  const formContentDiv = document.getElementById(
+    stealthFormInstance.getStealthFormContentId()
+  );
+
+  chartFormPrintChartRow(formContentDiv);
 }
 
 function stealthFormCancelChartCallback(stealthFormInstance) {
@@ -477,9 +557,58 @@ function stealthFormCancelChartCallback(stealthFormInstance) {
   stealthFormInstance.hideForm();
 }
 
+function parseChartRows(stealthFormInstance) {
+  const formContentDiv = document.getElementById(
+    stealthFormInstance.getStealthFormContentId()
+  );
+
+  const rows = Array.from(formContentDiv.children).slice(1); // Skip the header row
+  const chartData = rows.map((row) => {
+    const inputs = row.querySelectorAll("input, select");
+
+    // Parse individual inputs and dropdowns
+    return {
+      title: inputs[0]?.value || "", // Chart Subtitle
+      // title: row.children[0].textContent.trim(), // Non-editable title
+      // shortTitle: inputs[0]?.value || "", // Chart Subtitle
+      days: parseInt(inputs[1]?.value, 10) || 5, // Days
+      offset: inputs[2]?.checked ? false : true, // Offset Type (radio buttons)
+      chartType: parseInt(inputs[4].value, 10) || 0, // Chart Type (select)
+      radiusMiles: parseFloat(inputs[5]?.value) || 5, // Radius Miles
+      radiusStations: parseInt(inputs[6]?.value, 10) || 20, // Radius Stations
+    };
+  });
+
+  return chartData;
+}
+
 function stealthFormSubmitChartCallback(stealthFormInstance) {
   console.log("Submitted");
+
+  // Clear the chart list
+  myClickWeatherManager.setDefinedCharts([]);
+
+  // Push all the charts we have in the list into the weather manager's chart list
+  parseChartRows(stealthFormInstance).forEach((attributes) => {
+    myClickWeatherManager.pushAttributesToDefinedCharts(attributes);
+  });
+
+  // If the user has submitted the form, this is now a custom chart
+  myClickWeatherManager.setChartMode(CHART_MODES.custom);
+
   stealthFormInstance.hideForm();
+
+  const positionAttributes = myClickWeatherManager.getPositionAttributes();
+
+  // Need to figure out how to handle stations
+  clickWeatherClickListener(
+    {
+      lat: positionAttributes.position.lat,
+      lng: positionAttributes.position.lon,
+    },
+    false,
+    []
+  );
 }
 
 // 11/25/24 - Updating this function to somewhat revert to allow adding a list of named stations.
@@ -512,6 +641,17 @@ function clickWeatherClickListener(
 
   myMapManager.setMapCenter(position.lat, position.lng);
 
+  let stationMode = undefined;
+  if (realClick) {
+    stationMode = STATION_LIST_MODES.position;
+  }
+
+  // Update the position of the weather manager
+  myClickWeatherManager.setPositionAttributes(stationMode, {
+    lat: position.lat,
+    lon: position.lng,
+  });
+
   if (realClick) {
     myMapManager.setZoom(12);
   }
@@ -539,15 +679,6 @@ function clickWeatherClickListener(
     // weatherOffice: "SLC",
     chartObjects: [],
   };
-
-  // charts = [];
-  /*
-  charts.push("TGLU1");
-  charts.push("TGSU1");
-  charts.push("LGS");
-  charts.push("CRDUT");
-  charts.push("PRSUT");
-  */
 
   const weatherRadarDiv = createToggleChildElements(
     "dynamic-div",
@@ -622,7 +753,7 @@ function clickWeatherClickListener(
   //***********************************/
   for (const chartObject of myClickWeatherManager.getDefinedCharts()) {
     newHeading = document.createElement("h2");
-    newHeading.textContent = chartObject.title;
+    newHeading.textContent = chartObject.fullTitle;
 
     contentElement.appendChild(newHeading);
 

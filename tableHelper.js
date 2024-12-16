@@ -26,10 +26,10 @@ function makeTableSortable(tableId, defaultSortColumn = 1) {
     return;
   }
 
-  console.log("Found table " + tableId);
+  // console.log("Found table " + tableId);
 
   const headers = table.querySelectorAll("tr th");
-  console.log(headers);
+  // console.log(headers);
 
   // Set this to the opposite of what I want (ascending)
   // That way when I call the sortTable function, it'll reverse sort it

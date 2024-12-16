@@ -89,8 +89,9 @@ function displayWeatherData2(
   fetch(apiUrlWithParams)
     .then((response) => response.json())
     .then((data) => {
+      let numStations = data.STATION?.length || 0;
       console.log("Inside Fetch: " + stid);
-      console.log("Stations " + data.STATION.length);
+      console.log("Stations " + numStations);
 
       var dataSets = [];
 
@@ -104,7 +105,7 @@ function displayWeatherData2(
       ];
 
       // Iterate over the data sets
-      for (var dataSetIdx = 0; dataSetIdx < data.STATION.length; dataSetIdx++) {
+      for (var dataSetIdx = 0; dataSetIdx < numStations; dataSetIdx++) {
         var dataSet = [];
         var tempData = [];
         var dates = [];

@@ -36,6 +36,13 @@ const CHART_MODES = {
   custom: 2,
 };
 
+// Reverse lookup to put human readable chart modes in the URL
+const CHART_MODE_FOR_URL = Object.fromEntries(
+  Object.entries(CHART_MODES).map(([key, value]) => [value, key])
+);
+
+const STATION_LIST_MODES = { position: 0, stations: 1 };
+
 class clickWeatherManager {
   constructor() {
     if (clickWeatherManager.instance) return clickWeatherManager.instance;
@@ -44,9 +51,15 @@ class clickWeatherManager {
     this.allReturnedData = {};
 
     // Variables for creating different chart types
-    this.locationAttributes = {};
+    this.positionAttributes = {
+      stationMode: STATION_LIST_MODES.position,
+      position: {},
+      stations: [],
+    };
     this.definedCharts = [];
     this.definedStations = [];
+
+    this.currentChartMode = CHART_MODES.local;
 
     // this.stationDataTemplate = [];
     clickWeatherManager.instance = this;
@@ -389,7 +402,38 @@ class clickWeatherManager {
     return stationChangeResults;
   }
 
-  createCustomCharts(chartString) {
+  setChartMode(chartMode) {
+    // I might want to validate that I'm not setting this to an incorrect value in the future
+    this.currentChartMode = chartMode;
+  }
+
+  getChartMode() {
+    return this.currentChartMode;
+  }
+
+  getCustomChartsToURL() {
+    console.log(
+      this.definedCharts.map((attr) => encodeURIComponent(attr.title))
+    );
+
+    var compactState = this.definedCharts
+      .map((attr) =>
+        [
+          encodeURIComponent(attr.title),
+          attr.days,
+          +attr.offset,
+          attr.dataType,
+          attr.radiusMiles,
+          attr.radiusStations,
+        ].join(",")
+      )
+      .join("|");
+
+    console.log(compactState);
+    return compactState;
+  }
+
+  setCustomChartsFromURL(chartString) {
     const chartStringList = chartString?.split("|") || [chartString];
 
     console.log(chartStringList);
@@ -404,6 +448,7 @@ class clickWeatherManager {
       }
 
       console.log(chartAttributeArray);
+      this.setChartMode(CHART_MODES.custom);
 
       let attributes = {};
 
@@ -429,6 +474,8 @@ class clickWeatherManager {
   }
 
   createLocalPlots() {
+    this.setChartMode(CHART_MODES.local);
+
     var attributes = {};
 
     const defaultRadiusMi = 10;
@@ -465,6 +512,8 @@ class clickWeatherManager {
     this.definedCharts.push(this.createChartObject(attributes));
   }
   createFullMountainSuitePlots() {
+    this.setChartMode(CHART_MODES.snow);
+
     var attributes = {};
 
     const defaultRadiusMi = 20;
@@ -522,6 +571,15 @@ class clickWeatherManager {
     return this.definedCharts;
   }
 
+  setDefinedCharts(chartArray) {
+    this.definedCharts = chartArray;
+  }
+
+  pushAttributesToDefinedCharts(attributes) {
+    this.setChartMode(CHART_MODES.custom);
+    this.definedCharts.push(this.createChartObject(attributes));
+  }
+
   createChartObject(attributes) {
     const fullTitle =
       attributes.title +
@@ -534,8 +592,8 @@ class clickWeatherManager {
 
     console.log("My Title: " + fullTitle);
     const tempChartObject = {
-      title: fullTitle,
-      shortTitle: attributes.title,
+      fullTitle: fullTitle,
+      title: attributes.title,
       divName:
         "weather-chart-" +
         attributes.title.substring(0, 4) +
@@ -550,5 +608,23 @@ class clickWeatherManager {
       radiusStations: attributes.radiusStations,
     };
     return tempChartObject;
+  }
+
+  getPositionAttributes() {
+    return this.positionAttributes;
+  }
+
+  setPositionAttributes(
+    stationMode = this.positionAttributes.stationMode,
+    position = this.positionAttributes.position,
+    stations = this.positionAttributes.stations
+  ) {
+    this.positionAttributes = {
+      stationMode: stationMode,
+      position: position,
+      stations: stations,
+    };
+
+    // console.log(this.positionAttributes);
   }
 }

@@ -62,8 +62,14 @@ function parseURL() {
 
   console.log(stations);
 
+  var urlChartMode = "";
+
+  if (urlParams.get("chartMode")) {
+    urlChartMode = urlParams.get("chartMode").toLowerCase();
+  }
+
   // Switch on the chart modes, and also ignore case by making the input all lower
-  switch (urlParams.get("chartMode").toLowerCase()) {
+  switch (urlChartMode) {
     case "local":
       myClickWeatherManager.createLocalPlots();
       break;

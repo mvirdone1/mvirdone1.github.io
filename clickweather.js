@@ -130,20 +130,6 @@ function updateLinkURL() {
     linkURL += "&customCharts=" + myClickWeatherManager.getCustomChartsToURL();
   }
 
-  /*
- 
-  var latValue = parseFloat(document.getElementById("lat").value);
-  var lonValue = parseFloat(document.getElementById("lon").value);
-
-  console.log(latValue + " " + lonValue);
-
-  // This is a dumb logic check, but hopefully nobody is trying to use this tool at 0.000, 0.000 :shrug:
-  if (latValue != 0 && lonValue != 0) {
-    linkURL += "lat=" + latValue;
-    linkURL += "&lon=" + lonValue;
-  }
-    */
-
   // Set the href attribute using JavaScript
   var myPageLink = document.getElementById("page-link-position");
   myPageLink.href = linkURL;
@@ -798,7 +784,6 @@ function clickWeatherClickListener(
 
 function initMap() {
   const mapHTML = `    
-    <hr>
     <div id="map"></div>
     <form>
       <label for="lat">Latitude:</label>
@@ -811,7 +796,8 @@ function initMap() {
 
     `;
 
-  const forecastElement = document.getElementById("map-div");
+  // const forecastElement = document.getElementById("map-div");
+  forecastElement = createToggleChildElements("map-div", "Map");
   forecastElement.innerHTML = mapHTML;
 
   var linkHeader = document.createElement("a");

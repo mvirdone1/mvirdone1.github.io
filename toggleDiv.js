@@ -1,9 +1,37 @@
 function createToggleChildElements(parentId, title) {
   const divTitle = "hide-show-" + divify(title);
+
+  /*
   const button = document.createElement("button");
   button.textContent = "Show/Hide " + title;
   button.onclick = function () {
     toggleChildVisibility(divTitle + "-parent");
+  };
+  */
+
+  // Create the button
+  const button = document.createElement("button");
+  button.textContent = `Hide ${title}`;
+  button.classList.add("toggle-button");
+  button.setAttribute("aria-expanded", "true");
+  button.onclick = function () {
+    const isExpanded = button.getAttribute("aria-expanded") === "true";
+    button.setAttribute("aria-expanded", !isExpanded);
+    button.textContent = isExpanded ? `Show ${title}` : `Hide ${title}`;
+    toggleChildVisibility(divTitle + "-parent");
+  };
+
+  const headerDiv = document.createElement("div");
+  headerDiv.classList.add("toggle-section-header");
+  headerDiv.textContent = `Hide ${title}`;
+  headerDiv.setAttribute("aria-expanded", "true");
+
+  headerDiv.onclick = function () {
+    const isExpanded = headerDiv.getAttribute("aria-expanded") === "true";
+    headerDiv.setAttribute("aria-expanded", !isExpanded);
+    headerDiv.textContent = isExpanded ? `Show ${title}` : `Hide ${title}`;
+    toggleChildVisibility(divTitle + "-parent");
+    // contentDiv.style.display = isExpanded ? "none" : "block";
   };
 
   // Create the parent div
@@ -23,7 +51,8 @@ function createToggleChildElements(parentId, title) {
   const dynamicDivElement = document.getElementById(parentId);
   const divider = document.createElement("hr");
   dynamicDivElement.appendChild(divider);
-  dynamicDivElement.appendChild(button);
+  dynamicDivElement.appendChild(headerDiv);
+  // dynamicDivElement.appendChild(button);
   dynamicDivElement.appendChild(parentDiv);
 
   return document.getElementById(divTitle + "-child");

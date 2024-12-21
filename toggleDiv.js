@@ -72,7 +72,7 @@ function toggleChildVisibility(parentId) {
   }
 }
 
-function getAllToggleChildren() {
+function getAllToggleChildrenOld() {
   // Get all div elements in the document
   const allDivs = document.querySelectorAll("div");
 
@@ -85,6 +85,21 @@ function getAllToggleChildren() {
       element: div,
       display: div.style.display || window.getComputedStyle(div).display,
     }));
+
+  // Log the results
+  console.log(matchingDivs);
+  return matchingDivs;
+}
+
+function getAllToggleChildren() {
+  // Get all div elements with the class "show-hide-class"
+  const allMatchingDivs = document.querySelectorAll("div.show-hide-class");
+
+  // Map the elements to include their style.display or computed display property
+  const matchingDivs = Array.from(allMatchingDivs).map((div) => ({
+    element: div,
+    display: div.style.display || window.getComputedStyle(div).display,
+  }));
 
   // Log the results
   console.log(matchingDivs);

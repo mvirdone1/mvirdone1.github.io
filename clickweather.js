@@ -784,7 +784,11 @@ function clickWeatherClickListener(
 
 function initMap() {
   const mapHTML = `    
+    <button onclick="getLocation()">Use My Location</button>
+    </br>
+    </br>
     <div id="map"></div>
+    <br>
     <form>
       <label for="lat">Latitude:</label>
       <input type="text" id="lat" name="lat" />
@@ -797,18 +801,14 @@ function initMap() {
     `;
 
   // const forecastElement = document.getElementById("map-div");
-  forecastElement = createToggleChildElements("map-div", "Map");
-  forecastElement.innerHTML = mapHTML;
+  const mapDivElement = createToggleChildElements("map-div", "Map");
+  mapDivElement.innerHTML += mapHTML;
 
   var linkHeader = document.createElement("a");
   linkHeader.id = "page-link-position";
   linkHeader.href = "#"; // Link to nowhere since it will be dynamically updated
   linkHeader.innerHTML = "<h4>Link to this page</h4>";
   document.getElementById("my-header").appendChild(linkHeader);
-
-  document.getElementById("my-header").innerHTML =
-    document.getElementById("my-header").innerHTML +
-    '<button onclick="getLocation()">Use My Location</button>';
 
   // Default map center for Logan
   lat = 41.7713;

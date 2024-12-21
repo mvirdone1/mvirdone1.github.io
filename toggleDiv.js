@@ -1,25 +1,9 @@
-function createToggleChildElements(parentId, title) {
+function createToggleChildElements(
+  parentId,
+  title,
+  customCallbackFunction = ""
+) {
   const divTitle = "hide-show-" + divify(title);
-
-  /*
-  const button = document.createElement("button");
-  button.textContent = "Show/Hide " + title;
-  button.onclick = function () {
-    toggleChildVisibility(divTitle + "-parent");
-  };
-  */
-
-  // Create the button
-  const button = document.createElement("button");
-  button.textContent = `Hide ${title}`;
-  button.classList.add("toggle-button");
-  button.setAttribute("aria-expanded", "true");
-  button.onclick = function () {
-    const isExpanded = button.getAttribute("aria-expanded") === "true";
-    button.setAttribute("aria-expanded", !isExpanded);
-    button.textContent = isExpanded ? `Show ${title}` : `Hide ${title}`;
-    toggleChildVisibility(divTitle + "-parent");
-  };
 
   const headerDiv = document.createElement("div");
   headerDiv.classList.add("toggle-section-header");
@@ -31,6 +15,12 @@ function createToggleChildElements(parentId, title) {
     headerDiv.setAttribute("aria-expanded", !isExpanded);
     headerDiv.textContent = isExpanded ? `Show ${title}` : `Hide ${title}`;
     toggleChildVisibility(divTitle + "-parent");
+
+    if (customCallbackFunction) {
+      // This is passing by reference, so values of dataSets
+      // is being modified in here, specifically the borderColor
+      customCallbackFunction();
+    }
     // contentDiv.style.display = isExpanded ? "none" : "block";
   };
 
@@ -72,25 +62,6 @@ function toggleChildVisibility(parentId) {
   }
 }
 
-function getAllToggleChildrenOld() {
-  // Get all div elements in the document
-  const allDivs = document.querySelectorAll("div");
-
-  console.log(allDivs);
-
-  // Filter divs with the specific id format and get their style.display
-  const matchingDivs = Array.from(allDivs)
-    .filter((div) => /hide-show-.*-child/.test(div.id)) // Use div.id instead of div.getAttribute("name")
-    .map((div) => ({
-      element: div,
-      display: div.style.display || window.getComputedStyle(div).display,
-    }));
-
-  // Log the results
-  console.log(matchingDivs);
-  return matchingDivs;
-}
-
 function getAllToggleChildren() {
   // Get all div elements with the class "show-hide-class"
   const allMatchingDivs = document.querySelectorAll("div.show-hide-class");
@@ -102,6 +73,19 @@ function getAllToggleChildren() {
   }));
 
   // Log the results
-  console.log(matchingDivs);
+  // console.log(matchingDivs);
   return matchingDivs;
+}
+
+function setAllToggleDivOnURLString(URLString) {
+  const allMatchingHeadings = document.querySelectorAll(
+    "div.toggle-section-header"
+  );
+
+  // Iterate over the string, and for each element that is "none" click the div to toggle it
+  for (strIdx = 0; strIdx < URLString.length; strIdx++) {
+    if (URLString[strIdx] === "n") {
+      allMatchingHeadings[strIdx].onclick();
+    }
+  }
 }

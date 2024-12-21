@@ -98,7 +98,13 @@ function parseURL() {
 
   console.log("Charts: " + urlParams?.get("charts") || "No Charts");
 
+  // Create all the charts and data based on what was in the URL
   clickWeatherClickListener(position, false, stations);
+
+  // Update visibility of elements based on URL
+  if (urlParams.get("hideDiv")) {
+    setAllToggleDivOnURLString(urlParams.get("hideDiv").toLowerCase());
+  }
 }
 
 function updateLinkURL() {
@@ -130,12 +136,23 @@ function updateLinkURL() {
     linkURL += "&customCharts=" + myClickWeatherManager.getCustomChartsToURL();
   }
 
+  const toggleElements = getAllToggleChildren();
+
+  const allDivAreVisible = toggleElements.every(
+    (item) => item.display === "block"
+  );
+
+  // If we have some hidden div, add that to the URL
+  if (!allDivAreVisible) {
+    const firstLetters = toggleElements.map((item) => item.display[0]).join("");
+    linkURL += "&hideDiv=" + firstLetters;
+  }
+
   // Set the href attribute using JavaScript
   var myPageLink = document.getElementById("page-link-position");
   myPageLink.href = linkURL;
 
   console.log("Update Link URL");
-  console.log(getAllToggleChildren());
 }
 
 // This function is a callback from inside displayWeatherData2
@@ -620,12 +637,13 @@ function clickWeatherClickListener(
   // Clear the dynamic div and then add back in the weather images
   document.getElementById("dynamic-div").innerHTML = "";
 
-  createToggleChildElements("dynamic-div", "Legend");
+  createToggleChildElements("dynamic-div", "Legend", updateLinkURL);
 
   // Create the div for the forecasts from weather.gov
   const ForecastElement = createToggleChildElements(
     "dynamic-div",
-    "Forecast Charts"
+    "Forecast Charts",
+    updateLinkURL
   );
 
   // This function does all the addition of everything except the weather plots
@@ -674,7 +692,8 @@ function clickWeatherClickListener(
 
   const weatherRadarDiv = createToggleChildElements(
     "dynamic-div",
-    "Weather Radar"
+    "Weather Radar",
+    updateLinkURL
   );
   const numRadarStations = 6;
   weatherRadarDiv.setAttribute("class", "tab-container");
@@ -710,7 +729,8 @@ function clickWeatherClickListener(
   // Get the dynamic div where we put all the forecast stuff.
   const contentElement = createToggleChildElements(
     "dynamic-div",
-    "Historical Charts"
+    "Historical Charts",
+    updateLinkURL
   );
 
   //***********************************/
@@ -777,7 +797,7 @@ function clickWeatherClickListener(
     console.log(returnedStations);
     // handleStationList(allStations, returnedStations);
   }
-  createToggleChildElements("dynamic-div", "Sortable Tables");
+  createToggleChildElements("dynamic-div", "Sortable Tables", updateLinkURL);
 
   updateLinkURL();
 }
@@ -801,7 +821,11 @@ function initMap() {
     `;
 
   // const forecastElement = document.getElementById("map-div");
-  const mapDivElement = createToggleChildElements("map-div", "Map");
+  const mapDivElement = createToggleChildElements(
+    "map-div",
+    "Map",
+    updateLinkURL
+  );
   mapDivElement.innerHTML += mapHTML;
 
   var linkHeader = document.createElement("a");

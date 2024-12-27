@@ -488,10 +488,11 @@ class clickWeatherManager {
       let attributes = {};
 
       attributes.title = decodeURIComponent(chartAttributeArray[0]);
-      attributes.days = parseFloat(chartAttributeArray[1]).toFixed(0);
+      attributes.days = parseInt(parseFloat(chartAttributeArray[1]).toFixed(0));
+
       attributes.offset = false;
-      if (parseFloat(chartAttributeArray[2]).toFixed(0) == 1) {
-        attributes.offset = false;
+      if (parseFloat(chartAttributeArray[2]).toFixed(0) == "1") {
+        attributes.offset = true;
       }
 
       // Create a default value, and allow it to be overriden with a valid parsed value
@@ -504,8 +505,8 @@ class clickWeatherManager {
         attributes.chartType = parsedChartType;
       }
 
-      attributes.radiusMiles = parseFloat(chartAttributeArray[4]).toFixed(0);
-      attributes.radiusStations = parseFloat(chartAttributeArray[5]).toFixed(0);
+      attributes.radiusMiles = parseInt(chartAttributeArray[4]);
+      attributes.radiusStations = parseInt(chartAttributeArray[5]);
 
       // Remove the curly braces and check if the result is empty
       const tablesCSV = chartAttributeArray[6].slice(1, -1); // Removes the curly braces

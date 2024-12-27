@@ -442,14 +442,19 @@ class clickWeatherManager {
     );
 
     var compactState = this.definedCharts
-      .map((attr) =>
+      .map((currentChart) =>
         [
-          encodeURIComponent(attr.title),
-          attr.days,
-          +attr.offset,
-          attr.dataType,
-          attr.radiusMiles,
-          attr.radiusStations,
+          encodeURIComponent(currentChart.title),
+          currentChart.days,
+          +currentChart.offset,
+          currentChart.dataType,
+          currentChart.radiusMiles,
+          currentChart.radiusStations,
+          "{" +
+            currentChart.tables
+              .map((currentTable) => currentTable.hours)
+              .join(",") +
+            "}",
         ].join(",")
       )
       .join("|");
@@ -463,11 +468,16 @@ class clickWeatherManager {
 
     console.log(chartStringList);
 
+    // We're limiting to num elements so that the last item can also be a CSV
+    const numElements = 7;
+
     chartStringList.forEach((chartString) => {
       const chartAttributeArray = chartString.split(",");
-      if (chartAttributeArray.length != 6) {
+      if (chartAttributeArray.length != numElements) {
         alert(
-          "Incorrectly formatted chart string, each station must have 6 attributes comma separated"
+          "Incorrectly formatted chart string, each station must have " +
+            numElements +
+            " attributes comma separated"
         );
         return 0;
       }
@@ -486,7 +496,9 @@ class clickWeatherManager {
 
       // Create a default value, and allow it to be overriden with a valid parsed value
       attributes.chartType = CHART_TYPES.temperature;
-      var parsedChartType = parseFloat(chartAttributeArray[3]).toFixed(0);
+      var parsedChartType = parseInt(chartAttributeArray[3]);
+
+      console.log(parsedChartType);
       // See if the parsed chart type is in the list of valid chart types
       if (Object.values(CHART_TYPES).includes(parsedChartType)) {
         attributes.chartType = parsedChartType;
@@ -494,6 +506,15 @@ class clickWeatherManager {
 
       attributes.radiusMiles = parseFloat(chartAttributeArray[4]).toFixed(0);
       attributes.radiusStations = parseFloat(chartAttributeArray[5]).toFixed(0);
+
+      // Remove the curly braces and check if the result is empty
+      const tablesCSV = chartAttributeArray[6].slice(1, -1); // Removes the curly braces
+
+      // If innerCsv is non-empty, split by commas and create an array of objects
+      attributes.tables = tablesCSV
+        ? tablesCSV.split(";").map((item) => ({ hours: Number(item) }))
+        : [];
+
       this.definedCharts.push(this.createChartObject(attributes));
     });
   }
@@ -663,6 +684,7 @@ class clickWeatherManager {
       tables: attributes.tables,
       uuid: chartUUID,
     };
+
     return tempChartObject;
   }
 

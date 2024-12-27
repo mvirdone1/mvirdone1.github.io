@@ -51,14 +51,8 @@ const clickWeatherChartCRUD = {
     const chartData = rows.map((row) => {
       const inputs = row.querySelectorAll("input, select");
 
+      // Parse the string for the table metadata in the hidden element
       const tempTableArray = [];
-      /*
-      inputs[7].value
-        .split(",")
-        .map((tableItem) =>
-          tempTableArray.push({ hours: parseInt(tableItem) })
-        );
-*/
       if (inputs[7].value.trim()) {
         inputs[7].value
           .split(",")

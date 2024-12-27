@@ -14,6 +14,11 @@ const DATA_TYPES = {
   change: 1,
 };
 
+const DATA_TYPES_READABLE = {
+  0: "Absolute Reading",
+  1: "Change In Reading",
+};
+
 const CHART_TYPES = {
   temperature: 0,
   snowDepth: 1,

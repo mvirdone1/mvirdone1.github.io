@@ -3,29 +3,6 @@ const removeAbsoluteSnow = false;
 
 // const myClickWeatherManager = new persistentDataModule();
 
-const clickWeatherColors = [
-  [230, 25, 75], // Red
-  [60, 180, 75], // Green
-  [255, 225, 25], // Yellow
-  [67, 99, 216], // Blue
-  [245, 130, 49], // Orange
-  [145, 30, 180], // Purple
-  [70, 240, 240], // Cyan
-  [240, 50, 230], // Magenta
-  [188, 246, 12], // Lime
-  [250, 190, 190], // Pink
-  [0, 128, 128], // Teal
-  [230, 190, 255], // Lavender
-  [154, 99, 36], // Brown
-  [255, 250, 200], // Beige
-  [128, 0, 0], // Maroon
-  [170, 255, 195], // Mint
-  [128, 128, 0], // Olive
-  [255, 216, 177], // Peach
-  [0, 0, 117], // Navy
-  [128, 128, 128], // Gray
-];
-
 function parseURL() {
   const queryString = window.location.search;
   console.log(queryString);
@@ -93,6 +70,7 @@ function parseURL() {
     case "snow":
     default:
       myClickWeatherManager.createFullMountainSuitePlots();
+
       break;
   }
 
@@ -234,20 +212,11 @@ function tabulateStationMeasurements() {
   const tablesToSort = [];
 
   const tableParameters = [];
-  tableParameters.push({
-    type: CHART_TYPES.snowDepth,
-    hours: numHours,
-    title: "Snow Depth",
-  });
-  tableParameters.push({
-    type: CHART_TYPES.snowDepth,
-    hours: 72,
-    title: "Snow Depth",
-  });
-  tableParameters.push({
-    type: CHART_TYPES.SWE,
-    hours: numHours,
-    title: "Snow Water Equivalent",
+  myClickWeatherManager.getDefinedCharts().forEach((currentChart) => {
+    console.log(currentChart.tables);
+    currentChart.tables.forEach((table) => {
+      tableParameters.push(table);
+    });
   });
 
   tableParameters.forEach((currentTable) => {
@@ -315,6 +284,20 @@ function tabulateStationMeasurements() {
   const sortableTablesElement = document.getElementById(
     "hide-show-sortable-tables-child"
   );
+
+  const tableDataStealthFormInstance = new stealthForm(
+    sortableTablesElement,
+    "Manage Tables",
+    "Historical Chart Attributes",
+    updateTableFormList,
+    myClickWeatherManager
+  );
+
+  tableDataStealthFormInstance.addCustomButton(
+    "Cancel",
+    stealthFormCancelChartCallback
+  );
+
   sortableTablesElement.innerHTML = tabulateDataHtml;
 
   tablesToSort.forEach((tableId, index) => {
@@ -348,7 +331,7 @@ function printNiceWeatherCell(measurement) {
   }
 }
 
-function getLocation() {
+function getBrowserLocation() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(updateLocationFromBrowser);
   } else {
@@ -365,6 +348,162 @@ function updateLocationFromBrowser(position) {
 
   const myPosition = { lat: lat, lng: lon };
   clickWeatherClickListener(myPosition, false);
+}
+
+function tableFormPrintRow(
+  formContentDiv,
+  currentChart = {},
+  isFirstRow = false
+) {
+  // Create a wrapper div for the chart row
+  const chartRow = document.createElement("div");
+  chartRow.style.display = "flex";
+  chartRow.style.gap = "10px";
+  chartRow.style.alignItems = "center";
+  chartRow.style.marginBottom = "10px";
+
+  if (isFirstRow) {
+    // Create a header row with labels
+    const headerRow = document.createElement("div");
+    headerRow.style.display = "flex";
+    headerRow.style.gap = "10px";
+    headerRow.style.alignItems = "center";
+    headerRow.style.fontWeight = "bold";
+    headerRow.style.marginBottom = "10px";
+
+    // Add labels to the header row with consistent widths
+    const headers = [
+      { label: "Parent Chart", width: "350px" },
+      { label: "Data Type", width: "180px" },
+      { label: "Hours", width: "60px" },
+      { label: "Table Title", width: "180px" },
+    ];
+
+    headers.forEach(({ label, width }) => {
+      const labelDiv = document.createElement("div");
+      labelDiv.textContent = label;
+      labelDiv.style.width = width;
+      labelDiv.style.textAlign = "center"; // Align text with inputs
+      headerRow.appendChild(labelDiv);
+    });
+
+    // Append the header row to the form
+    formContentDiv.appendChild(headerRow);
+  }
+
+  currentChart.tables.forEach((currentTable) => {
+    // Chart Type dropdown
+    const chartTypeSelect = document.createElement("select");
+    chartTypeSelect.style.width = "350px"; // Match width to header
+
+    let hasSelectedOption = false;
+
+    myClickWeatherManager.getDefinedCharts.forEach((definedChart, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = definedChart.fullTitle;
+
+      // Otherwise, update the flag as we find the key
+      if (definedChart.fullTitle === currentChart.fullTitle) {
+        option.selected = true; // Default value
+        hasSelectedOption = true;
+      }
+
+      console.log(option);
+      chartTypeSelect.appendChild(option);
+    });
+    chartRow.appendChild(chartTypeSelect);
+
+    // Append the row to the list
+    formContentDiv.appendChild(chartRow);
+
+    return 0;
+  });
+
+  // Chart title (non-editable)
+  const titleDiv = document.createElement("div");
+  titleDiv.textContent = currentChart.fullTitle || "New Chart"; // Default value for new rows
+  titleDiv.style.width = "350px";
+  titleDiv.style.textAlign = "center"; // Align text
+  chartRow.appendChild(titleDiv);
+
+  // Chart Subtitle (input)
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+  titleInput.placeholder = "Title";
+  titleInput.style.width = "150px";
+  titleInput.value = currentChart.title || ""; // Default value
+  chartRow.appendChild(titleInput);
+
+  // Days input
+  const daysInput = document.createElement("input");
+  daysInput.type = "number";
+  daysInput.placeholder = "Days";
+  daysInput.style.width = "60px";
+  daysInput.value = currentChart.days || ""; // Default value
+  chartRow.appendChild(daysInput);
+
+  // Offset radio buttons
+  const offsetWrapper = document.createElement("div");
+  offsetWrapper.style.display = "flex";
+  offsetWrapper.style.gap = "5px";
+  offsetWrapper.style.width = "190px";
+
+  const absoluteValueRadio = document.createElement("input");
+  absoluteValueRadio.type = "radio";
+  absoluteValueRadio.name = `offset-${formContentDiv.children.length}`;
+  absoluteValueRadio.value = "false";
+  absoluteValueRadio.checked =
+    currentChart.offset === false || !currentChart.offset;
+  offsetWrapper.appendChild(absoluteValueRadio);
+  offsetWrapper.appendChild(document.createTextNode("Absolute"));
+
+  const changeInValueRadio = document.createElement("input");
+  changeInValueRadio.type = "radio";
+  changeInValueRadio.name = `offset-${formContentDiv.children.length}`;
+  changeInValueRadio.value = "true";
+  changeInValueRadio.checked = currentChart.offset === true;
+  offsetWrapper.appendChild(changeInValueRadio);
+  offsetWrapper.appendChild(document.createTextNode("Change"));
+
+  chartRow.appendChild(offsetWrapper);
+
+  /*  // If no matching dataType found, select the first option
+  if (!hasSelectedOption) {
+    chartTypeSelect.options[0].selected = true;
+  }
+    */
+
+  /*
+  if (!hasSelectedOption) {
+    console.log("Setting unselected index 1");
+    chartTypeSelect.selectedIndex = 0; // Explicitly set the first option as selected
+  }
+    */
+
+  // Radius Miles input
+  const radiusMilesInput = document.createElement("input");
+  radiusMilesInput.type = "number";
+  radiusMilesInput.placeholder = "Miles";
+  radiusMilesInput.style.width = "60px";
+  radiusMilesInput.value = currentChart.radiusMiles || ""; // Default value
+  chartRow.appendChild(radiusMilesInput);
+
+  // Radius Stations input
+  const radiusStationsInput = document.createElement("input");
+  radiusStationsInput.type = "number";
+  radiusStationsInput.placeholder = "Num Stations";
+  radiusStationsInput.style.width = "60px";
+  radiusStationsInput.value = currentChart.radiusStations || ""; // Default value
+  chartRow.appendChild(radiusStationsInput);
+
+  // Remove button
+  const removeButton = document.createElement("button");
+  removeButton.textContent = "Remove";
+  removeButton.addEventListener("click", function () {
+    formContentDiv.removeChild(chartRow);
+  });
+  chartRow.appendChild(removeButton);
 }
 
 function chartFormPrintChartRow(
@@ -532,6 +671,21 @@ function chartFormPrintChartRow(
 
   // Append the row to the list
   formContentDiv.appendChild(chartRow);
+}
+
+// Main function
+function updateTableFormList(stealthFormInstance) {
+  // Get the div element where the form content is going to reside
+  const formContentDiv = document.getElementById(
+    stealthFormInstance.getStealthFormContentId()
+  );
+
+  let isFirstRow = true;
+
+  myClickWeatherManager.getDefinedCharts().forEach((currentChart) => {
+    tableFormPrintRow(formContentDiv, currentChart, isFirstRow);
+    isFirstRow = false; // After the first row, no need for headers
+  });
 }
 
 // Main function

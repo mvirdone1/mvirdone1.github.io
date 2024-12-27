@@ -81,7 +81,6 @@ class clickWeatherManager {
     };
     this.definedCharts = [];
     this.definedStations = [];
-    this.definedTables = [];
 
     this.currentChartMode = CHART_MODES.local;
 
@@ -591,15 +590,11 @@ class clickWeatherManager {
     attributes.tables = [];
 
     attributes.tables.push({
-      type: CHART_TYPES.snowDepth,
       hours: 24,
-      title: "Snow Depth",
     });
 
     attributes.tables.push({
-      type: CHART_TYPES.snowDepth,
       hours: 36,
-      title: "Snow Depth",
     });
 
     this.definedCharts.push(this.createChartObject(attributes));
@@ -613,9 +608,7 @@ class clickWeatherManager {
     attributes.tables = [];
 
     attributes.tables.push({
-      type: CHART_TYPES.SWE,
       hours: 24,
-      title: "Snow Water Equivalent",
     });
 
     this.definedCharts.push(this.createChartObject(attributes));
@@ -644,6 +637,8 @@ class clickWeatherManager {
       " Day" +
       addS(attributes.days);
 
+    const chartUUID = Math.floor(Math.random() * 2 ** 32).toString(36);
+
     console.log("My Title: " + fullTitle);
     const tempChartObject = {
       fullTitle: fullTitle,
@@ -653,14 +648,20 @@ class clickWeatherManager {
         attributes.title.substring(0, 4) +
         "-" +
         attributes.days +
-        "dy",
+        "dy-" +
+        chartUUID,
       days: attributes.days,
       numHours: 24 * attributes.days,
       offset: attributes.offset,
+
+      // The duplication of data type and chart type is dumb,
+      // but I keep using them interchangably around the script and this just makes it easier :shrug:
       dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above
+      chartType: attributes.chartType,
       radiusMiles: attributes.radiusMiles,
       radiusStations: attributes.radiusStations,
       tables: attributes.tables,
+      uuid: chartUUID,
     };
     return tempChartObject;
   }

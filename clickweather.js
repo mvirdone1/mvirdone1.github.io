@@ -312,6 +312,11 @@ function tabulateStationMeasurements() {
 
   sortableTablesElement.innerHTML = tabulateDataHtml;
 
+  clickWeatherTableCRUD.createWeatherTableStealthCRUD(
+    sortableTablesElement,
+    myClickWeatherManager
+  );
+
   tablesToSort.forEach((tableId, index) => {
     makeTableSortable(tableId);
   });
@@ -484,7 +489,7 @@ function clickWeatherClickListener(
   updateWeatherPlot(locationObject, 49, "weather-plot-2");
 
   // Get the dynamic div where we put all the forecast stuff.
-  const contentElement = createToggleChildElements(
+  const chartContentElement = createToggleChildElements(
     "dynamic-div",
     "Historical Charts",
     updateLinkURL
@@ -494,7 +499,7 @@ function clickWeatherClickListener(
   // Code for the hideable form/menu for managing charts
   //***********************************/
   clickWeatherChartCRUD.createWeatherChartStealthCRUD(
-    contentElement,
+    chartContentElement,
     myClickWeatherManager
   );
 
@@ -505,13 +510,13 @@ function clickWeatherClickListener(
     newHeading = document.createElement("h2");
     newHeading.textContent = chartObject.fullTitle;
 
-    contentElement.appendChild(newHeading);
+    chartContentElement.appendChild(newHeading);
 
     var newCanvas = document.createElement("canvas");
 
     newCanvas.setAttribute("id", chartObject.divName);
 
-    contentElement.appendChild(newCanvas);
+    chartContentElement.appendChild(newCanvas);
 
     console.log(chartObject);
 
@@ -535,7 +540,11 @@ function clickWeatherClickListener(
     console.log(returnedStations);
     // handleStationList(allStations, returnedStations);
   }
-  createToggleChildElements("dynamic-div", "Sortable Tables", updateLinkURL);
+  const tableContentElement = createToggleChildElements(
+    "dynamic-div",
+    "Sortable Tables",
+    updateLinkURL
+  );
 
   updateLinkURL();
 }

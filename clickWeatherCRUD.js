@@ -109,10 +109,12 @@ const clickWeatherChartCRUD = {
       "Submit",
       this.stealthFormSubmitChartCallback.bind(this)
     );
+
     chartStealthFormInstance.addCustomButton(
       "Cancel",
       this.stealthFormCancelChartCallback.bind(this)
     );
+
     chartStealthFormInstance.addCustomButton(
       "Add Table",
       this.stealthFormAddChartCallback.bind(this)
@@ -349,7 +351,7 @@ const clickWeatherTableCRUD = {
     contentElement,
     clickWeatherManagerInstance
   ) {
-    const chartStealthFormInstance = new stealthForm(
+    const tableStealthFormInstance = new stealthForm(
       contentElement,
       "Manage Tables",
       "Sortable Tables",
@@ -357,15 +359,15 @@ const clickWeatherTableCRUD = {
       clickWeatherManagerInstance
     );
 
-    chartStealthFormInstance.addCustomButton(
+    tableStealthFormInstance.addCustomButton(
       "Submit",
       this.stealthFormSubmitChartCallback.bind(this)
     );
-    chartStealthFormInstance.addCustomButton(
+    tableStealthFormInstance.addCustomButton(
       "Cancel",
       this.stealthFormCancelChartCallback.bind(this)
     );
-    chartStealthFormInstance.addCustomButton(
+    tableStealthFormInstance.addCustomButton(
       "Add Chart",
       this.stealthFormAddChartCallback.bind(this)
     );
@@ -388,7 +390,7 @@ const clickWeatherTableCRUD = {
     stealthFormInstance.hideForm();
   },
 
-  parseChartRows: function (stealthFormInstance) {
+  parseTableRows: function (stealthFormInstance) {
     const formContentDiv = document.getElementById(
       stealthFormInstance.getStealthFormContentId()
     );
@@ -439,7 +441,7 @@ const clickWeatherTableCRUD = {
     myClickWeatherManager.setDefinedCharts([]);
 
     // Push all the charts we have in the list into the weather manager's chart list
-    this.parseChartRows(stealthFormInstance).forEach((attributes) => {
+    this.parseTableRows(stealthFormInstance).forEach((attributes) => {
       myClickWeatherManager.pushAttributesToDefinedCharts(attributes);
     });
 
@@ -463,6 +465,7 @@ const clickWeatherTableCRUD = {
 
   // Main function
   updateTableFormList: function (stealthFormInstance) {
+    console.log("Trying to make tables?!");
     // Get the div element where the form content is going to reside
     const formContentDiv = document.getElementById(
       stealthFormInstance.getStealthFormContentId()
@@ -490,48 +493,16 @@ const clickWeatherTableCRUD = {
 
     const FIELD_CONFIG = [
       {
-        type: "text",
-        label: "Full Chart Title",
-        width: "350px",
-        key: "fullTitle",
-        readOnly: true,
-        placeholder: "New Chart",
-        defaultValue: "New Chart",
-      },
-      {
-        type: "input",
-        label: "Chart Subtitle",
-        width: "150px",
-        key: "title",
-        placeholder: "Title",
-      },
-      {
-        type: "number",
-        label: "Days",
-        width: "60px",
-        key: "days",
-        placeholder: "Days",
-      },
-
-      {
         type: "select",
-        label: "Offset Type",
-        width: "180px",
-        key: "offset",
-        options: Object.entries(DATA_TYPES_READABLE).map(([key, label]) => ({
-          value: key,
-          label,
-        })),
-      },
-      {
-        type: "select",
-        label: "Chart Type",
+        label: "Data Source",
         width: "190px",
-        key: "dataType",
-        options: Object.entries(CHART_TYPE_READABLE).map(([key, label]) => ({
-          value: key,
-          label,
-        })),
+        key: "uuid",
+        options: Object.entries(myClickWeatherManager.getDefinedCharts()).map(
+          (chartOptionInstance) => ({
+            value: chartOptionInstance.uuid,
+            label: chartOptionInstance.fullTitle,
+          })
+        ),
       },
       {
         type: "number",
@@ -541,14 +512,7 @@ const clickWeatherTableCRUD = {
         placeholder: "Miles",
       },
       {
-        type: "number",
-        label: "Radius Stations",
-        width: "60px",
-        key: "radiusStations",
-        placeholder: "Num Stations",
-      },
-      {
-        type: "hidden",
+        type: "text",
         label: "Chart Tables",
         key: "tables",
         transform: (tables) =>

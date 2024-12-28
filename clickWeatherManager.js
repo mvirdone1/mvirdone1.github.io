@@ -14,6 +14,11 @@ const DATA_TYPES = {
   change: 1,
 };
 
+const DATA_TYPES_READABLE = {
+  0: "Absolute Reading",
+  1: "Change In Reading",
+};
+
 const CHART_TYPES = {
   temperature: 0,
   snowDepth: 1,
@@ -42,6 +47,29 @@ const CHART_MODE_FOR_URL = Object.fromEntries(
 );
 
 const STATION_LIST_MODES = { position: 0, stations: 1 };
+
+const CLICK_WEATHER_COLORS = [
+  [230, 25, 75], // Red
+  [60, 180, 75], // Green
+  [255, 225, 25], // Yellow
+  [67, 99, 216], // Blue
+  [245, 130, 49], // Orange
+  [145, 30, 180], // Purple
+  [70, 240, 240], // Cyan
+  [240, 50, 230], // Magenta
+  [188, 246, 12], // Lime
+  [250, 190, 190], // Pink
+  [0, 128, 128], // Teal
+  [230, 190, 255], // Lavender
+  [154, 99, 36], // Brown
+  [255, 250, 200], // Beige
+  [128, 0, 0], // Maroon
+  [170, 255, 195], // Mint
+  [128, 128, 0], // Olive
+  [255, 216, 177], // Peach
+  [0, 0, 117], // Navy
+  [128, 128, 128], // Gray
+];
 
 class clickWeatherManager {
   constructor() {
@@ -113,13 +141,13 @@ class clickWeatherManager {
         stationLocation,
         currentStation.name,
         currentStation.stid,
-        clickWeatherColors[stationArrayIndex]
+        CLICK_WEATHER_COLORS[stationArrayIndex]
       );
     }
     // Because this (currentDataSet) is an object that was passed
     // we are actually modifying the source object in this case
     currentDataSet.borderColor = rgbArrayToString(
-      clickWeatherColors[stationArrayIndex]
+      CLICK_WEATHER_COLORS[stationArrayIndex]
     );
 
     var lastDataPoint = currentDataSet.data.length - 1;
@@ -278,7 +306,9 @@ class clickWeatherManager {
     // ("<tr><th>ID</th><th>Dist (mi)</th><th>Name</th><th>Elevation</th></tr>");
 
     stationsWithDistance.forEach((station, index) => {
-      const color = rgbArrayToString(clickWeatherColors[station.originalIndex]);
+      const color = rgbArrayToString(
+        CLICK_WEATHER_COLORS[station.originalIndex]
+      );
 
       legendTableHTML += `<tr>`;
       legendTableHTML += `<td style="background-color: ${color};">${station.stid}</td>`;
@@ -417,14 +447,19 @@ class clickWeatherManager {
     );
 
     var compactState = this.definedCharts
-      .map((attr) =>
+      .map((currentChart) =>
         [
-          encodeURIComponent(attr.title),
-          attr.days,
-          +attr.offset,
-          attr.dataType,
-          attr.radiusMiles,
-          attr.radiusStations,
+          encodeURIComponent(currentChart.title),
+          currentChart.days,
+          +currentChart.offset,
+          currentChart.dataType,
+          currentChart.radiusMiles,
+          currentChart.radiusStations,
+          "{" +
+            currentChart.tables
+              .map((currentTable) => currentTable.hours)
+              .join(",") +
+            "}",
         ].join(",")
       )
       .join("|");
@@ -438,11 +473,16 @@ class clickWeatherManager {
 
     console.log(chartStringList);
 
+    // We're limiting to num elements so that the last item can also be a CSV
+    const numElements = 7;
+
     chartStringList.forEach((chartString) => {
       const chartAttributeArray = chartString.split(",");
-      if (chartAttributeArray.length != 6) {
+      if (chartAttributeArray.length != numElements) {
         alert(
-          "Incorrectly formatted chart string, each station must have 6 attributes comma separated"
+          "Incorrectly formatted chart string, each station must have " +
+            numElements +
+            " attributes comma separated"
         );
         return 0;
       }
@@ -453,22 +493,34 @@ class clickWeatherManager {
       let attributes = {};
 
       attributes.title = decodeURIComponent(chartAttributeArray[0]);
-      attributes.days = parseFloat(chartAttributeArray[1]).toFixed(0);
+      attributes.days = parseInt(parseFloat(chartAttributeArray[1]).toFixed(0));
+
       attributes.offset = false;
-      if (parseFloat(chartAttributeArray[2]).toFixed(0) == 1) {
-        attributes.offset = false;
+      if (parseFloat(chartAttributeArray[2]).toFixed(0) == "1") {
+        attributes.offset = true;
       }
 
       // Create a default value, and allow it to be overriden with a valid parsed value
       attributes.chartType = CHART_TYPES.temperature;
-      var parsedChartType = parseFloat(chartAttributeArray[3]).toFixed(0);
+      var parsedChartType = parseInt(chartAttributeArray[3]);
+
+      console.log(parsedChartType);
       // See if the parsed chart type is in the list of valid chart types
       if (Object.values(CHART_TYPES).includes(parsedChartType)) {
         attributes.chartType = parsedChartType;
       }
 
-      attributes.radiusMiles = parseFloat(chartAttributeArray[4]).toFixed(0);
-      attributes.radiusStations = parseFloat(chartAttributeArray[5]).toFixed(0);
+      attributes.radiusMiles = parseInt(chartAttributeArray[4]);
+      attributes.radiusStations = parseInt(chartAttributeArray[5]);
+
+      // Remove the curly braces and check if the result is empty
+      const tablesCSV = chartAttributeArray[6].slice(1, -1); // Removes the curly braces
+
+      // If innerCsv is non-empty, split by commas and create an array of objects
+      attributes.tables = tablesCSV
+        ? tablesCSV.split(";").map((item) => ({ hours: Number(item) }))
+        : [];
+
       this.definedCharts.push(this.createChartObject(attributes));
     });
   }
@@ -488,6 +540,7 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.snowDepth;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -498,6 +551,7 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.temperature;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -508,9 +562,11 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.windSpeed;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
   }
+
   createFullMountainSuitePlots() {
     this.setChartMode(CHART_MODES.snow);
 
@@ -526,6 +582,7 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.snowDepth;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -536,6 +593,7 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.temperature;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -546,6 +604,7 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.windSpeed;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -555,6 +614,15 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.snowDepth;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
+
+    attributes.tables.push({
+      hours: 24,
+    });
+
+    attributes.tables.push({
+      hours: 36,
+    });
 
     this.definedCharts.push(this.createChartObject(attributes));
 
@@ -564,6 +632,12 @@ class clickWeatherManager {
     attributes.chartType = CHART_TYPES.SWE;
     attributes.radiusMiles = defaultRadiusMi;
     attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
+
+    attributes.tables.push({
+      hours: 24,
+    });
+
     this.definedCharts.push(this.createChartObject(attributes));
   }
 
@@ -573,6 +647,25 @@ class clickWeatherManager {
 
   setDefinedCharts(chartArray) {
     this.definedCharts = chartArray;
+  }
+
+  updateDefinedChartsTables(tableList) {
+    // First delete all the current tables
+    this.definedCharts.forEach((currentChart) => {
+      currentChart.tables = [];
+    });
+
+    // Next, iterate
+    tableList.forEach((currentTable) => {
+      const chartToUpdate = this.definedCharts.find(
+        (myChart) => myChart.uuid === currentTable.uuid
+      );
+      if (chartToUpdate) {
+        chartToUpdate.tables.push({ hours: currentTable.tableTime });
+      } else {
+        console.error("UUID missing, this should never happen");
+      }
+    });
   }
 
   pushAttributesToDefinedCharts(attributes) {
@@ -590,6 +683,8 @@ class clickWeatherManager {
       " Day" +
       addS(attributes.days);
 
+    const chartUUID = Math.floor(Math.random() * 2 ** 32).toString(36);
+
     console.log("My Title: " + fullTitle);
     const tempChartObject = {
       fullTitle: fullTitle,
@@ -599,14 +694,22 @@ class clickWeatherManager {
         attributes.title.substring(0, 4) +
         "-" +
         attributes.days +
-        "dy",
+        "dy-" +
+        chartUUID,
       days: attributes.days,
       numHours: 24 * attributes.days,
       offset: attributes.offset,
+
+      // The duplication of data type and chart type is dumb,
+      // but I keep using them interchangably around the script and this just makes it easier :shrug:
       dataType: attributes.chartType, //See enumeration defined in const CHART_TYPES above
+      chartType: attributes.chartType,
       radiusMiles: attributes.radiusMiles,
       radiusStations: attributes.radiusStations,
+      tables: attributes.tables,
+      uuid: chartUUID,
     };
+
     return tempChartObject;
   }
 

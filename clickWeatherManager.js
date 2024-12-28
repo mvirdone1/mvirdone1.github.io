@@ -649,6 +649,25 @@ class clickWeatherManager {
     this.definedCharts = chartArray;
   }
 
+  updateDefinedChartsTables(tableList) {
+    // First delete all the current tables
+    this.definedCharts.forEach((currentChart) => {
+      currentChart.tables = [];
+    });
+
+    // Next, iterate
+    tableList.forEach((currentTable) => {
+      const chartToUpdate = this.definedCharts.find(
+        (myChart) => myChart.uuid === currentTable.uuid
+      );
+      if (chartToUpdate) {
+        chartToUpdate.tables.push({ hours: currentTable.tableTime });
+      } else {
+        console.error("UUID missing, this should never happen");
+      }
+    });
+  }
+
   pushAttributesToDefinedCharts(attributes) {
     this.setChartMode(CHART_MODES.custom);
     this.definedCharts.push(this.createChartObject(attributes));

@@ -216,7 +216,6 @@ function tabulateStationMeasurements() {
   console.log(myClickWeatherManager.getDefinedCharts());
 
   myClickWeatherManager.getDefinedCharts().forEach((currentChart) => {
-    console.log(currentChart.tables);
     currentChart.tables.forEach((currentTable) => {
       const tempTableParameters = {
         type: currentChart.chartType,
@@ -224,7 +223,6 @@ function tabulateStationMeasurements() {
         title: currentChart.title,
       };
 
-      console.log(tempTableParameters);
       tableParameters.push(tempTableParameters);
     });
   });
@@ -537,7 +535,6 @@ function clickWeatherClickListener(
       postAPIDataCallback
     );
 
-    console.log(returnedStations);
     // handleStationList(allStations, returnedStations);
   }
   const tableContentElement = createToggleChildElements(

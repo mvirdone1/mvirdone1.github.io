@@ -1,8 +1,24 @@
 const myCRUDHelper = {
-  buildGenericFormRow: function (fieldAttributes, formObject, parentElement) {
+  buildGenericFormRow: function (
+    fieldAttributes,
+    formObject,
+    parentElement,
+    printRowCallback = true,
+    arrayIndex = 0
+  ) {
+    // Create a wrapper div for the chart row
+    const chartRow = document.createElement("div");
+    chartRow.style.display = "flex";
+    chartRow.style.gap = "10px";
+    chartRow.style.alignItems = "center";
+    chartRow.style.marginBottom = "10px";
+
+    let isArrayField = false;
+    let arrayFieldNumElements = 0;
+
     fieldAttributes.forEach((field) => {
       const {
-        type,
+        fieldType,
         key,
         width,
         placeholder,
@@ -13,7 +29,7 @@ const myCRUDHelper = {
       } = field;
 
       let fieldElement;
-      switch (type) {
+      switch (fieldType) {
         case "text":
           fieldElement = document.createElement("div");
           fieldElement.textContent = formObject[key] || defaultValue || "";
@@ -26,7 +42,9 @@ const myCRUDHelper = {
           fieldElement.type = "text";
           fieldElement.placeholder = placeholder || "";
           fieldElement.style.width = width;
-          fieldElement.value = formObject[key] || "";
+          fieldElement.value = transform
+            ? transform(formObject[key])
+            : formObject[key] || "";
           break;
 
         case "number":
@@ -35,6 +53,18 @@ const myCRUDHelper = {
           fieldElement.placeholder = placeholder || "";
           fieldElement.style.width = width;
           fieldElement.value = formObject[key] || "";
+          break;
+
+        case "number-array":
+          isArrayField = true;
+          arrayFieldNumElements = formObject[key]?.length;
+          fieldElement = document.createElement("input");
+          fieldElement.type = "number";
+          fieldElement.placeholder = placeholder || "";
+          fieldElement.style.width = width;
+          fieldElement.value = transform
+            ? transform(formObject[key])?.[arrayIndex]
+            : formObject[key]?.[arrayIndex] || "";
           break;
 
         case "radioGroup":
@@ -60,7 +90,6 @@ const myCRUDHelper = {
         case "select":
           fieldElement = document.createElement("select");
           fieldElement.style.width = width;
-
           options.forEach(({ value, label }) => {
             const option = document.createElement("option");
             option.value = value;
@@ -70,8 +99,12 @@ const myCRUDHelper = {
           });
           break;
 
-        case "actions":
-          // do nothing?
+        case "action-remove":
+          fieldElement = document.createElement("button");
+          fieldElement.textContent = "Remove";
+          fieldElement.addEventListener("click", function () {
+            parentElement.removeChild(chartRow);
+          });
           break;
 
         case "hidden":
@@ -87,8 +120,22 @@ const myCRUDHelper = {
           console.warn(`Unknown field type: ${type}`);
       }
 
-      if (fieldElement) parentElement.appendChild(fieldElement);
+      if (fieldElement) chartRow.appendChild(fieldElement);
     });
+
+    if (printRowCallback) {
+      parentElement.appendChild(chartRow);
+    }
+
+    if (isArrayField && arrayIndex + 1 < arrayFieldNumElements) {
+      this.buildGenericFormRow(
+        fieldAttributes,
+        formObject,
+        parentElement,
+        printRowCallback,
+        arrayIndex + 1
+      );
+    }
   },
 };
 
@@ -130,7 +177,7 @@ const clickWeatherChartCRUD = {
       stealthFormInstance.getStealthFormContentId()
     );
 
-    this.tableFormPrintTableRow(formContentDiv);
+    this.chartFormPrintChartRow(formContentDiv);
   },
 
   stealthFormCancelChartCallback: function (stealthFormInstance) {
@@ -161,10 +208,6 @@ const clickWeatherChartCRUD = {
 
       // console.log(tempTableArray);
 
-      var tempOffsetType = false;
-      if (parseInt(inputs[2].value) === 1) {
-        tempOffsetType = true;
-      }
       // Parse individual inputs and dropdowns
       return {
         title: inputs[0]?.value || "", // Chart Subtitle
@@ -231,16 +274,9 @@ const clickWeatherChartCRUD = {
     currentChart = {},
     isFirstRow = false
   ) {
-    // Create a wrapper div for the chart row
-    const chartRow = document.createElement("div");
-    chartRow.style.display = "flex";
-    chartRow.style.gap = "10px";
-    chartRow.style.alignItems = "center";
-    chartRow.style.marginBottom = "10px";
-
     const FIELD_CONFIG = [
       {
-        type: "text",
+        fieldType: "text",
         label: "Full Chart Title",
         width: "350px",
         key: "fullTitle",
@@ -249,21 +285,21 @@ const clickWeatherChartCRUD = {
         defaultValue: "New Chart",
       },
       {
-        type: "input",
+        fieldType: "input",
         label: "Chart Subtitle",
         width: "150px",
         key: "title",
         placeholder: "Title",
       },
       {
-        type: "number",
+        fieldType: "number",
         label: "Days",
         width: "60px",
         key: "days",
         placeholder: "Days",
       },
       {
-        type: "select",
+        fieldType: "select",
         label: "Offset Type",
         width: "180px",
         key: "offset",
@@ -273,7 +309,7 @@ const clickWeatherChartCRUD = {
         })),
       },
       {
-        type: "select",
+        fieldType: "select",
         label: "Chart Type",
         width: "190px",
         key: "dataType",
@@ -283,28 +319,28 @@ const clickWeatherChartCRUD = {
         })),
       },
       {
-        type: "number",
+        fieldType: "number",
         label: "Radius Miles",
         width: "60px",
         key: "radiusMiles",
         placeholder: "Miles",
       },
       {
-        type: "number",
+        fieldType: "number",
         label: "Radius Stations",
         width: "60px",
         key: "radiusStations",
         placeholder: "Num Stations",
       },
       {
-        type: "hidden",
+        fieldType: "hidden",
         label: "Chart Tables",
         key: "tables",
         transform: (tables) =>
           tables?.map((table) => table.hours).join(",") || "",
       },
       {
-        type: "actions",
+        fieldType: "action-remove",
         label: "Actions",
         width: "auto",
       },
@@ -319,8 +355,8 @@ const clickWeatherChartCRUD = {
       headerRow.style.fontWeight = "bold";
       headerRow.style.marginBottom = "10px";
 
-      FIELD_CONFIG.forEach(({ label, width, type }) => {
-        if (type != "hidden") {
+      FIELD_CONFIG.forEach(({ label, width, fieldType }) => {
+        if (fieldType != "hidden") {
           const labelDiv = document.createElement("div");
           labelDiv.textContent = label;
           labelDiv.style.width = width;
@@ -333,8 +369,13 @@ const clickWeatherChartCRUD = {
       formContentDiv.appendChild(headerRow);
     } // END if (isFirstRow)
 
-    myCRUDHelper.buildGenericFormRow(FIELD_CONFIG, currentChart, chartRow);
+    myCRUDHelper.buildGenericFormRow(
+      FIELD_CONFIG,
+      currentChart,
+      formContentDiv
+    );
 
+    /*
     const removeButton = document.createElement("button");
     removeButton.textContent = "Remove";
     removeButton.addEventListener("click", function () {
@@ -343,6 +384,7 @@ const clickWeatherChartCRUD = {
     chartRow.appendChild(removeButton);
 
     formContentDiv.appendChild(chartRow);
+    */
   },
 };
 
@@ -361,20 +403,20 @@ const clickWeatherTableCRUD = {
 
     tableStealthFormInstance.addCustomButton(
       "Submit",
-      this.stealthFormSubmitChartCallback.bind(this)
+      this.stealthFormSubmitTableCallback.bind(this)
     );
     tableStealthFormInstance.addCustomButton(
       "Cancel",
-      this.stealthFormCancelChartCallback.bind(this)
+      this.stealthFormCancelTableCallback.bind(this)
     );
     tableStealthFormInstance.addCustomButton(
-      "Add Chart",
-      this.stealthFormAddChartCallback.bind(this)
+      "Add Table",
+      this.stealthFormAddTableCallback.bind(this)
     );
   },
 
-  stealthFormAddChartCallback: function (stealthFormInstance) {
-    console.log("Add Chart Click");
+  stealthFormAddTableCallback: function (stealthFormInstance) {
+    console.log("Add Table Click");
     console.log(stealthFormInstance);
 
     // Get the div element where the form content is going to reside
@@ -385,7 +427,7 @@ const clickWeatherTableCRUD = {
     this.tableFormPrintTableRow(formContentDiv);
   },
 
-  stealthFormCancelChartCallback: function (stealthFormInstance) {
+  stealthFormCancelTableCallback: function (stealthFormInstance) {
     console.log("Cancelled");
     stealthFormInstance.hideForm();
   },
@@ -399,51 +441,37 @@ const clickWeatherTableCRUD = {
     const chartData = rows.map((row) => {
       const inputs = row.querySelectorAll("input, select");
 
-      // console.log(inputs);
-
-      // Parse the string for the table metadata in the hidden element
-      const tempTableArray = [];
-      if (inputs[6].value.trim()) {
-        inputs[6].value
-          .split(",")
-          .map((tableItem) =>
-            tempTableArray.push({ hours: parseInt(tableItem) })
-          );
-      }
-
-      // console.log(tempTableArray);
-
-      var tempOffsetType = false;
-      if (parseInt(inputs[2].value) === 1) {
-        tempOffsetType = true;
-      }
       // Parse individual inputs and dropdowns
       return {
-        title: inputs[0]?.value || "", // Chart Subtitle
-        // title: row.children[0].textContent.trim(), // Non-editable title
-        // shortTitle: inputs[0]?.value || "", // Chart Subtitle
-        days: parseInt(inputs[1]?.value, 10) || 5, // Days
-        offset: parseInt(inputs[2]?.value, 10) === 1, // Offset Type drop down
-        chartType: parseInt(inputs[3].value, 10) || 0, // Chart Type (select)
-        radiusMiles: parseFloat(inputs[4]?.value) || 5, // Radius Miles
-        radiusStations: parseInt(inputs[5]?.value, 10) || 20, // Radius Stations
-        tables: tempTableArray,
+        uuid: inputs[0].value,
+        tableTime: parseInt(inputs[1].value),
       };
     });
 
     return chartData;
   },
 
-  stealthFormSubmitChartCallback: function (stealthFormInstance) {
-    console.log("Submitted");
+  chartHasTablesCallback: function (currentChart) {
+    if (currentChart.tables?.length > 0) {
+      return true;
+    }
+    return false;
+  },
+
+  stealthFormSubmitTableCallback: function (stealthFormInstance) {
+    console.log("Submitted Table List");
 
     // Clear the chart list
-    myClickWeatherManager.setDefinedCharts([]);
+    // myClickWeatherManager.setDefinedCharts([]);
 
     // Push all the charts we have in the list into the weather manager's chart list
     this.parseTableRows(stealthFormInstance).forEach((attributes) => {
-      myClickWeatherManager.pushAttributesToDefinedCharts(attributes);
+      console.log(attributes);
     });
+
+    myClickWeatherManager.updateDefinedChartsTables(
+      this.parseTableRows(stealthFormInstance)
+    );
 
     // If the user has submitted the form, this is now a custom chart
     myClickWeatherManager.setChartMode(CHART_MODES.custom);
@@ -493,33 +521,27 @@ const clickWeatherTableCRUD = {
 
     const FIELD_CONFIG = [
       {
-        type: "select",
+        fieldType: "select",
         label: "Data Source",
-        width: "190px",
+        width: "350px",
         key: "uuid",
-        options: Object.entries(myClickWeatherManager.getDefinedCharts()).map(
-          (chartOptionInstance) => ({
+        options: myClickWeatherManager
+          .getDefinedCharts()
+          .map((chartOptionInstance) => ({
             value: chartOptionInstance.uuid,
             label: chartOptionInstance.fullTitle,
-          })
-        ),
+          })),
       },
       {
-        type: "number",
-        label: "Radius Miles",
-        width: "60px",
-        key: "radiusMiles",
-        placeholder: "Miles",
-      },
-      {
-        type: "text",
-        label: "Chart Tables",
+        fieldType: "number-array",
+        label: "Table Hours",
+        width: "100px",
+        placeholder: 24,
         key: "tables",
-        transform: (tables) =>
-          tables?.map((table) => table.hours).join(",") || "",
+        transform: (tables) => tables?.map((table) => table.hours) || "",
       },
       {
-        type: "actions",
+        fieldType: "action-remove",
         label: "Actions",
         width: "auto",
       },
@@ -534,8 +556,8 @@ const clickWeatherTableCRUD = {
       headerRow.style.fontWeight = "bold";
       headerRow.style.marginBottom = "10px";
 
-      FIELD_CONFIG.forEach(({ label, width, type }) => {
-        if (type != "hidden") {
+      FIELD_CONFIG.forEach(({ label, width, fieldType }) => {
+        if (fieldType != "hidden") {
           const labelDiv = document.createElement("div");
           labelDiv.textContent = label;
           labelDiv.style.width = width;
@@ -548,15 +570,11 @@ const clickWeatherTableCRUD = {
       formContentDiv.appendChild(headerRow);
     } // END if (isFirstRow)
 
-    myCRUDHelper.buildGenericFormRow(FIELD_CONFIG, currentChart, chartRow);
-
-    const removeButton = document.createElement("button");
-    removeButton.textContent = "Remove";
-    removeButton.addEventListener("click", function () {
-      formContentDiv.removeChild(chartRow);
-    });
-    chartRow.appendChild(removeButton);
-
-    formContentDiv.appendChild(chartRow);
+    myCRUDHelper.buildGenericFormRow(
+      FIELD_CONFIG,
+      currentChart,
+      formContentDiv,
+      this.chartHasTablesCallback(currentChart)
+    );
   },
 };

@@ -458,7 +458,7 @@ class clickWeatherManager {
           "{" +
             currentChart.tables
               .map((currentTable) => currentTable.hours)
-              .join(",") +
+              .join(";") +
             "}",
         ].join(",")
       )

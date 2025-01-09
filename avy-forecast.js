@@ -43,22 +43,23 @@ const DANGER_ROSE_NUM_TO_RGB_COLOR = [
   "#000000", // Black (10)
 ];
 
-const LOGAN_REGIONAL_INFO = {
-  // Index 0 is highest elevation, index 2 is lowest
-  // This matches what's in the danger rose
-  elevations: [
-    { low: 8500, high: 99999 },
-    { low: 7000, high: 8499 },
-    { low: 0, high: 6999 },
-  ],
+const REGIONAL_INFO = {
+  logan: {
+    // Index 0 is highest elevation, index 2 is lowest
+    // This matches what's in the danger rose
+    elevations: [
+      { low: 8500, high: 10000 },
+      { low: 7000, high: 8499 },
+      { low: 0, high: 6999 },
+    ],
+  },
 };
 
 function generateForecastHTMLFromJSON(forecastJSON) {
   console.log(forecastJSON);
   const forecastText = forecastJSON.advisories[0].advisory.bottom_line;
-  console.log(
-    parseUtahDangerRose(forecastJSON.advisories[0].advisory.overall_danger_rose)
-  );
+  const forecastTime = forecastJSON.advisories[0].advisory.date_issued;
+  parseUtahDangerRose(forecastJSON.advisories[0].advisory.overall_danger_rose);
 
   document
     .getElementById("tableDiv")
@@ -74,7 +75,8 @@ function generateForecastHTMLFromJSON(forecastJSON) {
     parseUtahDangerRose(forecastJSON.advisories[0].advisory.overall_danger_rose)
   );
 
-  let pageString = "<p>" + forecastText + "</p>";
+  let pageString = "<p><b>(" + forecastTime + ") </b>" + forecastText + "</p>";
+
   pageString +=
     "<hr>" +
     '<a target="_blank" href="' +
@@ -111,7 +113,7 @@ function buildFullCaltopoString(
   dangerRoseObject,
   baseURLString = "https://caltopo.com/map.html#ll=41.94969,-111.5188&z=13&b=mbt"
 ) {
-  const useSlope = true;
+  const useSlope = false;
   const minSlope = 27;
   const maxSlope = 60;
 
@@ -201,7 +203,7 @@ function buildDangerRoseTable(dangerRoseObject) {
 
 function parseUtahDangerRose(
   dangerRoseString,
-  regionalInfo = LOGAN_REGIONAL_INFO
+  regionalInfo = REGIONAL_INFO["logan"]
 ) {
   const dangerRoseElements = dangerRoseString.split(",");
   if (dangerRoseElements.length != NUM_ELEVATION * NUM_BEARINGS) {

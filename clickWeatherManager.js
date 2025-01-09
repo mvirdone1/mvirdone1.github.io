@@ -533,15 +533,6 @@ class clickWeatherManager {
     const defaultRadiusMi = 10;
     const defaultRadiusStations = 5;
 
-    // 2 day snow change
-    attributes.title = "Snow Change";
-    attributes.days = 2;
-    attributes.offset = true;
-    attributes.chartType = CHART_TYPES.snowDepth;
-    attributes.radiusMiles = defaultRadiusMi;
-    attributes.radiusStations = defaultRadiusStations;
-    attributes.tables = [];
-
     this.definedCharts.push(this.createChartObject(attributes));
 
     // Plot 2 day temp
@@ -565,6 +556,15 @@ class clickWeatherManager {
     attributes.tables = [];
 
     this.definedCharts.push(this.createChartObject(attributes));
+
+    // 2 day snow change
+    attributes.title = "Snow Change";
+    attributes.days = 2;
+    attributes.offset = true;
+    attributes.chartType = CHART_TYPES.snowDepth;
+    attributes.radiusMiles = defaultRadiusMi;
+    attributes.radiusStations = defaultRadiusStations;
+    attributes.tables = [];
   }
 
   createFullMountainSuitePlots() {

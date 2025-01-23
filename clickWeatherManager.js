@@ -533,7 +533,7 @@ class clickWeatherManager {
     const defaultRadiusMi = 10;
     const defaultRadiusStations = 5;
 
-    this.definedCharts.push(this.createChartObject(attributes));
+    // this.definedCharts.push(this.createChartObject(attributes));
 
     // Plot 2 day temp
     attributes.title = "Temperature";

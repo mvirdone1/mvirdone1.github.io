@@ -163,13 +163,13 @@ const clickWeatherChartCRUD = {
     );
 
     chartStealthFormInstance.addCustomButton(
-      "Add Table",
+      "Add Chart",
       this.stealthFormAddChartCallback.bind(this)
     );
   },
 
   stealthFormAddChartCallback: function (stealthFormInstance) {
-    console.log("Add Table Click");
+    console.log("Add Chart Click");
     console.log(stealthFormInstance);
 
     // Get the div element where the form content is going to reside
@@ -424,7 +424,18 @@ const clickWeatherTableCRUD = {
       stealthFormInstance.getStealthFormContentId()
     );
 
-    this.tableFormPrintTableRow(formContentDiv);
+    // Because of the way this field works, you need to have a table for the iterator "number-array"
+    // Create a prototype off the first defined chart type
+    // Then reset the tables, and push a 24 hour table
+    // This will be the default "add table" template
+    const definedCharts = myClickWeatherManager.getDefinedCharts();
+    const tempChartObject = definedCharts[0];
+    tempChartObject.tables = [];
+    tempChartObject.tables.push({
+      hours: 24,
+    });
+
+    this.tableFormPrintTableRow(formContentDiv, tempChartObject);
   },
 
   stealthFormCancelTableCallback: function (stealthFormInstance) {

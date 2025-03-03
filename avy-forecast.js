@@ -43,46 +43,156 @@ const DANGER_ROSE_NUM_TO_RGB_COLOR = [
   "#000000", // Black (10)
 ];
 
+const REGIONAL_LOOKUP = {
+  logan: "logan",
+  slc: "salt-lake",
+};
+
 const REGIONAL_INFO = {
   logan: {
     // Index 0 is highest elevation, index 2 is lowest
     // This matches what's in the danger rose
     elevations: [
-      { low: 8500, high: 10000 },
+      { low: 8500, high: 11000 },
       { low: 7000, high: 8499 },
       { low: 0, high: 6999 },
     ],
   },
+  slc: {
+    elevations: [
+      { low: 9500, high: 12000 },
+      { low: 8000, high: 9499 },
+      { low: 0, high: 7999 },
+    ],
+  },
 };
+
+const AVY_REPORT_ELEMENTS = [
+  {
+    dangerRoseObject: {},
+    reportKey: "bottom_line",
+    roseKey: "overall_danger_rose",
+    title: "Avalanche Report",
+    slopeAngles: [{ low: 27, high: 90 }],
+    slopeColorsHex: [],
+    transparency: 1, // 0-1 (percent)
+    booleanThreshold: 0,
+    layerString: "",
+    layerFeature: {},
+  },
+  {
+    dangerRoseObject: {},
+    reportKey: "avalanche_problem_1",
+    title: "Problem #1",
+    roseKey: "danger_rose_1",
+    slopeAngles: [
+      { low: 27, high: 29 },
+      { low: 30, high: 31 },
+      { low: 32, high: 90 },
+    ],
+    slopeColorsHex: [
+      "#FFFF00", // Yellow (4)
+      "#FFA500", // Orange (5)
+      "#FF0000", // Red (7)
+    ],
+    transparency: 1, // 0-1 (percent)
+    booleanThreshold: 14,
+    layerString: "",
+    layerFeature: {},
+  },
+  {
+    dangerRoseObject: {},
+    reportKey: "avalanche_problem_2",
+    title: "Problem #2",
+    roseKey: "danger_rose_2",
+    slopeAngles: [
+      { low: 27, high: 29 },
+      { low: 30, high: 31 },
+      { low: 32, high: 90 },
+    ],
+    slopeColorsHex: [
+      "#FFFF00", // Yellow (4)
+      "#FFA500", // Orange (5)
+      "#FF0000", // Red (7)
+    ],
+    transparency: 1, // 0-1 (percent)
+    booleanThreshold: 14,
+    layerString: "",
+    layerFeature: {},
+  },
+  {
+    dangerRoseObject: {},
+    reportKey: "avalanche_problem_3",
+    title: "Problem #3",
+    roseKey: "danger_rose_3",
+    slopeAngles: [
+      { low: 27, high: 29 },
+      { low: 30, high: 31 },
+      { low: 32, high: 90 },
+    ],
+    slopeColorsHex: [
+      "#FFFF00", // Yellow (4)
+      "#FFA500", // Orange (5)
+      "#FF0000", // Red (7)
+    ],
+    transparency: 1, // 0-1 (percent)
+    booleanThreshold: 14,
+    layerString: "",
+    layerFeature: {},
+  },
+];
 
 function generateForecastHTMLFromJSON(forecastJSON) {
   console.log(forecastJSON);
   const forecastText = forecastJSON.advisories[0].advisory.bottom_line;
   const forecastTime = forecastJSON.advisories[0].advisory.date_issued;
-  parseUtahDangerRose(forecastJSON.advisories[0].advisory.overall_danger_rose);
-
-  document
-    .getElementById("tableDiv")
-    .appendChild(
-      buildDangerRoseTable(
-        parseUtahDangerRose(
-          forecastJSON.advisories[0].advisory.overall_danger_rose
-        )
-      )
-    );
-
-  const calTopoLayerString = buildFullCaltopoString(
-    parseUtahDangerRose(forecastJSON.advisories[0].advisory.overall_danger_rose)
+  const dangerRoseObject = parseUtahDangerRose(
+    forecastJSON.advisories[0].advisory.overall_danger_rose
   );
+
+  const overallRatingObject = {
+    dangerRoseObject: dangerRoseObject,
+    title: "Overall Rating " + forecastTime,
+    minSlope: 27,
+    maxSlope: 90,
+    transparency: 1,
+    layerString: "",
+    layerFeature: {},
+  };
+
+  buildCalTopoLayerString(overallRatingObject);
+
+  console.log(overallRatingObject);
+
+  const cloneObject = structuredClone(overallRatingObject);
+  cloneObject.minSlope = 35;
+  cloneObject.maxSlope = 45;
+  cloneObject.transparency = 0.5;
+  cloneObject.title = "Steeper Overall Rating";
+
+  buildCalTopoLayerString(cloneObject);
+
+  console.log(overallRatingObject);
+
+  // const calTopoURL = buildFullCaltopoString([overallRatingObject]);
+  const calTopoURL = buildFullCaltopoString([overallRatingObject, cloneObject]);
 
   let pageString = "<p><b>(" + forecastTime + ") </b>" + forecastText + "</p>";
 
   pageString +=
     "<hr>" +
     '<a target="_blank" href="' +
-    calTopoLayerString +
+    calTopoURL +
     '">Linky to CalTopo</a>';
+  pageString += "\n";
 
+  pageString += buildDangerRoseTable(dangerRoseObject).outerHTML;
+
+  /*
+  document
+    .getElementById("tableDiv")
+    .appendChild(buildDangerRoseTable(dangerRoseObject));
+    */
   // return `<p> ${forecastText} </p>`;
 
   return pageString;
@@ -99,26 +209,102 @@ function roseElementChanged(oldElement, newElement) {
     return false;
   }
 }
+
 function buildCaltopoSubString(startElement, endElement) {
   let myString = "";
-  myString += "a" + startElement.aspect + "-" + endElement.aspect;
+  myString += "a" + startElement.minAspect + "-" + endElement.maxAspect;
   myString +=
     "e" + startElement.elevation.low + "-" + startElement.elevation.high;
   myString += "fc" + startElement.rating_color_rgb_hex.slice(1);
-  myString;
+
+  console.log(myString);
   return myString;
 }
 
+function buildCalTopoLayerString(myLayerObject) {
+  const dangerRoseObject = myLayerObject.dangerRoseObject;
+  const layerStringBase =
+    "s" + myLayerObject.minSlope + "-" + myLayerObject.maxSlope;
+  let layerString = "";
+  // const urlStringArray = [];
+  let oldElement = dangerRoseObject[0];
+  let previousElement = dangerRoseObject[0];
+
+  dangerRoseObject.forEach((currentElement) => {
+    // console.log(currentElement);
+    if (roseElementChanged(oldElement, currentElement)) {
+      // console.log("It Changed!");
+      layerString +=
+        layerStringBase +
+        buildCaltopoSubString(oldElement, previousElement) +
+        "p";
+      /*urlStringArray.push(
+        layerString + buildCaltopoSubString(oldElement, previousElement)
+      );
+      */
+      oldElement = currentElement;
+    }
+
+    previousElement = currentElement;
+  });
+
+  layerString +=
+    layerStringBase +
+    buildCaltopoSubString(
+      oldElement,
+      dangerRoseArray[dangerRoseArray.length - 1]
+    );
+
+  const layerProperties = {};
+  layerProperties.alias = "scb_" + layerString;
+  layerProperties.title = myLayerObject.title;
+  layerProperties.class = "ConfiguredLayer";
+
+  const layerFeature = {};
+  layerFeature.type = "Feature";
+  layerFeature.id = crypto.randomUUID();
+  layerFeature.geometry = null;
+  layerFeature.properties = layerProperties;
+
+  myLayerObject.layerString = layerString;
+  myLayerObject.layerFeature = layerFeature;
+
+  console.log(myLayerObject);
+}
+
 function buildFullCaltopoString(
-  dangerRoseObject,
+  dangerRoseObjects,
   baseURLString = "https://caltopo.com/map.html#ll=41.94969,-111.5188&z=13&b=mbt"
 ) {
-  const useSlope = false;
+  const useSlope = true;
   const minSlope = 27;
   const maxSlope = 60;
 
-  let finalURL = baseURLString + "&o=scb_";
+  // scb is for base layer, and sc is for normal layer
+  let finalURL = baseURLString;
 
+  let layerString = "&o=scb_";
+  let transparencyString = "&n=";
+  let cfgLayersObject = { cfglayers: [] };
+
+  dangerRoseObjects.forEach((currentObject, index) => {
+    // Always append the configlayers objects to the list
+    cfgLayersObject.cfglayers.push(currentObject.layerFeature);
+
+    console.log(cfgLayersObject);
+
+    // Handle the delimiter between individual layer attributes
+    // differently for the first or subsequent layers
+    if (index === 0) {
+      layerString += currentObject.layerString;
+      transparencyString += currentObject.transparency;
+    } else {
+      layerString += "%2Cscb_" + currentObject.layerString;
+      transparencyString += "," + currentObject.transparency;
+    }
+  });
+
+  /*
   // Make the base string either include the slope or be blank
   const baseString = useSlope ? "s" + minSlope + "-" + maxSlope : "";
 
@@ -146,7 +332,14 @@ function buildFullCaltopoString(
     );
 
   finalURL += "&n=0.45";
-  console.log(finalURL);
+  */
+
+  finalURL += layerString;
+  finalURL += transparencyString;
+  // finalURL += "&cl=" + new URLSearchParams(cfgLayersObject).toString();
+
+  console.log(cfgLayersObject);
+  finalURL += "&cl=" + encodeURIComponent(JSON.stringify(cfgLayersObject));
 
   return finalURL;
 
@@ -197,7 +390,6 @@ function buildDangerRoseTable(dangerRoseObject) {
   }
 
   console.log(myTable);
-  document.getElementById("tableDiv").appendChild(myTable);
   return myTable;
 }
 
@@ -218,9 +410,27 @@ function parseUtahDangerRose(
       const arrayIdx = eleIdx * NUM_BEARINGS + hdgIdx;
       const currentRoseNum = dangerRoseElements[arrayIdx];
 
+      const ASPECT_WIDTH_DEG = 360 / NUM_BEARINGS;
+
       const currentRoseElement = {};
       currentRoseElement.elevation = regionalInfo.elevations[eleIdx];
-      currentRoseElement.aspect = hdgIdx * 45;
+      currentRoseElement.aspect = hdgIdx * ASPECT_WIDTH_DEG;
+      currentRoseElement.minAspect =
+        currentRoseElement.aspect - Math.ceil(ASPECT_WIDTH_DEG / 2);
+
+      // Handle wrap condition
+      if (currentRoseElement.minAspect < 0) {
+        currentRoseElement.minAspect += 360;
+      }
+
+      currentRoseElement.maxAspect =
+        currentRoseElement.aspect + Math.floor(ASPECT_WIDTH_DEG / 2);
+
+      // Handle wrap condition
+      if (currentRoseElement.maxAspect > 360) {
+        currentRoseElement.maxAspect -= 360;
+      }
+
       currentRoseElement.rating_num = currentRoseNum;
       currentRoseElement.rating_string =
         DANGER_ROSE_NUM_TO_TEXT[currentRoseNum];

@@ -71,18 +71,22 @@ const AVY_REPORT_ELEMENTS = [
   {
     dangerRoseObject: {},
     reportKey: "bottom_line",
+    subtitleKey: false,
     roseKey: "overall_danger_rose",
     title: "Avalanche Report",
     slopeAngles: [{ low: 27, high: 90 }],
     slopeColorsHex: [],
     transparency: 1, // 0-1 (percent)
     booleanThreshold: 0,
+    booleanTableColor: "#0096FF",
+    booleanTableValue: "*",
     layerString: "",
     layerFeature: {},
   },
   {
     dangerRoseObject: {},
-    reportKey: "avalanche_problem_1",
+    reportKey: "avalanche_problem_1_description",
+    subtitleKey: "avalanche_problem_1",
     title: "Problem #1",
     roseKey: "danger_rose_1",
     slopeAngles: [
@@ -97,12 +101,15 @@ const AVY_REPORT_ELEMENTS = [
     ],
     transparency: 1, // 0-1 (percent)
     booleanThreshold: 14,
+    booleanTableColor: "#0096FF",
+    booleanTableValue: "*",
     layerString: "",
     layerFeature: {},
   },
   {
     dangerRoseObject: {},
-    reportKey: "avalanche_problem_2",
+    reportKey: "avalanche_problem_2_description",
+    subtitleKey: "avalanche_problem_2",
     title: "Problem #2",
     roseKey: "danger_rose_2",
     slopeAngles: [
@@ -117,12 +124,15 @@ const AVY_REPORT_ELEMENTS = [
     ],
     transparency: 1, // 0-1 (percent)
     booleanThreshold: 14,
+    booleanTableColor: "#0096FF",
+    booleanTableValue: "*",
     layerString: "",
     layerFeature: {},
   },
   {
     dangerRoseObject: {},
-    reportKey: "avalanche_problem_3",
+    reportKey: "avalanche_problem_3_description",
+    subtitleKey: "avalanche_problem_3",
     title: "Problem #3",
     roseKey: "danger_rose_3",
     slopeAngles: [
@@ -137,6 +147,8 @@ const AVY_REPORT_ELEMENTS = [
     ],
     transparency: 1, // 0-1 (percent)
     booleanThreshold: 14,
+    booleanTableColor: "#0096FF",
+    booleanTableValue: "*",
     layerString: "",
     layerFeature: {},
   },
@@ -144,12 +156,35 @@ const AVY_REPORT_ELEMENTS = [
 
 function generateForecastHTMLFromJSON(forecastJSON) {
   console.log(forecastJSON);
-  const forecastText = forecastJSON.advisories[0].advisory.bottom_line;
+  // const forecastText = forecastJSON.advisories[0].advisory.bottom_line;
   const forecastTime = forecastJSON.advisories[0].advisory.date_issued;
-  const dangerRoseObject = parseUtahDangerRose(
+  /*const dangerRoseObject = parseUtahDangerRose(
     forecastJSON.advisories[0].advisory.overall_danger_rose
   );
+  */
 
+  var validReportIdx = 0;
+
+  let pageString = "";
+
+  for (reportIdx = 0; reportIdx < AVY_REPORT_ELEMENTS.length; reportIdx++) {
+    let avyReportElement = AVY_REPORT_ELEMENTS[reportIdx];
+    if (
+      avyReportElement.reportKey in forecastJSON.advisories[0].advisory &&
+      avyReportElement.roseKey in forecastJSON.advisories[0].advisory
+    ) {
+      console.log("Valid key found for " + avyReportElement.reportKey);
+      validReportIdx = reportIdx;
+      pageString += parseAndPrintForecastElement(
+        forecastJSON,
+        avyReportElement
+      );
+    } else {
+      break;
+    }
+  }
+
+  /*
   const overallRatingObject = {
     dangerRoseObject: dangerRoseObject,
     title: "Overall Rating " + forecastTime,
@@ -177,7 +212,7 @@ function generateForecastHTMLFromJSON(forecastJSON) {
   // const calTopoURL = buildFullCaltopoString([overallRatingObject]);
   const calTopoURL = buildFullCaltopoString([overallRatingObject, cloneObject]);
 
-  let pageString = "<p><b>(" + forecastTime + ") </b>" + forecastText + "</p>";
+  // let pageString = "<p><b>(" + forecastTime + ") </b>" + forecastText + "</p>";
 
   pageString +=
     "<hr>" +
@@ -196,6 +231,42 @@ function generateForecastHTMLFromJSON(forecastJSON) {
   // return `<p> ${forecastText} </p>`;
 
   return pageString;
+}
+
+function parseAndPrintForecastElement(forecastJSON, avyReportElement) {
+  // Performe the danger rose parsing and assign (by refernece) to the source object
+  avyReportElement.dangerRoseObject = parseUtahDangerRose(
+    forecastJSON.advisories[0].advisory[avyReportElement.roseKey],
+    avyReportElement
+  );
+
+  console.log(avyReportElement);
+
+  // Build the HTML for the report
+  var reportHTML = "";
+  if (avyReportElement.subtitleKey) {
+    reportHTML +=
+      "<h2>" +
+      avyReportElement.title +
+      ": " +
+      forecastJSON.advisories[0].advisory[avyReportElement.subtitleKey] +
+      "</h2>\n";
+  } else {
+    reportHTML += "<h2>" + avyReportElement.title + "</h2>\n";
+  }
+
+  reportHTML +=
+    "<p>" +
+    forecastJSON.advisories[0].advisory[avyReportElement.reportKey] +
+    "</p>\n";
+
+  reportHTML += buildDangerRoseTable(
+    avyReportElement.dangerRoseObject
+  ).outerHTML;
+
+  reportHTML += "<hr>\n";
+
+  return reportHTML;
 }
 
 function roseElementChanged(oldElement, newElement) {
@@ -304,36 +375,6 @@ function buildFullCaltopoString(
     }
   });
 
-  /*
-  // Make the base string either include the slope or be blank
-  const baseString = useSlope ? "s" + minSlope + "-" + maxSlope : "";
-
-  const urlStringArray = [];
-  let oldElement = dangerRoseObject[0];
-  let previousElement = dangerRoseObject[0];
-  dangerRoseObject.forEach((currentElement) => {
-    if (roseElementChanged(oldElement, currentElement)) {
-      finalURL +=
-        baseString + buildCaltopoSubString(oldElement, previousElement) + "p";
-      urlStringArray.push(
-        baseString + buildCaltopoSubString(oldElement, previousElement)
-      );
-      oldElement = currentElement;
-    }
-
-    previousElement = currentElement;
-  });
-
-  finalURL +=
-    baseString +
-    buildCaltopoSubString(
-      oldElement,
-      dangerRoseArray[dangerRoseArray.length - 1]
-    );
-
-  finalURL += "&n=0.45";
-  */
-
   finalURL += layerString;
   finalURL += transparencyString;
   // finalURL += "&cl=" + new URLSearchParams(cfgLayersObject).toString();
@@ -395,6 +436,7 @@ function buildDangerRoseTable(dangerRoseObject) {
 
 function parseUtahDangerRose(
   dangerRoseString,
+  avyReportElement,
   regionalInfo = REGIONAL_INFO["logan"]
 ) {
   const dangerRoseElements = dangerRoseString.split(",");
@@ -432,12 +474,23 @@ function parseUtahDangerRose(
       }
 
       currentRoseElement.rating_num = currentRoseNum;
-      currentRoseElement.rating_string =
-        DANGER_ROSE_NUM_TO_TEXT[currentRoseNum];
-      currentRoseElement.rating_color_name =
-        DANGER_ROSE_NUM_TO_COLOR_STRING[currentRoseNum];
-      currentRoseElement.rating_color_rgb_hex =
-        DANGER_ROSE_NUM_TO_RGB_COLOR[currentRoseNum];
+
+      if (avyReportElement.booleanThreshold === 0) {
+        currentRoseElement.rating_string =
+          DANGER_ROSE_NUM_TO_TEXT[currentRoseNum];
+        currentRoseElement.rating_color_name =
+          DANGER_ROSE_NUM_TO_COLOR_STRING[currentRoseNum];
+        currentRoseElement.rating_color_rgb_hex =
+          DANGER_ROSE_NUM_TO_RGB_COLOR[currentRoseNum];
+      } else {
+        currentRoseElement.rating_color_name = "";
+
+        if (currentRoseNum > avyReportElement.booleanThreshold) {
+          currentRoseElement.rating_string = avyReportElement.booleanTableValue;
+          currentRoseElement.rating_color_rgb_hex =
+            avyReportElement.booleanTableColor;
+        }
+      }
 
       dangerRoseArray.push(currentRoseElement);
     }

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Org Chart</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      textarea {
+        width: 100%;
+        height: 100px;
+      }
+      svg {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Org Chart Generator</h1>
+    <textarea id="input" placeholder="Enter org chart data..."></textarea>
+    <button onclick="generateChart()">Generate Chart</button>
+    <svg id="chart"></svg>
+
+    <script>
+      function parseInput(input) {
+        const lines = input
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line);
+        let root = { name: "root", children: [] };
+        let nodes = { root: root };
+
+        lines.forEach((line) => {
+          let level = (line.match(/^\.*|\d*(\.?\d*)*/)[0] || "").length;
+          let name = line.replace(/^\.*|\d*(\.?\d*)*/, "").trim();
+          let parent = Object.keys(nodes).reduce((acc, key) => {
+            return key.split(".").length === level ? nodes[key] : acc;
+          }, root);
+
+          let node = { name, children: [] };
+          parent.children.push(node);
+          nodes[line] = node;
+        });
+        return root.children.length === 1 ? root.children[0] : root;
+      }
+
+      function generateChart() {
+        const input = document.getElementById("input").value;
+        const data = parseInput(input);
+        d3.select("#chart").selectAll("*").remove();
+        const width = 600,
+          height = 400;
+        const svg = d3
+            .select("#chart")
+            .attr("width", width)
+            .attr("height", height),
+          g = svg.append("g").attr("transform", "translate(40,40)");
+
+        const tree = d3.tree().size([width - 80, height - 80]);
+        const root = d3.hierarchy(data);
+        tree(root);
+
+        const link = g
+          .selectAll(".link")
+          .data(root.links())
+          .enter()
+          .append("line")
+          .attr("class", "link")
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y)
+          .attr("stroke", "black");
+
+        const node = g
+          .selectAll(".node")
+          .data(root.descendants())
+          .enter()
+          .append("g")
+          .attr("class", "node")
+          .attr("transform", (d) => `translate(${d.x},${d.y})`);
+
+        node
+          .append("rect")
+          .attr("width", 80)
+          .attr("height", 30)
+          .attr("x", -40)
+          .attr("y", -15)
+          .attr("fill", "lightblue")
+          .attr("stroke", "black");
+
+        node
+          .append("text")
+          .attr("dy", 5)
+          .attr("text-anchor", "middle")
+          .text((d) => d.data.name);
+      }
+    </script>
+  </body>
+</html>

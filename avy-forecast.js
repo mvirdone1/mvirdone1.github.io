@@ -74,7 +74,7 @@ const AVY_REPORT_ELEMENTS = [
     subtitleKey: false,
     roseKey: "overall_danger_rose",
     title: "Avalanche Report",
-    slopeAngles: [{ low: 27, high: 90 }],
+    slopeAngles: [{ min: 27, max: 90 }],
     slopeColorsHex: [],
     transparency: 1, // 0-1 (percent)
     booleanThreshold: 0,
@@ -90,9 +90,9 @@ const AVY_REPORT_ELEMENTS = [
     title: "Problem #1",
     roseKey: "danger_rose_1",
     slopeAngles: [
-      { low: 27, high: 29 },
-      { low: 30, high: 31 },
-      { low: 32, high: 90 },
+      { min: 27, max: 29 },
+      { min: 30, max: 31 },
+      { min: 32, max: 90 },
     ],
     slopeColorsHex: [
       "#FFFF00", // Yellow (4)
@@ -113,9 +113,9 @@ const AVY_REPORT_ELEMENTS = [
     title: "Problem #2",
     roseKey: "danger_rose_2",
     slopeAngles: [
-      { low: 27, high: 29 },
-      { low: 30, high: 31 },
-      { low: 32, high: 90 },
+      { min: 27, max: 29 },
+      { min: 30, max: 31 },
+      { min: 32, max: 90 },
     ],
     slopeColorsHex: [
       "#FFFF00", // Yellow (4)
@@ -136,9 +136,9 @@ const AVY_REPORT_ELEMENTS = [
     title: "Problem #3",
     roseKey: "danger_rose_3",
     slopeAngles: [
-      { low: 27, high: 29 },
-      { low: 30, high: 31 },
-      { low: 32, high: 90 },
+      { min: 27, max: 29 },
+      { min: 30, max: 31 },
+      { min: 32, max: 90 },
     ],
     slopeColorsHex: [
       "#FFFF00", // Yellow (4)
@@ -179,10 +179,23 @@ function generateForecastHTMLFromJSON(forecastJSON) {
         forecastJSON,
         avyReportElement
       );
+      console.group(reportIdx);
+
+      buildCalTopoLayerString(avyReportElement);
     } else {
       break;
     }
   }
+
+  const calTopoURL = buildFullCaltopoString(
+    AVY_REPORT_ELEMENTS.slice(0, validReportIdx + 1)
+  );
+  pageString +=
+    "<hr>" +
+    '<a target="_blank" href="' +
+    calTopoURL +
+    '">Linky to CalTopo</a>';
+  pageString += "\n";
 
   /*
   const overallRatingObject = {
@@ -281,12 +294,23 @@ function roseElementChanged(oldElement, newElement) {
   }
 }
 
-function buildCaltopoSubString(startElement, endElement) {
+function buildCaltopoSubString(
+  startElement,
+  endElement,
+  myLayerObject,
+  angleIdx
+) {
+  console.log(myLayerObject);
   let myString = "";
   myString += "a" + startElement.minAspect + "-" + endElement.maxAspect;
   myString +=
     "e" + startElement.elevation.low + "-" + startElement.elevation.high;
-  myString += "fc" + startElement.rating_color_rgb_hex.slice(1);
+
+  if (myLayerObject.booleanThreshold > 0) {
+    myString += "fc" + myLayerObject.slopeColorsHex[angleIdx].slice(1);
+  } else {
+    myString += "fc" + startElement.rating_color_rgb_hex.slice(1);
+  }
 
   console.log(myString);
   return myString;
@@ -294,37 +318,47 @@ function buildCaltopoSubString(startElement, endElement) {
 
 function buildCalTopoLayerString(myLayerObject) {
   const dangerRoseObject = myLayerObject.dangerRoseObject;
-  const layerStringBase =
-    "s" + myLayerObject.minSlope + "-" + myLayerObject.maxSlope;
-  let layerString = "";
-  // const urlStringArray = [];
-  let oldElement = dangerRoseObject[0];
-  let previousElement = dangerRoseObject[0];
 
-  dangerRoseObject.forEach((currentElement) => {
-    // console.log(currentElement);
-    if (roseElementChanged(oldElement, currentElement)) {
-      // console.log("It Changed!");
-      layerString +=
-        layerStringBase +
-        buildCaltopoSubString(oldElement, previousElement) +
-        "p";
-      /*urlStringArray.push(
+  let layerString = "";
+
+  myLayerObject.slopeAngles.forEach((currentAngles, angleIdx) => {
+    const layerStringBase = "s" + currentAngles.min + "-" + currentAngles.max;
+    // const urlStringArray = [];
+    let oldElement = dangerRoseObject[0];
+    let previousElement = dangerRoseObject[0];
+
+    dangerRoseObject.forEach((currentElement) => {
+      // console.log(currentElement);
+      if (roseElementChanged(oldElement, currentElement)) {
+        // console.log("It Changed!");
+        layerString +=
+          layerStringBase +
+          buildCaltopoSubString(
+            oldElement,
+            previousElement,
+            myLayerObject,
+            angleIdx
+          ) +
+          "p";
+        /*urlStringArray.push(
         layerString + buildCaltopoSubString(oldElement, previousElement)
       );
       */
-      oldElement = currentElement;
-    }
+        oldElement = currentElement;
+      }
 
-    previousElement = currentElement;
+      previousElement = currentElement;
+    });
+
+    layerString +=
+      layerStringBase +
+      buildCaltopoSubString(
+        oldElement,
+        dangerRoseArray[dangerRoseArray.length - 1],
+        myLayerObject,
+        angleIdx
+      );
   });
-
-  layerString +=
-    layerStringBase +
-    buildCaltopoSubString(
-      oldElement,
-      dangerRoseArray[dangerRoseArray.length - 1]
-    );
 
   const layerProperties = {};
   layerProperties.alias = "scb_" + layerString;
@@ -489,6 +523,8 @@ function parseUtahDangerRose(
           currentRoseElement.rating_string = avyReportElement.booleanTableValue;
           currentRoseElement.rating_color_rgb_hex =
             avyReportElement.booleanTableColor;
+        } else {
+          currentRoseElement.rating_color_rgb_hex = "#FFFFFF";
         }
       }
 

@@ -28,11 +28,11 @@ function azElR_to_LLA(lat0, lon0, alt0, azDeg, elDeg, rKm){
 }
 
 function polygonKml(coords){
-  let s = `<Polygon><altitudeMode>absolute</altitudeMode><outerBoundaryIs><LinearRing><coordinates>`;
+  let s = `<Polygon><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>`;
   coords.forEach(c=>{
     s += `${c.lon},${c.lat},${c.alt}\n`;
   });
-  s += `${coords[0].lon},${coords[0].lat},${coords[0].alt}\n`; // close loop
+  // s += `${coords[0].lon},${coords[0].lat},${coords[0].alt}\n`; // close loop
   s += `</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
   return s;
 }
@@ -62,6 +62,7 @@ function buildWedge(params){
     kml+=face(pts);
   }
 
+  
   // Right side (az=azMax)
   {
     const pts=[];
@@ -72,25 +73,66 @@ function buildWedge(params){
     kml+=face(pts);
   }
 
+
+  /*
   // Bottom side (el=elMin)
   {
     const pts=[];
     pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMin,rMin));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMin,rMax));
+    for(let i=0;i<=azSteps;i++){
+      const az=azMin+(azMax-azMin)*i/azSteps;
+      const el=elMax;
+      pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
+    }
     pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMax));
+    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMin,rMax));
+    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
     kml+=face(pts);
   }
+    */
+    
+
+  // Bottom side (el=elMin)
+  {
+    const pts=[];
+    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
+
+    for(let i=0;i<=azSteps;i++){
+      const az=azMin+((azMax-azMin)*i/azSteps);
+      pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMax));
+    }
+
+    
+    for(let i=0;i<=(azSteps-1);i++){
+      const az=azMax-((azMax-azMin)*i/azSteps);
+      pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMin));
+    }
+
+    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
+    kml+=face(pts);
+  }
+  
 
   // Top side (el=elMax)
   {
     const pts=[];
     pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMin));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMax,rMin));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMax,rMax));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMax));
+
+    for(let i=0;i<=azSteps;i++){
+      const az=azMin+(azMax-azMin)*i/azSteps;
+      pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMax));
+    }
+
+    for(let i=0;i<=(azSteps-1);i++){
+      const az=azMax-((azMax-azMin)*i/azSteps);
+      pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMin));
+    }
+
+    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMin));
     kml+=face(pts);
   }
+
+  /*
 
   // Front cap (r=rMax, tessellated in az/el)
   {
@@ -117,6 +159,8 @@ function buildWedge(params){
     }
     kml+=face(pts);
   }
+    */
+    
 
   kml+=`</Folder>\n`;
   return kml;
@@ -140,9 +184,18 @@ document.getElementById('gen').addEventListener('click',()=>{
     color: (document.getElementById('styleColor').value || '7dff8000').trim()
   };
 
+  params.alt = 0; 
+
   let kml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
   kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
   kml += buildWedge(params);
+
+  params.rMin = params.rMax;
+  params.rMax = Math.max(0.001, parseFloat(document.getElementById('rMax').value)) * 2;
+
+  kml += buildWedge(params);
+
+
   kml += `</Document></kml>`;
 
   const out=document.getElementById('out');

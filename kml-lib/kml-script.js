@@ -65,121 +65,57 @@
   function buildKml(params){
     const {lat, lon, alt, azCtr, azBw, elCtr, elBw, rMin, rMax, azSteps, elSteps, name, color} = params;
     const az0 = normAz(azCtr - azBw/2), az1 = normAz(azCtr + azBw/2);
-    // handle wrap-around by mapping to monotonically increasing range
-    const wrap = az1 < az0; // if true, we cross 360->0
+    const wrap = az1 < az0; 
     const azStart = az0;
     const azEnd = wrap ? az1 + 360 : az1;
     const el0 = clamp(elCtr - elBw/2, -90, 90);
     const el1 = clamp(elCtr + elBw/2, -90, 90);
-
+  
     const azVals = [];
     for(let i=0;i<=azSteps;i++){ azVals.push(azStart + (azEnd-azStart)*i/azSteps); }
     const elVals = [];
     for(let j=0;j<=elSteps;j++){ elVals.push(el0 + (el1-el0)*j/elSteps); }
-
-    function cornerLLA(azDeg){
-      const a = normAz(azDeg);
-      return a;
-    }
-
-    function quadPolygon(coords){
-      // coords: array of {lat,lon,alt} length >= 3; ensure closed
-      let s = '<Polygon><altitudeMode>absolute</altitudeMode><outerBoundaryIs><LinearRing><coordinates>';
-      for(const c of coords){ s += `${c.lon.toFixed(8)},${c.lat.toFixed(8)},${c.alt.toFixed(2)}\n`; }
-      // close loop
-      s += `${coords[0].lon.toFixed(8)},${coords[0].lat.toFixed(8)},${coords[0].alt.toFixed(2)}\n`;
-      s += '</coordinates></LinearRing></outerBoundaryIs></Polygon>';
-      return s;
-    }
-
-    function cellAtRange(rKm, i, j){
-      // four corners across az (i->i+1) and el (j->j+1)
-      const azA = azVals[i], azB = azVals[i+1];
-      const elA = elVals[j], elB = elVals[j+1];
-      const p1 = azElR_to_LLA(azA, elA, rKm, lat, lon, alt);
-      const p2 = azElR_to_LLA(azB, elA, rKm, lat, lon, alt);
-      const p3 = azElR_to_LLA(azB, elB, rKm, lat, lon, alt);
-      const p4 = azElR_to_LLA(azA, elB, rKm, lat, lon, alt);
-      return [p1,p2,p3,p4];
-    }
-
-    function sideStrip(isAzFixed, idx, iFrom, iTo){
-      // Build quads between rMin and rMax along the index range
-      // isAzFixed: if true, vary el along fixed az = azVals[idx] (or azVals[idx+1] when at upper edge)
-      // if false, vary az along fixed el = elVals[idx]
-      const quads = [];
-      const steps = (iTo - iFrom);
-      for(let k=iFrom; k< iTo; k++){
-        let a1,a2,e1,e2;
-        if(isAzFixed){
-          const az = (idx === -1) ? azVals[0] : (idx === 9999 ? azVals[azVals.length-1] : azVals[idx]);
-          a1 = a2 = az;
-          e1 = elVals[k]; e2 = elVals[k+1];
-        } else {
-          const el = (idx === -1) ? elVals[0] : (idx === 9999 ? elVals[elVals.length-1] : elVals[idx]);
-          e1 = e2 = el;
-          a1 = azVals[k]; a2 = azVals[k+1];
-        }
-        const p1 = azElR_to_LLA(a1, e1, rMin, lat, lon, alt);
-        const p2 = azElR_to_LLA(a2, e2, rMin, lat, lon, alt);
-        const p3 = azElR_to_LLA(a2, e2, rMax, lat, lon, alt);
-        const p4 = azElR_to_LLA(a1, e1, rMax, lat, lon, alt);
-        quads.push([p1,p2,p3,p4]);
-      }
-      return quads;
-    }
-
+  
+    // Origin point
+    const origin = {lon, lat, alt};
+  
     let kml = '';
     kml += `<?xml version="1.0" encoding="UTF-8"?>\n`;
-    kml += `<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">\n`;
+    kml += `<kml xmlns="http://www.opengis.net/kml/2.2">\n`;
     kml += `<Document>\n`;
     kml += `<name>${escapeXml(name)}</name>\n`;
     kml += `<Style id="wedge"><PolyStyle><color>${color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
-
-
-    kml += `<Folder><name>${escapeXml(name)} Faces</name>\n`;
-
-    // Caps (top and optional inner cap)
-    // Top at rMax
-    for(let i=0;i<azVals.length-1;i++){
-      for(let j=0;j<elVals.length-1;j++){
-        const quad = cellAtRange(rMax, i, j);
-        kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-      }
+  
+    // One Placemark = one polygon covering entire wedge
+    kml += `<Placemark><styleUrl>#wedge</styleUrl>`;
+    kml += `<Polygon><altitudeMode>absolute</altitudeMode><outerBoundaryIs><LinearRing><coordinates>\n`;
+  
+    // Start at origin
+    kml += `${origin.lon},${origin.lat},${origin.alt}\n`;
+  
+    // Sweep around outer arc: all (az, el1) then (az, el0)
+    for (let i = 0; i < azVals.length; i++) {
+      const az = azVals[i];
+      const pt = azElR_to_LLA(az, el1, rMax, lat, lon, alt);
+      kml += `${pt.lon},${pt.lat},${pt.alt}\n`;
     }
-    // Inner cap at rMin (skip if rMin == 0)
-    if(rMin > 0){
-      for(let i=0;i<azVals.length-1;i++){
-        for(let j=0;j<elVals.length-1;j++){
-          const quad = cellAtRange(rMin, i, j);
-          kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-        }
-      }
+    for (let i = azVals.length-1; i >= 0; i--) {
+      const az = azVals[i];
+      const pt = azElR_to_LLA(az, el0, rMax, lat, lon, alt);
+      kml += `${pt.lon},${pt.lat},${pt.alt}\n`;
     }
-
-    // Sides (4: az=min, az=max, el=min, el=max)
-    // az = min edge
-    for(const quad of sideStrip(true, 0, 0, elVals.length-1)){
-      kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-    }
-    // az = max edge
-    for(const quad of sideStrip(true, azVals.length-1, 0, elVals.length-1)){
-      kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-    }
-    // el = min edge
-    for(const quad of sideStrip(false, 0, 0, azVals.length-1)){
-      kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-    }
-    // el = max edge
-    for(const quad of sideStrip(false, elVals.length-1, 0, azVals.length-1)){
-      kml += `<Placemark><styleUrl>#wedge</styleUrl>` + quadPolygon(quad) + `</Placemark>\n`;
-    }
-
-    kml += `</Folder>\n`;
+  
+    // Back to origin to close
+    kml += `${origin.lon},${origin.lat},${origin.alt}\n`;
+  
+    kml += `</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
+    kml += `</Placemark>\n`;
+  
     kml += `</Document></kml>`;
     return kml;
   }
-
+  
+  
   function escapeXml(s){
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
   }

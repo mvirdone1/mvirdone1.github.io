@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cesium Coverage Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/cesium@1.113/Build/Cesium/Cesium.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/cesium@1.113/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <style>
+        html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: sans-serif;
+            max-width: 300px;
+        }
+        input[type="number"], input[type="color"] { width: 70px; }
+        .layer-controls { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div id="cesiumContainer"></div>
+    <div id="controls">
+        <div>
+            <label>Azimuth: <input type="number" id="azimuth" value="0"></label>
+            <label>Width: <input type="number" id="azWidth" value="60"></label>
+        </div>
+        <div>
+            <label>Elevation: <input type="number" id="elAngle" value="0"></label>
+            <label>Width: <input type="number" id="elWidth" value="30"></label>
+        </div>
+        <div id="layersContainer"></div>
+        <button id="addLayer">Add Layer</button>
+        <button id="updateLayers">Update Visualization</button>
+    </div>
+    <script src="coverage.js"></script>
+</body>
+</html>

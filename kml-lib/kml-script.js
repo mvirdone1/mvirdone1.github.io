@@ -122,26 +122,56 @@ function buildWedge(params){
   }
     
 
-  // Bottom side (el=elMin)
+  // Bottom side (el = elMin)
   {
-    const pts=[];
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-    
-    for(let i=0;i<=azSteps;i++){
-      const az=azMin+(sliceSize*i);
-      pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMax));
+    const elRef = elMin;
+    const pts = [];
+    pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMin));
+
+    pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMax));
+    for (let i=1; i<=azSteps; i++) {
+      const az = azMin + sliceSize * i;
+      pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMax));
     }
 
-    
-    for(let i=0;i<=(azSteps-1);i++){
-      const az=azMax-(sliceSize*i);
-      pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMin));
+    pts.push(azElR_to_LLA(lat, lon, alt, azMax, elRef, rMin));
+    for (let i=azSteps-1; i>=1; i--) {
+      const az = azMin + sliceSize * i;
+      pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMin));
     }
 
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-    kml+=face(pts);
+    // manually close
+    pts.push(pts[0]);
+
+    kml += face(pts);
   }
+
+    // Top side (el = elMax)
+    {
+      const elRef = elMax;
+      const pts = [];
+      pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMin));
+
+      pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMax));
+      for (let i=1; i<=azSteps; i++) {
+        const az = azMin + sliceSize * i;
+        pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMax));
+      }
+
+      pts.push(azElR_to_LLA(lat, lon, alt, azMax, elRef, rMin));
+      for (let i=azSteps-1; i>=1; i--) {
+        const az = azMin + sliceSize * i;
+        pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMin));
+      }
+
+      // manually close
+      pts.push(pts[0]);
+
+      kml += face(pts);
+    }
+
   
+  /*
 
   // Top side (el=elMax)
   {
@@ -162,6 +192,7 @@ function buildWedge(params){
     pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMin));
     kml+=face(pts);
   }
+    */
 
   /*
 
@@ -223,7 +254,6 @@ document.getElementById('gen').addEventListener('click',()=>{
 
   // const ranges = [r1, r2, r3].filter(r => !isNaN(r) && r > 0);
 
-  params.alt = 0; 
 
   let kml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
   kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
@@ -246,6 +276,7 @@ document.getElementById('gen').addEventListener('click',()=>{
     paramsCopy.rMax = ring.max;
     paramsCopy.color = ring.color;
     paramsCopy.trans = ring.trans;
+    paramsCopy.name = `${params.name} ${idx + 1}`;
     kml += buildWedge(paramsCopy);
     rMin = ring.max;
   });

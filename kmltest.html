@@ -71,19 +71,28 @@
           <div class="row">
             <div id="rangeRings">
               <h3>Range Rings</h3>
-              <div>
-                <label>Ring 1 Max Range (km)</label>
-                <input type="number" id="rMax1" value="2" min="0.1" step="0.1">
+            
+              <div class="ring">
+                <label>Ring 1</label>
+                <input type="number" id="rMax1" value="2" min="0.1" step="0.1" style="width:60px"> km
+                <input type="color" id="color1" value="#0000ff">
               </div>
-              <div>
-                <label>Ring 2 Max Range (km)</label>
-                <input type="number" id="rMax2" value="4" min="0.1" step="0.1">
+            
+              <div class="ring">
+                <label>Ring 2</label>
+                <input type="number" id="rMax2" value="4" min="0.1" step="0.1" style="width:60px"> km
+                <input type="color" id="color2" value="#00ffff">
               </div>
-              <div>
-                <label>Ring 3 Max Range (km)</label>
-                <input type="number" id="rMax3" value="6" min="0.1" step="0.1">
+            
+              <div class="ring">
+                <label>Ring 3</label>
+                <input type="number" id="rMax3" value="6" min="0.1" step="0.1" style="width:60px"> km
+                <input type="color" id="color3" value="#00ff00">
               </div>
             </div>
+            
+            
+            
           </div>
           <div class="row">
             <div>
@@ -127,7 +136,7 @@
     <section class="card">
       <div class="grid2">
         <div>
-          <h3 style="margin-top:0">Preview (first 25 kB)</h3>
+          <h3 style="margin-top:0">Preview (first kB)</h3>
           <pre id="out" class="out preview">Nothing yet. Set parameters and click “Generate KML”.</pre>
         </div>
         <div>

@@ -24,3 +24,21 @@
     details{background:#f3f6ff;border:1px solid #dbe6ff;border-radius:10px;padding:.6rem .8rem}
     summary{cursor:pointer;font-weight:600;color:#1b3ea7}
     code{background:#eef1f8;padding:.1rem .3rem;border-radius:6px}
+
+
+    #rangeRings {
+        margin: 10px 0;
+      }
+      
+      #rangeRings .ring {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 0.9em;
+      }
+      
+      #rangeRings label {
+        white-space: nowrap;
+      }
+      

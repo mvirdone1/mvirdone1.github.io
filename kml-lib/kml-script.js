@@ -4,6 +4,18 @@
 function deg2rad(d){return d*Math.PI/180;}
 function rad2deg(r){return r*180/Math.PI;}
 
+// Converts #RRGGBB + alpha (0–255) -> KML ABGR string
+function colorToKmlHex(hex, alpha = 255) {
+  const h = (hex || '#ffffff').replace('#', '');
+  const r = h.substring(0, 2);
+  const g = h.substring(2, 4);
+  const b = h.substring(4, 6);
+  const a = Math.max(0, Math.min(255, alpha)).toString(16).padStart(2, '0');
+  // KML color order is AABBGGRR
+  return a + b + g + r;
+}
+
+
 // Convert antenna-centered az/el/r (km) to lat/lon/alt
 function azElR_to_LLA(lat0, lon0, alt0, azDeg, elDeg, rKm){
   const R_E = 6378137.0; // Earth radius (approx)
@@ -28,9 +40,30 @@ function azElR_to_LLA(lat0, lon0, alt0, azDeg, elDeg, rKm){
 }
 
 function polygonKml(coords){
-  let s = `<Polygon><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>`;
+  let s = `<Polygon><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>\n`;
   coords.forEach(c=>{
-    s += `${c.lon},${c.lat},${c.alt}\n`;
+    const lon = c.lon.toFixed(5);
+    const lat = c.lat.toFixed(5);
+    const alt = c.alt.toFixed(5);
+    s += `${lon},${lat},${alt}\n`;
+  });
+  // Explicit closure
+  const f = coords[0];
+  s += `${f.lon.toFixed(5)},${f.lat.toFixed(5)},${f.alt.toFixed(5)}\n`;
+  s += `</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
+  return s;
+}
+
+// Old version of polygonKml, kept for reference
+// (does not close the polygon loop, which is not strictly necessary in KML)
+
+function polygonKmlOld(coords){
+  let s = `<Polygon><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>\n`;
+  coords.forEach(c => {
+    const lon = c.lon.toFixed(5);
+    const lat = c.lat.toFixed(5);
+    const alt = c.alt.toFixed(5);
+    s += `${lon},${lat},${alt}\n`;
   });
   // s += `${coords[0].lon},${coords[0].lat},${coords[0].alt}\n`; // close loop
   s += `</coordinates></LinearRing></outerBoundaryIs></Polygon>`;
@@ -46,11 +79,26 @@ function buildWedge(params){
   const elMin = elCtr - elBw/2;
   const elMax = elCtr + elBw/2;
 
+  const alpha = Math.round(255 * (1 - (params.trans / 100)));
+  const kmlColor = colorToKmlHex(params.color, alpha);
+
+
+
   let kml = `<Folder><name>${name}</name>\n`;
 
+  // kml += `<Placemark><Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>`;
+
   function face(pts){
-    return `<Placemark><styleUrl>#wedge</styleUrl>`+polygonKml(pts)+`</Placemark>\n`;
+
+    return `<Placemark><Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>` 
+    + polygonKml(pts) 
+    + `</Placemark>\n`;
+
+
+    // return `<Placemark><styleUrl>#wedge</styleUrl>`+polygonKml(pts)+`</Placemark>\n`;
   }
+
+  const sliceSize = (azMax - azMin) / azSteps
 
   // Left side (az=azMin)
   {
@@ -78,15 +126,15 @@ function buildWedge(params){
   {
     const pts=[];
     pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-
+    
     for(let i=0;i<=azSteps;i++){
-      const az=azMin+((azMax-azMin)*i/azSteps);
+      const az=azMin+(sliceSize*i);
       pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMax));
     }
 
     
     for(let i=0;i<=(azSteps-1);i++){
-      const az=azMax-((azMax-azMin)*i/azSteps);
+      const az=azMax-(sliceSize*i);
       pts.push(azElR_to_LLA(lat,lon,alt,az,elMin,rMin));
     }
 
@@ -98,15 +146,16 @@ function buildWedge(params){
   // Top side (el=elMax)
   {
     const pts=[];
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMin));
+    pts.push(azElR_to_LLA(lat,lon,alt,azMin,elMax,rMin));
+    
 
     for(let i=0;i<=azSteps;i++){
-      const az=azMin+(azMax-azMin)*i/azSteps;
+      const az=azMin+(sliceSize*i);
       pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMax));
     }
 
     for(let i=0;i<=(azSteps-1);i++){
-      const az=azMax-((azMax-azMin)*i/azSteps);
+      const az=azMax-(sliceSize*i);
       pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMin));
     }
 
@@ -172,7 +221,7 @@ document.getElementById('gen').addEventListener('click',()=>{
   const r2 = parseFloat(document.getElementById('rMax2').value);
   const r3 = parseFloat(document.getElementById('rMax3').value);
 
-  const ranges = [r1, r2, r3].filter(r => !isNaN(r) && r > 0);
+  // const ranges = [r1, r2, r3].filter(r => !isNaN(r) && r > 0);
 
   params.alt = 0; 
 
@@ -180,14 +229,29 @@ document.getElementById('gen').addEventListener('click',()=>{
   kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
 
 
-  let rMin = 0;
-  for (let i = 0; i < ranges.length; i++) {
-    const paramsCopy = { ...params }; // shallow copy
-    paramsCopy.rMin = rMin;
-    paramsCopy.rMax = ranges[i];
-    kml += buildWedge(paramsCopy);
-    rMin = ranges[i]; // next ring starts at previous max
+  const ranges = [];
+  for (let i = 1; i <= 3; i++) {
+    const maxVal = parseFloat(document.getElementById(`rMax${i}`).value);
+    if (!isNaN(maxVal) && maxVal > 0) {
+      const color = document.getElementById(`color${i}`).value;
+      const trans = 30; // Default transparency
+      ranges.push({ max: maxVal, color, trans });
+    }
   }
+  
+  let rMin = 0;
+  ranges.forEach((ring, idx) => {
+    const paramsCopy = { ...params };
+    paramsCopy.rMin = rMin;
+    paramsCopy.rMax = ring.max;
+    paramsCopy.color = ring.color;
+    paramsCopy.trans = ring.trans;
+    kml += buildWedge(paramsCopy);
+    rMin = ring.max;
+  });
+  // If no ranges were specified, use the default rMax
+
+
 
   /*
   kml += buildWedge(params);
@@ -201,7 +265,7 @@ document.getElementById('gen').addEventListener('click',()=>{
   kml += `</Document></kml>`;
 
   const out=document.getElementById('out');
-  out.textContent = kml.slice(0,25000) + (kml.length > 25000 ? "\n…(truncated preview)" : "");
+  out.textContent = kml.slice(0,1000) + (kml.length > 1000 ? "\n…(truncated preview)" : "");
 
   const dlBtn=document.getElementById('download');
   const blob=new Blob([kml],{type:'application/vnd.google-earth.kml+xml'});

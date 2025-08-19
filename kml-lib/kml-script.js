@@ -72,24 +72,6 @@ function buildWedge(params){
     pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMax,rMin));
     kml+=face(pts);
   }
-
-
-  /*
-  // Bottom side (el=elMin)
-  {
-    const pts=[];
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-    for(let i=0;i<=azSteps;i++){
-      const az=azMin+(azMax-azMin)*i/azSteps;
-      const el=elMax;
-      pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
-    }
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMax));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMax,elMin,rMax));
-    pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMin,rMin));
-    kml+=face(pts);
-  }
-    */
     
 
   // Bottom side (el=elMin)
@@ -176,25 +158,45 @@ document.getElementById('gen').addEventListener('click',()=>{
     azBw: parseFloat(document.getElementById('azBw').value),
     elCtr: parseFloat(document.getElementById('el').value),
     elBw: parseFloat(document.getElementById('elBw').value),
-    rMin: Math.max(0, parseFloat(document.getElementById('rMin').value)),
-    rMax: Math.max(0.001, parseFloat(document.getElementById('rMax').value)),
+    rMin: 0, // Parsing from elsewhere in the form
+    rMax: 0, // Parsing from elsewhere in the form
     azSteps: Math.max(4, parseInt(document.getElementById('azSteps').value)),
-    elSteps: Math.max(2, parseInt(document.getElementById('elSteps').value)),
+    elSteps: 1, // Default to 1 for elevation steps
     name: document.getElementById('name').value || 'Antenna Wedge',
     color: (document.getElementById('styleColor').value || '7dff8000').trim()
   };
+
+
+  // Collect ranges from GUI
+  const r1 = parseFloat(document.getElementById('rMax1').value);
+  const r2 = parseFloat(document.getElementById('rMax2').value);
+  const r3 = parseFloat(document.getElementById('rMax3').value);
+
+  const ranges = [r1, r2, r3].filter(r => !isNaN(r) && r > 0);
 
   params.alt = 0; 
 
   let kml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
   kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
+
+
+  let rMin = 0;
+  for (let i = 0; i < ranges.length; i++) {
+    const paramsCopy = { ...params }; // shallow copy
+    paramsCopy.rMin = rMin;
+    paramsCopy.rMax = ranges[i];
+    kml += buildWedge(paramsCopy);
+    rMin = ranges[i]; // next ring starts at previous max
+  }
+
+  /*
   kml += buildWedge(params);
 
   params.rMin = params.rMax;
   params.rMax = Math.max(0.001, parseFloat(document.getElementById('rMax').value)) * 2;
 
   kml += buildWedge(params);
-
+  */
 
   kml += `</Document></kml>`;
 

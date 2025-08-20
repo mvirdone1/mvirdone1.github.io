@@ -256,7 +256,7 @@ document.getElementById('gen').addEventListener('click',()=>{
 
 
   let kml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
-  kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
+  // kml += `<Style id=\"wedge\"><PolyStyle><color>${params.color}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`;
 
 
   const ranges = [];
@@ -268,6 +268,8 @@ document.getElementById('gen').addEventListener('click',()=>{
       ranges.push({ max: maxVal, color, trans });
     }
   }
+
+  kml += `<Folder><name>${params.name}</name>\n`;
   
   let rMin = 0;
   ranges.forEach((ring, idx) => {
@@ -276,12 +278,13 @@ document.getElementById('gen').addEventListener('click',()=>{
     paramsCopy.rMax = ring.max;
     paramsCopy.color = ring.color;
     paramsCopy.trans = ring.trans;
-    paramsCopy.name = `${params.name} ${idx + 1}`;
+    paramsCopy.name = `Coverage ${idx + 1}`;
     kml += buildWedge(paramsCopy);
     rMin = ring.max;
   });
   // If no ranges were specified, use the default rMax
 
+  kml += `</Folder>\n`;
 
 
   /*

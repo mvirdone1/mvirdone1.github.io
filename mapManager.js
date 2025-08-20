@@ -36,7 +36,7 @@ class MapManager {
 
   // Call this function to force a re-rendering of the map
   mapResize() {
-    google.maps.event.trigger(map, "resize");
+    google.maps.event.trigger(this.map, "resize");
   }
 
   addMarker(position, title, label = "", rgbColor = null) {
@@ -83,7 +83,7 @@ class MapManager {
     if (marker) {
       marker.setPosition(position);
       marker.setTitle(title);
-      marker.setMap(this);
+      marker.setMap(this.map);
     }
 
     return marker;

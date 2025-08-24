@@ -137,7 +137,7 @@ class clickWeatherManager {
       // I don't love having this tucked in the weather data object
       // Really I should be doing this back in clickweather.js
       // but that part of the script doesn't know about the new-ness of the station
-      myMapManager.addMarker(
+      myMapManager.addMarkerLegacy(
         stationLocation,
         currentStation.name,
         currentStation.stid,

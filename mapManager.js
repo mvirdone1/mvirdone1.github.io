@@ -39,53 +39,68 @@ class MapManager {
     google.maps.event.trigger(this.map, "resize");
   }
 
-  addMarker(position, title, label = "", rgbColor = null) {
-    if (!label) {
-      label = (this.markers.length + 1).toString();
+
+
+
+  addMarker(config) {
+    const {
+      position,
+      title,
+      onDragEnd,
+      onClick,
+      label,
+      ...markerOptions
+    } = config;
+  
+    if (!position) {
+      throw new Error("addMarker requires at least `position`");
     }
 
-    // Place the standard marker
-    if (!rgbColor) {
-      const marker = new google.maps.Marker({
-        map: this.map,
-        position: position,
-        title: title,
-        label: label,
-        // draggable: true, 
-      });
-
-            // update stored position when dragged
-      marker.addListener('dragend', () => {
+    console.log(this.markers.length.toString());
+    const marker = new google.maps.Marker({
+      position,
+      map: this.map,
+      title,
+      label: label || (this.markers.length + 1).toString(),
+      ...markerOptions
+    });
+  
+    if (markerOptions.draggable && onDragEnd) {
+      marker.addListener("dragend", (event) => {
         const pos = marker.getPosition();
-        marker.lat = pos.lat();
-        marker.lng = pos.lng();
-        console.log(`Marker moved to ${marker.lat}, ${marker.lng}`);
+        onDragEnd({ lat: pos.lat(), lng: pos.lng() }, marker);
       });
+    }
+  
+    if (onClick) {
+      marker.addListener("click", () => onClick(marker));
+    }
+  
+    this.markers.push(marker);
+    return marker;
+  }
 
-      this.markers.push(marker);
-      return marker;
-    } else {
-      const marker = new google.maps.Marker({
-        map: this.map,
-        position: position,
-        title: title,
-        label: label,
+  addMarkerLegacy(position, title, label = "", rgbColor = null) {
+
+    const config = {
+      position,
+      title,
+      label,
+      ...(rgbColor ? {
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           fillColor: `rgb(${rgbColor[0]}, ${rgbColor[1]}, ${rgbColor[2]})`,
           fillOpacity: 1,
           strokeWeight: 0,
-          scale: 8, // Adjust the size of the marker
-        },
-        draggable: false, // You can set this to false if you don't want the marker to be draggable
-      });
+          scale: 8,
+        }
+      } : {})
+    };
+  
+    return this.addMarker(config);
 
-      console.log(marker.getDraggable()); 
-
-      this.markers.push(marker);
-      return marker;
-    }
   }
+ 
 
   updateMarker(index, position, title) {
     const marker = this.markers[index];

@@ -18,6 +18,7 @@ function updateMarkerTitles() {
 }
 
 function updateDriveList() {
+  console.log("Updating Drive List");
   $("#dynamic-div").empty();
 
   var linkURL = "https://mvirdone1.github.io/driveweather.html?drive=";
@@ -111,12 +112,18 @@ function driveWeatherInit() {
 
   // Add a click event listener to the map
   myMapManager.setMapClickListener((position) => {
-    // mapManager.addMarker(position, "");
     console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
+    // myMapManager.addMarker(position, "");
 
-
-
-    myMapManager.addMarker(position, "");
+    myMapManager.addMarker({
+      position: position,
+      title: "",
+      draggable: true,
+      onDragEnd: ({ lat, lng, marker }) => {
+        // Refresh the drive list
+        updateDriveList();
+      }
+    });
 
     //appendLatLon(lat, lon);
     updateDriveList();

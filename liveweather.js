@@ -382,7 +382,7 @@ function parseURL() {
         chartObjects: [],
       };
 
-      myMapManager.addMarker({ lat: lat, lng: lon }, "Forecast Location", "Wx");
+      myMapManager.addMarkerLegacy({ lat: lat, lng: lon }, "Forecast Location", "Wx");
       myMapManager.setMapCenter(lat, lon);
 
       // Update the URL for the image element
@@ -419,13 +419,13 @@ function initMap() {
   const initialCenter = { lat: lat, lng: lon };
   const initialZoom = 7;
   const myMapManager = new MapManager("map", initialCenter, initialZoom);
-  myMapManager.addMarker(initialCenter, "Forecast Location", "Wx");
+  myMapManager.addMarkerLegacy(initialCenter, "Forecast Location", "Wx");
 
   // Make this instance of the map manager a global variable
   window.myMapManager = myMapManager;
 
   myMapManager.setMapClickListener((position) => {
-    // mapManager.addMarker(position, "");
+    // mapManager.addMarkerLegacy(position, "");
     console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
 
     const numDecimals = 4;
@@ -438,7 +438,7 @@ function initMap() {
     document.getElementById("lon").value = lon;
 
     myMapManager.deleteAllMarkers();
-    myMapManager.addMarker(position, "Forecast Location", "Wx");
+    myMapManager.addMarkerLegacy(position, "Forecast Location", "Wx");
 
     var locationObject = {
       lat: lat,

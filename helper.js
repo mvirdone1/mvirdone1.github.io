@@ -481,3 +481,9 @@ function timeUTCToLocalString(timeIn) {
 
   return formattedTime;
 }
+
+// Positive number for more decimals
+function roundDecimal(value, numDecimals) {
+  const roundFactor = 10 ** numDecimals;
+  return Math.round(value * roundFactor) / roundFactor;
+}

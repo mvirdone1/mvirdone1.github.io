@@ -9,28 +9,36 @@ function appendLatLon(lat, lon) {
   locationList.push([lat, lon]);
 }
 
+// Update the marker list titles in the map manager markers
+function updateMarkerTitles() {
+    // Re-label all the markers since we deleted one
+    myMapManager.getMarkers().forEach((marker, idx) => {
+      marker.setLabel((idx + 1).toString());  
+    }) 
+}
+
 function updateDriveList() {
   $("#dynamic-div").empty();
 
   var linkURL = "https://mvirdone1.github.io/driveweather.html?drive=";
 
-  myMapManager.deleteAllMarkers();
+  // myMapManager.deleteAllMarkers();
 
-  for (idx = 0; idx < locationList.length; idx++) {
-    console.log("[" + idx + "]: " + locationList[idx]);
+  // Get all markers from the map manager and then iterate over them
+  // iterate over all markers and their index
+  myMapManager.getMarkers().forEach((marker, idx) => {
+    // print troubleshooting info
+    console.log(marker);
 
-    var lat = locationList[idx][0];
-    var lon = locationList[idx][1];
+    const numDecimals = 2;
+    const lat = roundDecimal(marker.getPosition().lat(), numDecimals);
+    const lon = roundDecimal(marker.getPosition().lng(), numDecimals);
 
     getWeatherOverview(lat, lon, idx);
-    mapPosition = {
-      lat: Number(lat),
-      lng: Number(lon),
-    };
-    myMapManager.addMarker(mapPosition, "");
-
     linkURL = linkURL + lat + "," + lon + ";";
-  }
+
+  })   
+
 
   $("#drive-link").attr("href", linkURL);
 
@@ -38,8 +46,9 @@ function updateDriveList() {
 }
 
 function deleteLocation(deleteIdx) {
-  locationList.splice(deleteIdx, 1);
 
+  myMapManager.deleteMarker(deleteIdx);
+  updateMarkerTitles();
   updateDriveList();
 }
 
@@ -97,6 +106,7 @@ function driveWeatherInit() {
   const initialCenter = { lat: 41.69, lng: -111.8 };
   const initialZoom = 8;
   const myMapManager = new MapManager("map", initialCenter, initialZoom);
+  // Make this a global variable 
   window.myMapManager = myMapManager;
 
   // Add a click event listener to the map
@@ -104,13 +114,11 @@ function driveWeatherInit() {
     // mapManager.addMarker(position, "");
     console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
 
-    const numDecimals = 2;
-    const roundFactor = 10 ** numDecimals;
 
-    var lat = Math.round(position.lat * roundFactor) / roundFactor;
-    var lon = Math.round(position.lng * roundFactor) / roundFactor;
 
-    appendLatLon(lat, lon);
+    myMapManager.addMarker(position, "");
+
+    //appendLatLon(lat, lon);
     updateDriveList();
   });
 
@@ -145,38 +153,12 @@ function driveWeatherInit() {
   }, 1000);
 }
 
-/*
-function driveWeatherInit() {
-  var reverseButton = $('<button id="reverseButton">Reverse List</button>');
-
-  $("#map-div").append(reverseButton);
-  // Add a click event listener to the button
-  reverseButton.on("click", function () {
-    reverseList();
-  });
-
-  // Get the URL and see if we have pre-set
-  const queryString = window.location.search;
-  console.log(queryString);
-  const urlParams = new URLSearchParams(queryString);
-
-  // appendLatLon(41.73, -111.83);
-
-  if (urlParams.has("drive")) {
-    console.log("Found a drive parameter");
-    getDriveURLParameters(urlParams.get("drive"));
-    updateDriveList();
-  }
-
-  var intervalId = window.setInterval(function () {
-    console.log("Updating Images");
-    updateWeatherImages();
-  }, 1000);
-}
-*/
 
 function reverseList() {
-  locationList.reverse();
+  const markers = myMapManager.getMarkers();
+  markers.reverse();
+  myMapManager.setMarkers(markers);
+  updateMarkerTitles();
   updateDriveList();
 }
 

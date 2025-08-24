@@ -51,6 +51,15 @@ class MapManager {
         position: position,
         title: title,
         label: label,
+        // draggable: true, 
+      });
+
+            // update stored position when dragged
+      marker.addListener('dragend', () => {
+        const pos = marker.getPosition();
+        marker.lat = pos.lat();
+        marker.lng = pos.lng();
+        console.log(`Marker moved to ${marker.lat}, ${marker.lng}`);
       });
 
       this.markers.push(marker);
@@ -70,6 +79,8 @@ class MapManager {
         },
         draggable: false, // You can set this to false if you don't want the marker to be draggable
       });
+
+      console.log(marker.getDraggable()); 
 
       this.markers.push(marker);
       return marker;
@@ -109,6 +120,18 @@ class MapManager {
 
   setMapClickListener(callback) {
     this.mapClickListener = callback;
+  }
+
+  getMarkers() {  
+    return this.markers; 
+  } 
+
+  setMarkers(markers) {
+    this.deleteAllMarkers();
+    this.markers = markers;
+    this.markers.forEach((marker) => {
+      marker.setMap(this.map);
+    });
   }
 }
 

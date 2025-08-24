@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="../mv-favicon.png">
+  <meta charset="UTF-8">
+  <title>Coverage Visualization</title>
+  <link rel="stylesheet" href="coverage_main.css">
+</head>
+<body>
+  <div id="container">
+    <div id="sidebar">
+      <h2>Dynamic Content</h2>
+      <div id="dynamicContent">
+        <p>Click on the map to add a marker.</p>
+      </div>
+      <button id="clearMarkers">Clear Markers</button>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- MapManager and main script -->
+  <script src="mapManager.js"></script>
+  <script src="coverage_main.js"></script>
+  
+  <script defer>
+    // Call the following functions to setup the google maps API by getting a production or test key
+    // Then source additional script to do the API initialization and callback
+    initMapKey("initMap");
+    //initializeMap("initMapManager");
+  </script>
+</body>
+</html>

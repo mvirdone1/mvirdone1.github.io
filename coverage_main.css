@@ -33,4 +33,33 @@ html, body {
   button {
     margin-top: 10px;
   }
+
+  
+  #propertiesContent textarea {
+    width: 100%;
+  }
+  
+  .numeric-field {
+    margin-bottom: 8px;
+  }
+  
+  .radius-group {
+    margin-bottom: 12px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .radius-group label {
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  .radius-group input[type="number"],
+  .radius-group input[type="text"],
+  .radius-group input[type="color"],
+  .radius-group input[type="range"] {
+    margin-bottom: 4px;
+  }
   

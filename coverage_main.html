@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" href="../mv-favicon.png">
+    <link rel="icon" type="image/png" href="mv-favicon.png">
   <meta charset="UTF-8">
   <title>Coverage Visualization</title>
   <link rel="stylesheet" href="coverage_main.css">
@@ -9,11 +9,14 @@
 <body>
   <div id="container">
     <div id="sidebar">
-      <h2>Dynamic Content</h2>
+      <button id="addMarkerButton">Add Marker</button>
       <div id="dynamicContent">
-        <p>Click on the map to add a marker.</p>
       </div>
-      <button id="clearMarkers">Clear Markers</button>
+      <button id="clearMarkers">Clear All Markers</button>
+      <h3>Item Properties</h3>
+      <div id="propertiesContent">
+
+      </div>
     </div>
     <div id="map"></div>
   </div>

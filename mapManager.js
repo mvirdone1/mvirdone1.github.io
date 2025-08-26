@@ -51,7 +51,7 @@ class MapManager {
       label,
       ...markerOptions
     } = config;
-  
+
     if (!position) {
       throw new Error("addMarker requires at least `position`");
     }
@@ -64,18 +64,18 @@ class MapManager {
       label: label || (this.markers.length + 1).toString(),
       ...markerOptions
     });
-  
+
     if (markerOptions.draggable && onDragEnd) {
       marker.addListener("dragend", (event) => {
         const pos = marker.getPosition();
         onDragEnd({ lat: pos.lat(), lng: pos.lng() }, marker);
       });
     }
-  
+
     if (onClick) {
       marker.addListener("click", () => onClick(marker));
     }
-  
+
     this.markers.push(marker);
     return marker;
   }
@@ -96,11 +96,11 @@ class MapManager {
         }
       } : {})
     };
-  
+
     return this.addMarker(config);
 
   }
- 
+
 
   updateMarker(index, position, title) {
     const marker = this.markers[index];
@@ -137,9 +137,9 @@ class MapManager {
     this.mapClickListener = callback;
   }
 
-  getMarkers() {  
-    return this.markers; 
-  } 
+  getMarkers() {
+    return this.markers;
+  }
 
   setMarkers(markers) {
     this.deleteAllMarkers();

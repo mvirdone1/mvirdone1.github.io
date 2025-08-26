@@ -3,7 +3,7 @@
 const coverageGlobals = {
   addingMarker: false,
   pendingName: null,
-  defaultMetadata: {
+  defaultMarkerMetadata: {
     description: "",
     createdAt: null,
     sectorAzimuthWidth: 90,
@@ -11,14 +11,17 @@ const coverageGlobals = {
     sectorElevationHeight: 30,
     sectorElevationAngle: 20,
     sectorHeight: 5,
-    radius: [{ value: 5, color: [0, 0, 255], transparency: 0.5, label: "5 km" }], 
-  }
+    radius: [{ value: 5, color: [0, 0, 255], transparency: 0.5, label: "5 km" }],
+  },
+  newMarkerMetadata: {}
 };
 
 
 function initMap() {
   // Initialize MapManager
   const mapManager = new MapManager('map', { lat: 40.7128, lng: -74.006 }, 12);
+  window.myMapManager = mapManager; // Global variable
+
 
   const contentDiv = document.getElementById('dynamicContent');
   const clearButton = document.getElementById('clearMarkers');
@@ -38,11 +41,11 @@ function initMap() {
     addMarkerButton.textContent = 'Click on map to place marker';
   });
 
-  mapManager.setMapClickListener((latLng) => {
+  myMapManager.setMapClickListener((latLng) => {
     if (!coverageGlobals.addingMarker) return;
 
     // Create the marker at the clicked location
-    const marker = mapManager.addMarker({
+    const marker = myMapManager.addMarker({
       title: coverageGlobals.pendingMarkerName || 'New Marker',
       position: latLng,
       draggable: true,
@@ -55,8 +58,10 @@ function initMap() {
       },
     });
 
+    // Make the new marker the default metadata template
+    coverageGlobals.newMarkerMetadata = coverageGlobals.defaultMarkerMetadata;
 
-    marker.coverageMetadata = coverageGlobals.defaultMetadata;
+    marker.coverageMetadata = structuredClone(coverageGlobals.newMarkerMetadata);
     marker.coverageMetadata.createdAt = new Date().toISOString();
     displayMarkerProperties(marker)
 
@@ -66,36 +71,87 @@ function initMap() {
     addMarkerButton.disabled = false;
     addMarkerButton.textContent = 'Add Marker';
 
+    updateUI();
+
+
     const markerDiv = document.createElement('div');
     markerDiv.className = 'marker-info';
     markerDiv.id = 'marker-' + marker.getLabel();
-    markerDiv.textContent = `Marker ${marker.getTitle()}: ${latLng.lat.toFixed(5)}, ${latLng.lng.toFixed(5)}`;
     contentDiv.appendChild(markerDiv);
+    updateMarkerInfo(marker, latLng);
   });
 
-  /*
-  // Map click listener: add draggable marker and update sidebar
-  mapManager.setMapClickListener((latLng) => {
-    const marker = mapManager.addMarker({
-      position: latLng,
-      title: '',
-      draggable: true,
-      onDragEnd: (newPos, markerRef) => {
-        updateMarkerInfo(markerRef, newPos);
-      },
-      onClick: (markerRef) => {
-        console.log('Marker clicked:', markerRef.getTitle());
-      }
+  function updateUI() {
+    refreshMarkerList();
+  }
+
+
+  // --- UI update ---
+  function refreshMarkerList() {
+    console.log('Refreshing marker list');
+    const list = document.getElementById("markerList");
+    if (!list) return;
+
+    list.innerHTML = ""; // clear existing
+
+    myMapManager.getMarkers().forEach((mObj, idx) => {
+      const item = document.createElement("div");
+      item.className = "marker-entry";
+
+      // Marker title
+      const label = document.createElement("span");
+      label.textContent = mObj.getTitle();
+      label.style.marginRight = "8px";
+
+      // Delete button
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener("click", () => {
+        // Remove polygons
+        if (mObj.polygons) {
+          mObj.polygons.forEach(p => p.setMap(null));
+        }
+        // Remove marker
+        mObj.marker.setMap(null);
+        // Remove from globals
+        coverageGlobals.markers.splice(idx, 1);
+        refreshMarkerList();
+      });
+
+      // Copy button
+      const copyBtn = document.createElement("button");
+      copyBtn.textContent = "Copy";
+      copyBtn.style.marginLeft = "4px";
+      copyBtn.addEventListener("click", () => {
+        const name = prompt("Enter a name for the new marker:");
+        if (name && name.trim() !== "") {
+          coverageGlobals.pendingMarkerName = name.trim();
+          coverageGlobals.addingMarker = true;
+          coverageGlobals.newMarkerMetadata = mObj.coverageMetadata
+        }
+
+
+      });
+
+      // Edit button
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.style.marginLeft = "4px";
+      editBtn.addEventListener("click", () => {
+
+        displayMarkerProperties(mObj)
+
+
+      });
+
+      item.appendChild(label);
+      item.appendChild(delBtn);
+      item.appendChild(copyBtn);
+      item.appendChild(editBtn);
+      list.appendChild(item);
     });
+  }
 
-    // Add marker info to sidebar
-    const markerDiv = document.createElement('div');
-    markerDiv.className = 'marker-info';
-    markerDiv.id = 'marker-' + marker.getLabel();
-    markerDiv.textContent = `Marker ${marker.getLabel()}: ${latLng.lat.toFixed(5)}, ${latLng.lng.toFixed(5)}`;
-    contentDiv.appendChild(markerDiv);
-  });
-  */
 
   // Function to display information about a marker in the sidebar in the propertiesContent div
   function displayMarkerPropertiesOld(marker) {
@@ -105,18 +161,72 @@ function initMap() {
 
   // Function to update marker info in sidebar
   function updateMarkerInfo(marker, newPos) {
+    drawCoverageWedgesForMarker(marker);
+
     const markerDiv = document.getElementById('marker-' + marker.getLabel());
     if (markerDiv) {
-      markerDiv.textContent = `Marker ${marker.getLabel()}: ${newPos.lat.toFixed(5)}, ${newPos.lng.toFixed(5)}`;
+      markerDiv.textContent = `Marker ${marker.getTitle()}: ${newPos.lat.toFixed(3)}, ${newPos.lng.toFixed(3)}`;
     }
   }
 
   // Clear markers button
   clearButton.addEventListener('click', () => {
-    mapManager.deleteAllMarkers();
+    myMapManager.deleteAllMarkers();
     contentDiv.innerHTML = '<p>Markers cleared.</p>';
   });
 }
+
+
+/*
+// --- UI update ---
+function refreshMarkerList() {
+  const list = document.getElementById("markerList");
+  if (!list) return;
+
+  list.innerHTML = ""; // clear existing
+
+  myMapManager.getMarkers().forEach((mObj, idx) => {
+    const item = document.createElement("div");
+    item.className = "marker-entry";
+
+    // Marker title
+    const label = document.createElement("span");
+    label.textContent = mObj.marker.getTitle();
+    label.style.marginRight = "8px";
+
+    // Delete button
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", () => {
+      // Remove polygons
+      if (mObj.polygons) {
+        mObj.polygons.forEach(p => p.setMap(null));
+      }
+      // Remove marker
+      mObj.marker.setMap(null);
+      // Remove from globals
+      coverageGlobals.markers.splice(idx, 1);
+      refreshMarkerList();
+    });
+
+    // Copy button
+    const copyBtn = document.createElement("button");
+    copyBtn.textContent = "Copy";
+    copyBtn.style.marginLeft = "4px";
+    copyBtn.addEventListener("click", () => {
+      const name = prompt("Enter a name for the copied marker:");
+      if (name && name.trim() !== "") {
+        enterAddMarkerMode(name.trim(), mObj);
+      }
+    });
+
+    item.appendChild(label);
+    item.appendChild(delBtn);
+    item.appendChild(copyBtn);
+    list.appendChild(item);
+  });
+}
+  */
 
 
 // Helper functions
@@ -141,6 +251,12 @@ function getRandomMidColor() {
 
 // Main function
 function displayMarkerProperties(marker) {
+
+  console.log("displayMarkerProperties called", marker.getTitle());
+
+  const titleDiv = document.getElementById('propertiesTitle');
+  titleDiv.innerHTML = `<h3>Item Properties For: ${marker.getTitle()}<h3>`;
+
   const propertiesDiv = document.getElementById('propertiesContent');
   const metadata = marker.coverageMetadata;
 
@@ -202,7 +318,9 @@ function displayMarkerProperties(marker) {
     html += `<button id="addRadiusButton">Add Radius</button>`;
   }
 
-  html += `<br><br><button id="updateMarkerButton">Update Marker</button>`;
+  html += `<br><br><button id="updateMarkerButton">Update Marker</button> `;
+  html += `<button id="updateCancelButton">Cancel</button>`;
+
 
   propertiesDiv.innerHTML = html;
 
@@ -238,10 +356,16 @@ function displayMarkerProperties(marker) {
   }
 
   // Delete radius
-  window.deleteRadius = function(idx) {
+  window.deleteRadius = function (idx) {
     metadata.radius.splice(idx, 1);
     displayMarkerProperties(marker);
   };
+
+  // Update marker metadata
+  document.getElementById('updateCancelButton').addEventListener('click', () => {
+    titleDiv.innerHTML = `<h3>Item Properties</h3>`;
+    propertiesDiv.innerHTML = "No Marker Selected";
+  });
 
   // Update marker metadata
   document.getElementById('updateMarkerButton').addEventListener('click', () => {
@@ -257,8 +381,96 @@ function displayMarkerProperties(marker) {
       r.transparency = parseInt(document.getElementById(`radiusT${idx}`).value) / 100;
     });
 
-    alert('Marker metadata updated!');
-    // Optional: redraw circles
+
+    titleDiv.innerHTML = `<h3>Item Properties</h3>`;
+    propertiesDiv.innerHTML = "No Marker Selected";
+
+    drawCoverageWedgesForMarker(marker);
   });
 }
+
+// Take the list of radius segments in a given marker, and add the coverage wedges to the map
+function drawCoverageWedgesForMarker(marker) {
+  // Remove existing polygons
+  if (marker.coveragePolygons) {
+    marker.coveragePolygons.forEach(p => p.setMap(null));
+  }
+  marker.coveragePolygons = [];
+
+  const metadata = marker.coverageMetadata;
+  if (!metadata || !metadata.radius || metadata.radius.length === 0) return;
+
+  const innerRadius = 0; // meters
+  const outerRadius = metadata.radius[metadata.radius.length - 1].value * 1000; // km to m
+  const centerAzimuth = metadata.sectorAzimuthHeading || 0; // degrees
+  const width = metadata.sectorAzimuthWidth || 90; // degrees
+
+  // iterate over each of the radius in the marker metadata array
+  marker.coverageMetadata.radius.forEach((r, idx) => {
+    const polygon = addCoverageWedge(marker, innerRadius, outerRadius, centerAzimuth, width);
+    if (polygon) {
+      marker.coveragePolygons.push(polygon);
+      polygon.setMap(myMapManager.map);
+    }
+  });
+
+
+}
+
+
+function addCoverageWedge(marker, innerRadius, outerRadius, centerAzimuth, width) {
+  const center = marker.getPosition();
+
+  // Compute azimuth bounds
+  const startAzimuth = centerAzimuth - width / 2;
+  const endAzimuth = centerAzimuth + width / 2;
+
+  const path = [];
+
+  // Helper to convert polar to LatLng
+  function computeOffset(center, distance, heading) {
+    return google.maps.geometry.spherical.computeOffset(center, distance, heading);
+  }
+
+  // Arc resolution: 1 point per ~50m of arc length
+  function numPoints(radius, spanDeg) {
+    const arcLength = (Math.PI * radius * spanDeg) / 180; // meters
+    return Math.max(3, Math.floor(arcLength / 50));
+  }
+
+  const outerPoints = numPoints(outerRadius, width);
+  const innerPoints = numPoints(innerRadius, width);
+
+  // Outer arc (start -> end)
+  for (let i = 0; i <= outerPoints; i++) {
+    const az = startAzimuth + (i / outerPoints) * width;
+    path.push(computeOffset(center, outerRadius, az));
+  }
+
+  // Inner arc (end -> start, reversed)
+  for (let i = innerPoints; i >= 0; i--) {
+    const az = startAzimuth + (i / innerPoints) * width;
+    path.push(computeOffset(center, innerRadius, az));
+  }
+
+  // Create polygon
+  const polygon = new google.maps.Polygon({
+    paths: path,
+    strokeColor: "#FF0000",
+    strokeOpacity: 0.8,
+    strokeWeight: 1,
+    fillColor: "#FF0000",
+    fillOpacity: 0.35,
+    map: marker.getMap()
+  });
+
+  // Associate polygon with the marker
+  if (!marker.coveragePolygons) {
+    marker.coveragePolygons = [];
+  }
+  marker.coveragePolygons.push(polygon);
+
+  return polygon;
+}
+
 

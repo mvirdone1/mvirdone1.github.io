@@ -3,13 +3,16 @@ function getGoogleMapsApiKey() {
   return "AIzaSyD4IR1iXOziMLx9qmMSAVZrzDdLWslS_BY";
 }
 
+
+
 // When this file loads,
 // construct the Google Maps API URL with the API key
 var mapsApiUrl =
   "https://maps.googleapis.com/maps/api/js?key=" +
   getGoogleMapsApiKey() +
   "&callback=" +
-  getGMapCallbackName();
+  getGMapCallbackName() +
+  "&libraries=geometry,places";
 
 // getGMapCallbackName is sourced from mapManager.js
 
@@ -18,6 +21,7 @@ var mapsApiUrl =
 var myScript = document.createElement("script");
 myScript.src = mapsApiUrl;
 // Set the defer attribute
+myScript.async = true;
 myScript.defer = true;
 
 // Append the script element to the document body

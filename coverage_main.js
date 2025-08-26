@@ -36,6 +36,9 @@ function initMap() {
       coverageGlobals.addingMarker = true;
     }
 
+    // Make any new makers use the default metadata
+    coverageGlobals.newMarkerMetadata = structuredClone(coverageGlobals.defaultMarkerMetadata);
+
 
     addMarkerButton.disabled = true; // optional: disable while waiting for click
     addMarkerButton.textContent = 'Click on map to place marker';
@@ -58,8 +61,7 @@ function initMap() {
       },
     });
 
-    // Make the new marker the default metadata template
-    coverageGlobals.newMarkerMetadata = coverageGlobals.defaultMarkerMetadata;
+
 
     marker.coverageMetadata = structuredClone(coverageGlobals.newMarkerMetadata);
     marker.coverageMetadata.createdAt = new Date().toISOString();
@@ -70,7 +72,6 @@ function initMap() {
     coverageGlobals.addingMarker = false;
     addMarkerButton.disabled = false;
     addMarkerButton.textContent = 'Add Marker';
-
     updateUI();
 
 
@@ -111,10 +112,9 @@ function initMap() {
         if (mObj.polygons) {
           mObj.polygons.forEach(p => p.setMap(null));
         }
-        // Remove marker
-        mObj.marker.setMap(null);
+
         // Remove from globals
-        coverageGlobals.markers.splice(idx, 1);
+        myMapManager.deleteMarker(idx);
         refreshMarkerList();
       });
 
@@ -127,7 +127,9 @@ function initMap() {
         if (name && name.trim() !== "") {
           coverageGlobals.pendingMarkerName = name.trim();
           coverageGlobals.addingMarker = true;
-          coverageGlobals.newMarkerMetadata = mObj.coverageMetadata
+          coverageGlobals.newMarkerMetadata = structuredClone(mObj.coverageMetadata);
+          console.log("Copied metadata:", coverageGlobals.newMarkerMetadata);
+
         }
 
 
@@ -175,59 +177,6 @@ function initMap() {
     contentDiv.innerHTML = '<p>Markers cleared.</p>';
   });
 }
-
-
-/*
-// --- UI update ---
-function refreshMarkerList() {
-  const list = document.getElementById("markerList");
-  if (!list) return;
-
-  list.innerHTML = ""; // clear existing
-
-  myMapManager.getMarkers().forEach((mObj, idx) => {
-    const item = document.createElement("div");
-    item.className = "marker-entry";
-
-    // Marker title
-    const label = document.createElement("span");
-    label.textContent = mObj.marker.getTitle();
-    label.style.marginRight = "8px";
-
-    // Delete button
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => {
-      // Remove polygons
-      if (mObj.polygons) {
-        mObj.polygons.forEach(p => p.setMap(null));
-      }
-      // Remove marker
-      mObj.marker.setMap(null);
-      // Remove from globals
-      coverageGlobals.markers.splice(idx, 1);
-      refreshMarkerList();
-    });
-
-    // Copy button
-    const copyBtn = document.createElement("button");
-    copyBtn.textContent = "Copy";
-    copyBtn.style.marginLeft = "4px";
-    copyBtn.addEventListener("click", () => {
-      const name = prompt("Enter a name for the copied marker:");
-      if (name && name.trim() !== "") {
-        enterAddMarkerMode(name.trim(), mObj);
-      }
-    });
-
-    item.appendChild(label);
-    item.appendChild(delBtn);
-    item.appendChild(copyBtn);
-    list.appendChild(item);
-  });
-}
-  */
-
 
 // Helper functions
 function rgbToHex(r, g, b) {
@@ -347,7 +296,7 @@ function displayMarkerProperties(marker) {
           value: newValue,
           label: `Radius ${metadata.radius.length + 1}`,
           color: [getRandomMidColor(), getRandomMidColor(), getRandomMidColor()],
-          transparency: 0
+          transparency: coverageGlobals.defaultMarkerMetadata.radius[0].transparency,
         });
 
         displayMarkerProperties(marker);
@@ -400,77 +349,100 @@ function drawCoverageWedgesForMarker(marker) {
   const metadata = marker.coverageMetadata;
   if (!metadata || !metadata.radius || metadata.radius.length === 0) return;
 
-  const innerRadius = 0; // meters
-  const outerRadius = metadata.radius[metadata.radius.length - 1].value * 1000; // km to m
-  const centerAzimuth = metadata.sectorAzimuthHeading || 0; // degrees
-  const width = metadata.sectorAzimuthWidth || 90; // degrees
+  var innerRadius = 0; // meters
+
 
   // iterate over each of the radius in the marker metadata array
-  marker.coverageMetadata.radius.forEach((r, idx) => {
-    const polygon = addCoverageWedge(marker, innerRadius, outerRadius, centerAzimuth, width);
+  marker.coverageMetadata.radius.forEach((radiusObj, idx) => {
+    const polygon = addCoverageWedge(marker, innerRadius, radiusObj);
     if (polygon) {
       marker.coveragePolygons.push(polygon);
       polygon.setMap(myMapManager.map);
     }
+
+    innerRadius = radiusObj.value;
   });
 
 
 }
 
-
-function addCoverageWedge(marker, innerRadius, outerRadius, centerAzimuth, width) {
-  const center = marker.getPosition();
-
-  // Compute azimuth bounds
-  const startAzimuth = centerAzimuth - width / 2;
-  const endAzimuth = centerAzimuth + width / 2;
-
-  const path = [];
-
-  // Helper to convert polar to LatLng
-  function computeOffset(center, distance, heading) {
-    return google.maps.geometry.spherical.computeOffset(center, distance, heading);
+function addCoverageWedge(marker, innerRadiusKm, radiusObj) {
+  if (!marker || !radiusObj) {
+    console.warn("Marker or radiusObj missing");
+    return;
   }
 
-  // Arc resolution: 1 point per ~50m of arc length
-  function numPoints(radius, spanDeg) {
-    const arcLength = (Math.PI * radius * spanDeg) / 180; // meters
-    return Math.max(3, Math.floor(arcLength / 50));
+  console.log(radiusObj);
+
+  const center = marker.getPosition(); // google.maps.LatLng
+
+  // Convert radius color from [r,g,b] to hex
+  const fillColor = rgbToHex(...radiusObj.color);
+
+  // Transparency in your object (0 = opaque, 1 = fully transparent)
+  // Convert to fillOpacity: fillOpacity = 1 - transparency
+  const fillOpacity = 1 - (radiusObj.transparency || 0);
+
+  // Use your existing wedge helper function
+  const outerRadius = radiusObj.value; // km
+  const sectorCenter = marker.coverageMetadata.sectorAzimuthHeading;
+  const sectorWidth = marker.coverageMetadata.sectorAzimuthWidth;
+
+  const path = getWedgePolygonPath(center, innerRadiusKm, outerRadius, sectorCenter, sectorWidth);
+
+  if (!path || !path.length) {
+    console.warn("Computed wedge path is empty!");
+    return;
   }
 
-  const outerPoints = numPoints(outerRadius, width);
-  const innerPoints = numPoints(innerRadius, width);
+  console.log(`Adding wedge polygon: inner=${innerRadiusKm}km, outer=${outerRadius}km, center=${sectorCenter}, width=${sectorWidth}`);
+  console.log("Path points:", path.length);
 
-  // Outer arc (start -> end)
-  for (let i = 0; i <= outerPoints; i++) {
-    const az = startAzimuth + (i / outerPoints) * width;
-    path.push(computeOffset(center, outerRadius, az));
-  }
-
-  // Inner arc (end -> start, reversed)
-  for (let i = innerPoints; i >= 0; i--) {
-    const az = startAzimuth + (i / innerPoints) * width;
-    path.push(computeOffset(center, innerRadius, az));
-  }
-
-  // Create polygon
   const polygon = new google.maps.Polygon({
     paths: path,
-    strokeColor: "#FF0000",
-    strokeOpacity: 0.8,
-    strokeWeight: 1,
-    fillColor: "#FF0000",
-    fillOpacity: 0.35,
-    map: marker.getMap()
+    strokeColor: fillColor,
+    strokeOpacity: fillOpacity + 0.15, // slightly more opaque border
+    strokeWeight: 2,
+    fillColor: fillColor,
+    fillOpacity: fillOpacity,
+    map: marker.getMap(),
   });
 
   // Associate polygon with the marker
-  if (!marker.coveragePolygons) {
-    marker.coveragePolygons = [];
-  }
-  marker.coveragePolygons.push(polygon);
+  marker.polygons = marker.polygons || [];
+  marker.polygons.push(polygon);
 
   return polygon;
 }
+
+
+function getWedgePolygonPath(center, innerRadiusKm, outerRadiusKm, azimuthCenter, azimuthWidth, pointsPerKm = 1) {
+  const path = [];
+
+  // Convert to radians
+  const centerRad = (azimuthCenter * Math.PI) / 180;
+  const halfWidthRad = ((azimuthWidth / 2) * Math.PI) / 180;
+
+  // Determine number of points along outer arc
+  const outerArcLengthKm = outerRadiusKm * azimuthWidth * Math.PI / 180;
+  const numPoints = Math.max(2, Math.ceil(outerArcLengthKm * pointsPerKm));
+
+  // Outer arc
+  for (let i = 0; i <= numPoints; i++) {
+    const angle = centerRad - halfWidthRad + (i / numPoints) * (2 * halfWidthRad);
+    const pos = google.maps.geometry.spherical.computeOffset(center, outerRadiusKm * 1000, (angle * 180) / Math.PI);
+    path.push(pos);
+  }
+
+  // Inner arc (reverse order)
+  for (let i = numPoints; i >= 0; i--) {
+    const angle = centerRad - halfWidthRad + (i / numPoints) * (2 * halfWidthRad);
+    const pos = google.maps.geometry.spherical.computeOffset(center, innerRadiusKm * 1000, (angle * 180) / Math.PI);
+    path.push(pos);
+  }
+
+  return path;
+}
+
 
 

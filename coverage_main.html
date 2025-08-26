@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <link rel="icon" type="image/png" href="mv-favicon.png">
+  <link rel="icon" type="image/png" href="mv-favicon.png">
   <meta charset="UTF-8">
   <title>Coverage Visualization</title>
   <link rel="stylesheet" href="coverage_main.css">
 </head>
+
 <body>
   <div id="container">
     <div id="sidebar">
@@ -14,9 +16,11 @@
       <h3>Dynamic Content</h3>
       <div id="dynamicContent">
       </div>
-      <button id="clearMarkers">Clear All Markers</button>
-      <!-- <h3 id="propertiesTitle">Item Properties</h3> -->
-       <div id="propertiesTitle"><h3>Item Properties</h3></div>
+      <!--<button id="clearMarkers">Clear All Markers</button>
+       <h3 id="propertiesTitle">Item Properties</h3> -->
+      <div id="propertiesTitle">
+        <h3>Item Properties</h3>
+      </div>
       <div id="propertiesContent">
 
       </div>
@@ -27,7 +31,7 @@
   <!-- MapManager and main script -->
   <script src="mapManager.js"></script>
   <script src="coverage_main.js"></script>
-  
+
   <script defer>
     // Call the following functions to setup the google maps API by getting a production or test key
     // Then source additional script to do the API initialization and callback
@@ -35,4 +39,5 @@
     //initializeMap("initMapManager");
   </script>
 </body>
+
 </html>

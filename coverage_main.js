@@ -24,7 +24,6 @@ function initMap() {
 
 
   const contentDiv = document.getElementById('dynamicContent');
-  const clearButton = document.getElementById('clearMarkers');
 
   // Button in your sidebar
   const addMarkerButton = document.getElementById('addMarkerButton');

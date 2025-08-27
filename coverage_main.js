@@ -346,6 +346,41 @@ function loadCoverageSettings(markers) {
   }
 }
 
+function generateKML() {
+  const markers = myMapManager.getMarkers();
+  if (!markers || markers.length === 0) {
+    alert("No markers to generate KML.");
+    return;
+  }
+
+  markers.forEach(marker => {
+
+    const params = {
+      lat: marker.getPosition().lat(),
+      lon: marker.getPosition().lng(),
+      alt: marker.coverageMetadata.sectorHeight || 0,
+      azCtr: marker.coverageMetadata.sectorAzimuthHeading || 0,
+      azBw: marker.coverageMetadata.sectorAzimuthWidth || 90,
+      elCtr: marker.coverageMetadata.sectorElevationAngle || 0,
+      elBw: marker.coverageMetadata.sectorElevationHeight || 30,
+      rMin: 0, // Parsing from each radius segment
+      rMax: 0, // Parsing from each radius segment
+      azSteps: Math.max(4, parseInt(document.getElementById('azSteps').value)),
+      elSteps: 1, // Default to 1 for elevation steps
+      name: "placeholder", // will be replaced below
+      color: (document.getElementById('styleColor').value || '7dff8000').trim()
+    };
+
+    marker.radius.forEach((r, idx) => {
+      params.rMin = idx === 0 ? 0 : marker.radius[idx - 1].value;
+      params.rMax = r.value;
+      params.name = `${marker.getTitle()} - ${r.label}`;
+
+      const kml = generateKMLForSector(params);
+    });
 
 
 
+
+  });
+}

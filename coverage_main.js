@@ -71,11 +71,12 @@ function initMap() {
     updateUI();
 
 
-    const contentDiv = document.getElementById('dynamicContent');
+    /*const contentDiv = document.getElementById('dynamicContent');
     const markerDiv = document.createElement('div');
     markerDiv.className = 'marker-info';
     markerDiv.id = 'marker-' + marker.getLabel();
     contentDiv.appendChild(markerDiv);
+    */
     updateMarkerInfo(marker, latLng);
   });
 
@@ -164,12 +165,15 @@ function refreshMarkerList() {
 
 // Function to update marker info in sidebar
 function updateMarkerInfo(marker, newPos) {
+  marker.setPosition(newPos);
   drawCoverageWedgesForMarker(marker);
 
+  /*
   const markerDiv = document.getElementById('marker-' + marker.getLabel());
   if (markerDiv) {
     markerDiv.textContent = `Marker ${marker.getTitle()}: ${newPos.lat.toFixed(3)}, ${newPos.lng.toFixed(3)}`;
   }
+    */
 }
 
 
@@ -185,8 +189,32 @@ function displayMarkerProperties(marker) {
   const propertiesDiv = document.getElementById('propertiesContent');
   const metadata = marker.coverageMetadata;
 
+  let html = "";
+
+  const pos = marker.getPosition();
+  const lat = pos.lat();
+  const lng = pos.lng();
+
+  html += `
+        <label>
+            Title:
+            <input id="markerTitleInput" type="text" value="${marker.title || ""}">
+        </label>
+        <br>
+        <label>
+            Latitude:
+            <input id="markerLatInput" type="number" step="any" value="${lat.toFixed(5)}">
+        </label>
+        <br>
+        <label>
+            Longitude:
+            <input id="markerLngInput" type="number" step="any" value="${lng.toFixed(5)}">
+        </label>
+        `;
+
+
   // Build description
-  let html = `
+  html += `
     <label>Description:</label>
     <textarea id="descInput" rows="3">${metadata.description || ''}</textarea>
   `;
@@ -234,7 +262,7 @@ function displayMarkerProperties(marker) {
         <input type="range" id="radiusT${idx}" min="0" max="100" value="${transparencyPercent}">
         <span id="radiusTLabel${idx}">${transparencyPercent}%</span><br>
         
-        <button onclick="deleteRadius(${idx})">Delete</button>
+        <button onclick="deleteRadius(${idx})">Delete Radius</button>
       </div>
     `;
   });
@@ -294,6 +322,15 @@ function displayMarkerProperties(marker) {
 
   // Update marker metadata
   document.getElementById('updateMarkerButton').addEventListener('click', () => {
+
+    const newTitle = document.getElementById("markerTitleInput").value;
+    const newLat = parseFloat(document.getElementById("markerLatInput").value);
+    const newLng = parseFloat(document.getElementById("markerLngInput").value);
+
+    // Update marker properties
+    marker.setTitle(newTitle);
+    marker.setPosition({ lat: newLat, lng: newLng });
+
     metadata.description = document.getElementById('descInput').value;
     numericFields.forEach(field => {
       metadata[field.key] = parseFloat(document.getElementById(field.key + 'Input').value) || 0;
@@ -310,6 +347,7 @@ function displayMarkerProperties(marker) {
     titleDiv.innerHTML = `<h3>Item Properties</h3>`;
     propertiesDiv.innerHTML = "No Marker Selected";
 
+    updateUI();
     drawCoverageWedgesForMarker(marker);
   });
 }
@@ -336,13 +374,17 @@ function loadCoverageSettings(markers) {
         },
       });
       marker.coverageMetadata = structuredClone(m.coverageMetadata) || structuredClone(coverageGlobals.defaultMarkerMetadata);
-      const markerDiv = document.createElement('div');
+
+
+      /*const markerDiv = document.createElement('div');
       markerDiv.className = 'marker-info';
       markerDiv.id = 'marker-' + marker.getLabel();
       const contentDiv = document.getElementById('dynamicContent');
       contentDiv.appendChild(markerDiv);
+      */
       updateMarkerInfo(marker, m.position);
     });
+    updateUI();
   }
 }
 
@@ -353,7 +395,18 @@ function generateKML() {
     return;
   }
 
+
+  let kmlString = "";
+
+  kmlString += `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
+
+
   markers.forEach(marker => {
+    console.log("Generating KML for marker:", marker.getTitle());
+    // console print the length of the kml string
+    console.log("Current KML length:", kmlString.length);
+
+    kmlString += `<Folder><name>${marker.getTitle()}</name>\n`;
 
     const params = {
       lat: marker.getPosition().lat(),
@@ -365,22 +418,67 @@ function generateKML() {
       elBw: marker.coverageMetadata.sectorElevationHeight || 30,
       rMin: 0, // Parsing from each radius segment
       rMax: 0, // Parsing from each radius segment
-      azSteps: Math.max(4, parseInt(document.getElementById('azSteps').value)),
-      elSteps: 1, // Default to 1 for elevation steps
+      // azSteps: 3, // Math.max(4, parseInt(document.getElementById('azSteps').value)),
+      // elSteps: 1, // Default to 1 for elevation steps
       name: "placeholder", // will be replaced below
-      color: (document.getElementById('styleColor').value || '7dff8000').trim()
+      color: null, // will be replaced below
     };
 
-    marker.radius.forEach((r, idx) => {
-      params.rMin = idx === 0 ? 0 : marker.radius[idx - 1].value;
-      params.rMax = r.value;
-      params.name = `${marker.getTitle()} - ${r.label}`;
+    const radiusData = marker.coverageMetadata.radius || [];
 
-      const kml = generateKMLForSector(params);
+    /*
+    console.log("Marker radius segments:", marker.coverageMetadata.radius);
+
+
+    if (!Array.isArray(marker.radius)) {
+      marker.radius = [marker.radius];
+    }
+
+    console.log("Marker radius segments:", marker.radius);
+*/
+
+    radiusData.forEach((r, idx) => {
+      console.log("Processing radius segment:", idx, r);
+      params.rMin = idx === 0 ? 0 : radiusData[idx - 1].value;
+      params.rMax = r.value;
+      params.color = rgbaToKmlColor(r.color, r.transparency);
+
+      // console.log("Wedge color:", params.color);
+
+      // params.name = `${marker.getTitle()} - ${r.label}`;
+      params.name = `${r.label}`;
+
+      /*const pointsPerKm = 2; // Adjust for more/less detail
+      const outerArcLengthKm = r.rMax * params.azBw * Math.PI / 180;
+      const numAzPoints = Math.max(2, Math.ceil(outerArcLengthKm * pointsPerKm));
+      params.azSteps = numAzPoints;*/
+
+      kmlString += buildWedgeKML(params);
     });
 
-
+    kmlString += `</Folder>\n`;
 
 
   });
+
+  kmlString += `</Document></kml>`;
+
+
+  const now = new Date();
+  const pad = num => num.toString().padStart(2, "0");
+  const filename =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}_coverage.kml`;
+
+  // Trigger download
+  const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

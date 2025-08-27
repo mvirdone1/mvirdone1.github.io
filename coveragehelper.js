@@ -144,16 +144,21 @@ function polygonKml(coords) {
 }
 
 // --- Build one wedge as 5 faces ---
-function buildWedgeKML(params) {
-    const { lat, lon, alt, azCtr, azBw, elCtr, elBw, rMin, rMax, azSteps, elSteps, name, color } = params;
+function buildWedgeKML(params, pointsPerKm = 2) {
+    const { lat, lon, alt, azCtr, azBw, elCtr, elBw, rMin, rMax, name, color } = params;
 
     const azMin = azCtr - azBw / 2;
     const azMax = azCtr + azBw / 2;
     const elMin = elCtr - elBw / 2;
     const elMax = elCtr + elBw / 2;
 
-    const alpha = Math.round(255 * (1 - (params.trans / 100)));
-    const kmlColor = colorToKmlHex(params.color, alpha);
+    // const alpha = Math.round(255 * (1 - (params.trans / 100)));
+    // const kmlColor = colorToKmlHex(color);
+    const kmlColor = color;
+
+    const outerArcLengthKm = rMax * azBw * Math.PI / 180;
+    const azSteps = Math.max(4, Math.ceil(outerArcLengthKm * pointsPerKm));
+
 
 
 

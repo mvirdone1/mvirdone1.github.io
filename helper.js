@@ -430,6 +430,21 @@ function colorToKmlHex(hex, alpha = 255) {
   return a + b + g + r;
 }
 
+// Converts [R, G, B] + alpha (0.0–1.0) -> KML ABGR string
+function rgbaToKmlColor(rgbArray, transparency) {
+  const [r, g, b] = rgbArray;
+  const alpha = Math.round((1 - transparency) * 255); // KML alpha is "opacity"
+
+  // console.log({ rgbArray, alpha, r, g, b, transparency });
+
+  return (
+    alpha.toString(16).padStart(2, "0") +
+    b.toString(16).padStart(2, "0") +
+    g.toString(16).padStart(2, "0") +
+    r.toString(16).padStart(2, "0")
+  ).toUpperCase();
+}
+
 function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
   // Radius of the Earth in kilometers and miles
   const R_km = 6371;

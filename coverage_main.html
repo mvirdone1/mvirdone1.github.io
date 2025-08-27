@@ -16,6 +16,10 @@
       <h3>Dynamic Content</h3>
       <div id="dynamicContent">
       </div>
+      <button id="saveCoverageBtn">Save Coverage Settings</button>
+      <input type="file" id="jsonFileInput" accept=".json" style="display:none;" />
+      <button onclick="loadCoverageSettingsJSON(loadCoverageSettings)">Load Coverage Settings</button>
+
       <!--<button id="clearMarkers">Clear All Markers</button>
        <h3 id="propertiesTitle">Item Properties</h3> -->
       <div id="propertiesTitle">
@@ -31,6 +35,8 @@
   <!-- MapManager and main script -->
   <script src="mapManager.js"></script>
   <script src="coverage_main.js"></script>
+  <script src="coveragehelper.js"></script>
+  <script src="helper.js"></script>
 
   <script defer>
     // Call the following functions to setup the google maps API by getting a production or test key

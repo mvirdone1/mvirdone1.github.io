@@ -399,6 +399,37 @@ function rgbArrayToString(rgbArray) {
   return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
 }
 
+// Helper functions
+function rgbToHex(r, g, b) {
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)
+    .toString(16)
+    .slice(1)
+    .toUpperCase();
+}
+
+function hexToRgb(hex) {
+  const bigint = parseInt(hex.slice(1), 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return [r, g, b];
+}
+
+function getRandomColor() {
+  return Math.floor(Math.random() * 255); // 100–200
+}
+
+// Converts #RRGGBB + alpha (0–255) -> KML ABGR string
+function colorToKmlHex(hex, alpha = 255) {
+  const h = (hex || '#ffffff').replace('#', '');
+  const r = h.substring(0, 2);
+  const g = h.substring(2, 4);
+  const b = h.substring(4, 6);
+  const a = Math.max(0, Math.min(255, alpha)).toString(16).padStart(2, '0');
+  // KML color order is AABBGGRR
+  return a + b + g + r;
+}
+
 function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
   // Radius of the Earth in kilometers and miles
   const R_km = 6371;
@@ -418,9 +449,9 @@ function calculateLatLonDistance(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1Rad) *
-      Math.cos(lat2Rad) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
+    Math.cos(lat2Rad) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   // Distance in kilometers and miles

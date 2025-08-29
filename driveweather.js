@@ -1,5 +1,5 @@
 class DriveWeather {
-  constructor(mapId, initialCenter, initialZoom) {}
+  constructor(mapId, initialCenter, initialZoom) { }
 }
 
 let locationList = [];
@@ -11,10 +11,10 @@ function appendLatLon(lat, lon) {
 
 // Update the marker list titles in the map manager markers
 function updateMarkerTitles() {
-    // Re-label all the markers since we deleted one
-    myMapManager.getMarkers().forEach((marker, idx) => {
-      marker.setLabel((idx + 1).toString());  
-    }) 
+  // Re-label all the markers since we deleted one
+  myMapManager.getMarkers().forEach((marker, idx) => {
+    marker.setLabel((idx + 1).toString());
+  })
 }
 
 function updateDriveList() {
@@ -29,7 +29,7 @@ function updateDriveList() {
   // iterate over all markers and their index
   myMapManager.getMarkers().forEach((marker, idx) => {
     // print troubleshooting info
-    console.log(marker);
+    // console.log(marker);
 
     const numDecimals = 2;
     const lat = roundDecimal(marker.getPosition().lat(), numDecimals);
@@ -38,7 +38,7 @@ function updateDriveList() {
     getWeatherOverview(lat, lon, idx);
     linkURL = linkURL + lat + "," + lon + ";";
 
-  })   
+  })
 
 
   $("#drive-link").attr("href", linkURL);
@@ -62,18 +62,18 @@ function getWeatherOverview(lat, lon, idx) {
   var printIdx = idx + 1;
   $("#dynamic-div").append(
     '<a target="_blank" href="' +
-      localURL +
-      '"><h1> Location ' +
-      printIdx +
-      "</h1></a>"
+    localURL +
+    '"><h1> Location ' +
+    printIdx +
+    "</h1></a>"
   );
 
   var deleteButton = $(
     '<button id="deleteButton-' +
-      idx +
-      '">Delete Location ' +
-      printIdx +
-      "</button>"
+    idx +
+    '">Delete Location ' +
+    printIdx +
+    "</button>"
   );
 
   // Append the button to a container div
@@ -92,14 +92,24 @@ function getWeatherOverview(lat, lon, idx) {
 }
 
 function getDriveURLParameters(driveString) {
-  var driveLocations = driveString.split(";");
+  // Take the list of lat,lon;lat,lon;lat,lon and add to the mapmanager using addmarker
+  console.log("Drive String:", driveString);
 
-  for (driveLocation of driveLocations) {
-    var coordinates = driveLocation.split(",");
-    if (coordinates.length == 2) {
-      appendLatLon(coordinates[0], coordinates[1]);
+  driveString.split(";").forEach((loc) => {
+    console.log("Location:", loc);
+    if (loc.includes(",")) {
+      myMapManager.addMarker({
+        position: { lat: parseFloat(loc.split(",")[0]), lng: parseFloat(loc.split(",")[1]) },
+        title: "",
+        draggable: true,
+        onDragEnd: ({ lat, lng, marker }) => {
+          // Refresh the drive list
+          updateDriveList();
+        },
+        label: (myMapManager.getMarkers().length + 1).toString()
+      });
     }
-  }
+  });
 }
 
 function driveWeatherInit() {
@@ -152,6 +162,7 @@ function driveWeatherInit() {
     console.log("Found a drive parameter");
     getDriveURLParameters(urlParams.get("drive"));
     updateDriveList();
+    myMapManager.setZoomOnMarkerBounds();
   }
 
   var intervalId = window.setInterval(function () {

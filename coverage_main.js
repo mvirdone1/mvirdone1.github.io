@@ -78,9 +78,39 @@ function initMap() {
     contentDiv.appendChild(markerDiv);
     */
     updateMarkerInfo(marker, latLng);
+
+
   });
 
+  // Wire up buttons
+  // document.getElementById("generateReportBtn").onclick = generateDistanceReport;
+  // document.getElementById("closeReportBtn").onclick = closeDistanceReport;
 
+  // Get modal elements
+  const reportModal = document.getElementById("reportModal");
+  const closeReportBtn = document.getElementById("closeReportBtn");
+
+
+  // Open modal when generating report
+  document.getElementById("generateReportBtn").addEventListener("click", () => {
+    const distanceReport = document.getElementById("distanceReport");
+    distanceReport.innerHTML = "<h2>Scenario Analysis</h2>";
+    distanceReport.innerHTML += generateMarkerReport();
+    reportModal.style.display = "block";
+
+  });
+
+  // Close modal
+  closeReportBtn.onclick = () => {
+    reportModal.style.display = "none";
+  };
+
+  // Close modal when clicking outside content
+  window.onclick = (event) => {
+    if (event.target === reportModal) {
+      reportModal.style.display = "none";
+    }
+  };
 
 
   // Add an event listener to the save button
@@ -481,4 +511,105 @@ function generateKML() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function generateMarkerReport() {
+  const markers = myMapManager.getMarkers();
+  let html = "";
+  html += generateDistanceReportHTML(markers);
+  html += generateAreaReport(markers);
+  return html;
+}
+
+// Function that iterates over each of the marker and radius and calculates the area of each wedge
+function generateAreaReport(markers) {
+  let html = "<h3>Area</h3>\n";
+  html += "<table border='1' cellpadding='5'><tr>";
+
+  titles = ["Marker", "Radius Title", "Sector Width (deg)", "Radius Range (km)", "Full Area (sq km)", "Sector Area (sq km)"];
+  titles.forEach(title => {
+    html += `<th>${title}</th>`;
+  });
+  html += "</tr>";
+
+
+  markers.forEach(marker => {
+    const metadata = marker.coverageMetadata;
+    metadata.radius.forEach((r, idx) => {
+      const azBw = metadata.sectorAzimuthWidth || 90;
+      let rMin = idx === 0 ? 0 : metadata.radius[idx - 1].value;
+      const rMax = r.value;
+
+
+
+      // Area of sector formula: (θ/360) * π * (R^2 - r^2)
+      const area = (azBw / 360) * Math.PI * (rMax * rMax - rMin * rMin);
+
+      rMin = 0;
+      const fullArea = (azBw / 360) * Math.PI * (rMax * rMax - rMin * rMin);
+
+      const results = [];
+      results.push(marker.getTitle());
+      results.push(r.label || `Radius ${idx + 1}`);
+      results.push(azBw);
+      results.push(rMax.toFixed(1));
+      results.push(fullArea.toFixed(1));
+      results.push(area.toFixed(1));
+
+      html += "<tr>";
+      results.forEach(res => {
+        html += `<td>${res}</td>`;
+      });
+      html += "</tr>";
+    });
+  });
+  html += "</table>";
+  return html;
+}
+
+// Generate the distance matrix
+function generateDistanceReportHTML(markers) {
+
+
+
+  let html = "<h3>Distance Matrix (km)</h3>\n";
+  html += "<table border='1' cellpadding='5'><tr><th></th>";
+  markers.forEach(m => {
+    html += `<th>${m.title}</th>`;
+  });
+  html += "</tr>";
+
+  markers.forEach((m1, i) => {
+    html += `<tr><th>${m1.title}</th>`;
+    markers.forEach((m2, j) => {
+      if (i === j || i < j) {
+        html += "<td>-</td>"; // diagonal
+      } else {
+
+
+        const d = calculateLatLonDistance(
+          m1.getPosition().lat(), m1.getPosition().lng(),
+          m2.getPosition().lat(), m2.getPosition().lng(),
+        );
+
+        console.log(`Distance from ${m1.title} to ${m2.title}:`, d);
+        html += `<td>${d.km.toFixed(1)}</td>`;
+      }
+    });
+    html += "</tr>";
+  });
+  html += "</table>";
+
+
+  return html;
+
+  // distanceReportElement.innerHTML = html;
+  // document.getElementById("distanceReport").style.display = "block";
+  // document.getElementById("closeReportBtn").style.display = "inline-block";
+}
+
+// Close the report
+function closeDistanceReport() {
+  document.getElementById("distanceReport").style.display = "none";
+  document.getElementById("closeReportBtn").style.display = "none";
 }

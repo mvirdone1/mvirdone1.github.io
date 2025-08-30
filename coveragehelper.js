@@ -14,7 +14,7 @@ function drawCoverageWedgesForMarker(marker) {
 
     // iterate over each of the radius in the marker metadata array
     marker.coverageMetadata.radius.forEach((radiusObj, idx) => {
-        const polygon = addMapCoverageWedge(marker, innerRadius, radiusObj);
+        const polygon = generateWedgePolygon(marker, innerRadius, radiusObj);
         if (polygon) {
             marker.coveragePolygons.push(polygon);
             polygon.setMap(myMapManager.map);
@@ -26,7 +26,7 @@ function drawCoverageWedgesForMarker(marker) {
 
 }
 
-function addMapCoverageWedge(marker, innerRadiusKm, radiusObj) {
+function generateWedgePolygon(marker, innerRadiusKm, radiusObj) {
     if (!marker || !radiusObj) {
         console.warn("Marker or radiusObj missing");
         return;
@@ -65,12 +65,9 @@ function addMapCoverageWedge(marker, innerRadiusKm, radiusObj) {
         strokeWeight: 2,
         fillColor: fillColor,
         fillOpacity: fillOpacity,
-        map: marker.getMap(),
+        // map: marker.getMap(),
     });
 
-    // Associate polygon with the marker
-    marker.polygons = marker.polygons || [];
-    marker.polygons.push(polygon);
 
     return polygon;
 }
@@ -247,60 +244,6 @@ function buildWedgeKML(params, pointsPerKm = 2) {
 
         kml += face(pts);
     }
-
-
-    /*
-  
-    // Top side (el=elMax)
-    {
-      const pts=[];
-      pts.push(azElR_to_LLA(lat,lon,alt,azMin,elMax,rMin));
-      
-  
-      for(let i=0;i<=azSteps;i++){
-        const az=azMin+(sliceSize*i);
-        pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMax));
-      }
-  
-      for(let i=0;i<=(azSteps-1);i++){
-        const az=azMax-(sliceSize*i);
-        pts.push(azElR_to_LLA(lat,lon,alt,az,elMax,rMin));
-      }
-  
-      pts.push(azElR_to_LLA(lat,lon,alt, azMin,elMax,rMin));
-      kml+=face(pts);
-    }
-      */
-
-    /*
-  
-    // Front cap (r=rMax, tessellated in az/el)
-    {
-      const pts=[];
-      for(let i=0;i<=azSteps;i++){
-        const az=azMin+(azMax-azMin)*i/azSteps;
-        const el=elMin;
-        pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
-      }
-      for(let j=1;j<=elSteps;j++){
-        const el=elMin+(elMax-elMin)*j/elSteps;
-        const az=azMax;
-        pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
-      }
-      for(let i=azSteps-1;i>=0;i--){
-        const az=azMin+(azMax-azMin)*i/azSteps;
-        const el=elMax;
-        pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
-      }
-      for(let j=elSteps-1;j>0;j--){
-        const el=elMin+(elMax-elMin)*j/elSteps;
-        const az=azMin;
-        pts.push(azElR_to_LLA(lat,lon,alt,az,el,rMax));
-      }
-      kml+=face(pts);
-    }
-      */
-
 
     kml += `</Folder>\n`;
     return kml;

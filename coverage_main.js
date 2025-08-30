@@ -20,7 +20,8 @@ function initMap() {
   const mapManager = new MapManager('map', { lat: 40.7128, lng: -74.006 }, 12);
   window.myMapManager = mapManager; // Global variable
 
-
+  const myModal = new ModalManager();
+  window.myModal = myModal; // Global variable
 
   // Button in your sidebar
   const addMarkerButton = document.getElementById('addMarkerButton');
@@ -82,35 +83,19 @@ function initMap() {
 
   });
 
-  // Wire up buttons
-  // document.getElementById("generateReportBtn").onclick = generateDistanceReport;
-  // document.getElementById("closeReportBtn").onclick = closeDistanceReport;
-
-  // Get modal elements
-  const reportModal = document.getElementById("reportModal");
-  const closeReportBtn = document.getElementById("closeReportBtn");
 
 
   // Open modal when generating report
   document.getElementById("generateReportBtn").addEventListener("click", () => {
-    const distanceReport = document.getElementById("distanceReport");
-    distanceReport.innerHTML = "<h2>Scenario Analysis</h2>";
-    distanceReport.innerHTML += generateMarkerReport();
-    reportModal.style.display = "block";
+    const modalContentDiv = myModal.getContentDiv();
+    modalContentDiv.innerHTML = ""; // Clear previous content
+    modalContentDiv.innerHTML = "<h2>Scenario Analysis</h2>";
+    modalContentDiv.innerHTML += generateMarkerReport();
+    myModal.showModal();
 
   });
 
-  // Close modal
-  closeReportBtn.onclick = () => {
-    reportModal.style.display = "none";
-  };
 
-  // Close modal when clicking outside content
-  window.onclick = (event) => {
-    if (event.target === reportModal) {
-      reportModal.style.display = "none";
-    }
-  };
 
 
   // Add an event listener to the save button
@@ -148,8 +133,8 @@ function refreshMarkerList() {
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", () => {
       // Remove polygons
-      if (mObj.polygons) {
-        mObj.polygons.forEach(p => p.setMap(null));
+      if (mObj.coveragePolygons) {
+        mObj.coveragePolygons.forEach(p => p.setMap(null));
       }
 
       // Remove from globals
@@ -414,8 +399,10 @@ function loadCoverageSettings(markers) {
       */
       updateMarkerInfo(marker, m.position);
     });
-    updateUI();
   }
+
+  updateUI();
+  myMapManager.setZoomOnMarkerBounds();
 }
 
 function generateKML() {

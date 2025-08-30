@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <title>Coverage Visualization</title>
   <link rel="stylesheet" href="coverage_main.css">
+  <link rel="stylesheet" href="modal.css">
 </head>
 
 <body>
@@ -32,34 +33,25 @@
         <h3>Item Properties</h3>
       </div>
       <div id="propertiesContent"></div>
-
-
-
-      <button id="closeReportBtnOld" style="display:none;">Close Report</button>
-
-      <!-- Container for the report -->
-      <div id="distanceReportOld" style="display:none; border:1px solid #ccc; padding:10px; margin-top:10px;">
-
-      </div>
-
-
     </div>
     <div id="map"></div>
   </div>
 
-  <!-- Report Modal -->
+  <!-- Report Modal
   <div id="reportModal" class="modal">
     <div class="modal-content">
       <span id="closeReportBtn" class="close">&times;</span>
       <div id="distanceReport"></div>
     </div>
   </div>
+  -->
 
   <!-- MapManager and main script -->
   <script src="mapManager.js"></script>
   <script src="coverage_main.js"></script>
   <script src="coveragehelper.js"></script>
   <script src="helper.js"></script>
+  <script src="modalManager.js"></script>
 
   <script defer>
     // Call the following functions to setup the google maps API by getting a production or test key

@@ -39,10 +39,7 @@ class MapManager {
     google.maps.event.trigger(this.map, "resize");
   }
 
-
-
-
-  addMarker(config) {
+  createMarker(config) {
     const {
       position,
       title,
@@ -75,6 +72,13 @@ class MapManager {
     if (onClick) {
       marker.addListener("click", () => onClick(marker));
     }
+
+    return marker;
+  }
+
+
+  addMarker(config) {
+    const marker = this.createMarker(config);
 
     this.markers.push(marker);
     return marker;

@@ -11,7 +11,8 @@ const coverageGlobals = {
     sectorHeight: 5,
     radius: [{ value: 5, color: [0, 0, 255], transparency: 0.5, label: "5 km" }],
   },
-  newMarkerMetadata: {}
+  newMarkerMetadata: {},
+  steeringMarker: null,
 };
 
 
@@ -182,19 +183,17 @@ function refreshMarkerList() {
 function updateMarkerInfo(marker, newPos) {
   marker.setPosition(newPos);
   drawCoverageWedgesForMarker(marker);
+  showHeadingHelper(marker);
 
-  /*
-  const markerDiv = document.getElementById('marker-' + marker.getLabel());
-  if (markerDiv) {
-    markerDiv.textContent = `Marker ${marker.getTitle()}: ${newPos.lat.toFixed(3)}, ${newPos.lng.toFixed(3)}`;
-  }
-    */
+
 }
 
 
 
 // Main function
 function displayMarkerProperties(marker) {
+
+  showHeadingHelper(marker);
 
   console.log("displayMarkerProperties called", marker.getTitle());
 
@@ -362,9 +361,57 @@ function displayMarkerProperties(marker) {
     titleDiv.innerHTML = `<h3>Item Properties</h3>`;
     propertiesDiv.innerHTML = "No Marker Selected";
 
+    // Clear out the old marker if it exists
+    if (coverageGlobals.steeringMarker) {
+      coverageGlobals.steeringMarker.setMap(null);
+    }
+
     updateUI();
     drawCoverageWedgesForMarker(marker);
   });
+}
+
+// When I click on a marker, add a marker to the map 2 km behind it
+// Behind being defined by 180* from the heading
+// That marker will update the heading of the orginal marker on drag end
+// by calculating the heading from the new marker to the original marker
+// and setting the original marker heading to that value
+function showHeadingHelper(parentMarker) {
+
+  // Clear out the old marker if it exists
+  if (coverageGlobals.steeringMarker) {
+    coverageGlobals.steeringMarker.setMap(null);
+  }
+
+  console.log("showHeadingHelper called for marker:", parentMarker.getTitle());
+
+  const sourceMarkerPos = parentMarker.getPosition();
+  const heading = parentMarker.coverageMetadata.sectorAzimuthHeading || 0;
+  const behindHeading = (heading + 180) % 360;
+  const newMarkerDist = 3; // km
+
+  // new marker position
+  const headingMarkerPos = azElR_to_LLA(sourceMarkerPos.lat(), sourceMarkerPos.lng(), 0, behindHeading, 0, newMarkerDist);
+
+  console.log("Heading marker position:", headingMarkerPos);
+
+  const steeringMarker = myMapManager.createMarker({
+    title: "Drag to change heading",
+    position: { lat: headingMarkerPos.lat, lng: headingMarkerPos.lon },
+    draggable: true,
+    onDragEnd: (newHeadingMarkerPos, markerRef) => {
+      console.log("New heading marker position:", newHeadingMarkerPos);
+      const newLatLonDistResult = calculateLatLonDistance(newHeadingMarkerPos.lat, newHeadingMarkerPos.lng, sourceMarkerPos.lat(), sourceMarkerPos.lng());
+      parentMarker.coverageMetadata.sectorAzimuthHeading = newLatLonDistResult.heading;
+      drawCoverageWedgesForMarker(parentMarker);
+      displayMarkerProperties(parentMarker);
+    },
+    onClick: (markerRef) => {
+      alert("Hi");
+    },
+  });
+
+  coverageGlobals.steeringMarker = steeringMarker;
 }
 
 function loadCoverageSettings(markers) {

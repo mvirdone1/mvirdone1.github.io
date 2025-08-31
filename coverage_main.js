@@ -388,26 +388,37 @@ function showHeadingHelper(parentMarker) {
   const sourceMarkerPos = parentMarker.getPosition();
   const heading = parentMarker.coverageMetadata.sectorAzimuthHeading || 0;
   const behindHeading = (heading + 180) % 360;
-  const newMarkerDist = 3; // km
+  const newMarkerDist = 4; // km - I tried betewen 3 and 5 km, but this works best
 
   // new marker position
   const headingMarkerPos = azElR_to_LLA(sourceMarkerPos.lat(), sourceMarkerPos.lng(), 0, behindHeading, 0, newMarkerDist);
 
   console.log("Heading marker position:", headingMarkerPos);
 
+  const azimuthIcon = {
+    url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18" fill="#333" stroke="#fff" stroke-width="2"/>
+      <polygon points="20,5 24,20 20,35 16,20" fill="#FF4136"/>
+      <circle cx="20" cy="20" r="4" fill="#fff"/>
+    </svg>
+  `),
+    scaledSize: new google.maps.Size(30, 30),
+    anchor: new google.maps.Point(20, 20),
+  };
+
   const steeringMarker = myMapManager.createMarker({
     title: "Drag to change heading",
+    icon: azimuthIcon,
+    label: " ",
     position: { lat: headingMarkerPos.lat, lng: headingMarkerPos.lon },
     draggable: true,
     onDragEnd: (newHeadingMarkerPos, markerRef) => {
       console.log("New heading marker position:", newHeadingMarkerPos);
       const newLatLonDistResult = calculateLatLonDistance(newHeadingMarkerPos.lat, newHeadingMarkerPos.lng, sourceMarkerPos.lat(), sourceMarkerPos.lng());
-      parentMarker.coverageMetadata.sectorAzimuthHeading = newLatLonDistResult.heading;
+      parentMarker.coverageMetadata.sectorAzimuthHeading = Math.round(newLatLonDistResult.heading);
       drawCoverageWedgesForMarker(parentMarker);
       displayMarkerProperties(parentMarker);
-    },
-    onClick: (markerRef) => {
-      alert("Hi");
     },
   });
 

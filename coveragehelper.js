@@ -393,7 +393,7 @@ function computeCoveragePolygonOverlap(markers) {
                     const sectorOverlap = turf.intersect(primaryOverlap.turfPolgyon, compareOverlap.turfPolgyon);
                     let sectorOverlapArea = sectorOverlap ? turf.area(sectorOverlap) : 0;
 
-                    console.log(compareMarker);
+                    // console.log(compareMarker);
 
                     const currentOverlapResult = {
                         markerOneName: primaryMarker.title,
@@ -410,7 +410,7 @@ function computeCoveragePolygonOverlap(markers) {
                             )),
                         overlap: turf.intersect(primaryOverlap.turfPolygon, compareOverlap.turfPolygon),*/
                     };
-                    console.log(currentOverlapResult);
+                    // console.log(currentOverlapResult);
                     overlapResults.push(currentOverlapResult);
 
                 });
@@ -448,37 +448,4 @@ function googlePolygonToTurf(polygon) {
     const turfPolygon = turf.polygon([coordinates]);
 
     return turfPolygon;
-
-
-    console.log(turfFeaturePolygon2);
-
-    const test2 = turf.intersect(turfFeaturePolygon2, turfFeaturePolygon2);
-    console.log(test2);
-    console.log(turf.area(test2));
-
-
-
-    const turfFeature = {
-        type: "Feature",
-        geometry: {
-            type: "Polygon",
-            coordinates: [coordinates],
-        },
-        properties: {},
-    };
-
-    const turfFeaturePolygon = turf.polygon(turfFeature.geometry.coordinates);
-    console.log(turfFeaturePolygon);
-
-    const test = turf.intersect(turf.featureCollection(turfFeaturePolygon.geometry.coordinates, turfFeaturePolygon.geometry.coordinates));
-    console.log(test);
-    console.log(turf.area(test));
-
-
-    // const turfPolygon = turf.polygon(outerArray);
-    // console.log(turfPolygon);
-    return turfFeature;
-
-    // Return Turf.js Polygon (GeoJSON format)
-    // return turfFeature
 }

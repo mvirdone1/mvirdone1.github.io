@@ -92,6 +92,7 @@ function initMap() {
     modalContentDiv.innerHTML = ""; // Clear previous content
     modalContentDiv.innerHTML = "<h2>Scenario Analysis</h2>";
     modalContentDiv.innerHTML += generateMarkerReport();
+    modalContentDiv.innerHTML += generateOverlapReport();
     myModal.showModal();
 
   });
@@ -565,6 +566,47 @@ function generateMarkerReport() {
   html += generateAreaReport(markers);
   return html;
 }
+
+function generateOverlapReport() {
+  const overlapResults = computeCoveragePolygonOverlap(myMapManager.getMarkers());
+  const html = generateOverlapReportHTML(overlapResults);
+
+  return html;
+
+}
+
+
+function generateOverlapReportHTML(overlapResults) {
+  let html = "<h3>Overlap (sq km)</h3>\n";
+  html += "<table border='1' cellpadding='5'><tr>";
+
+  titles = ["Object 1", "Sector 1", "Object 2", "Sector 2", "Overlap of Full", "Overlap of Partial"];
+  titles.forEach(title => {
+    html += `<th>${title}</th>`;
+  });
+  html += "</tr>\n";
+
+  overlapResults.forEach((currentResult) => {
+    if (currentResult.overlap > 0 || currentResult.fullOverlap > 0) {
+      html += "<tr>"
+      html += `<td>${currentResult.markerOneName}</td>`;
+      html += `<td>${currentResult.segmentOneName}</td>`;
+      html += `<td>${currentResult.markerTwoName}</td>`;
+      html += `<td>${currentResult.segmentTwoName}</td>`;
+      html += `<td>${roundDecimal(currentResult.fullOverlap / 1e6, 1)}</td>`;
+      html += `<td>${roundDecimal(currentResult.overlap / 1e6, 1)}</td>`;
+      html += "</tr>\n";
+
+
+    }
+
+  });
+
+  html += "</table>";
+  return html;
+
+}
+
 
 // Function that iterates over each of the marker and radius and calculates the area of each wedge
 function generateAreaReport(markers) {

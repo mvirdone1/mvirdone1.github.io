@@ -32,7 +32,7 @@ function generateWedgePolygon(marker, innerRadiusKm, radiusObj) {
         return;
     }
 
-    console.log(radiusObj);
+    // console.log(radiusObj);
 
     const center = marker.getPosition(); // google.maps.LatLng
 
@@ -55,8 +55,8 @@ function generateWedgePolygon(marker, innerRadiusKm, radiusObj) {
         return;
     }
 
-    console.log(`Adding wedge polygon: inner=${innerRadiusKm}km, outer=${outerRadius}km, center=${sectorCenter}, width=${sectorWidth}`);
-    console.log("Path points:", path.length);
+    // console.log(`Adding wedge polygon: inner=${innerRadiusKm}km, outer=${outerRadius}km, center=${sectorCenter}, width=${sectorWidth}`);
+    // console.log("Path points:", path.length);
 
     const polygon = new google.maps.Polygon({
         paths: path,
@@ -332,4 +332,153 @@ function loadCoverageSettingsJSON(callbackFunction) {
 
         reader.readAsText(file);
     };
+}
+
+function computeCoveragePolygonOverlap(markers) {
+    // For each marker in markers, create two new turf polygons for each radius
+    // The first one will be the same inner/outer radius, the second will be from zero
+    // For each marker element, add a new object turfMetadata will have an array called radius
+    // Each radius will have fullPoly and poly
+
+
+    // prepare all the markers
+    markers.forEach(marker => {
+
+        innerRadius = 0;
+
+
+        marker.overlapMetadata = [];
+        marker.coverageMetadata.radius.forEach((currentRadiusObj, idx) => {
+            // Build the new wedges
+            const polygon = generateWedgePolygon(marker, innerRadius, currentRadiusObj);
+            const fullPolygon = generateWedgePolygon(marker, 0, currentRadiusObj);
+
+            const newOverlap = {
+                radius: currentRadiusObj,
+                polygon: polygon,
+                fullPolygon: fullPolygon,
+                turfPolgyon: googlePolygonToTurf(polygon),
+                turfFullPolygon: googlePolygonToTurf(fullPolygon),
+            };
+
+            // Update the metadata in each marker object
+            marker.overlapMetadata.push(newOverlap)
+
+            // console.log(newOverlap);
+
+            innerRadius = currentRadiusObj.value; // Set the inner radius for the next iteration
+
+        });
+
+    });
+
+
+    const overlapResults = [];
+
+    markers.forEach((primaryMarker, idx) => {
+
+        markers.slice(idx + 1).forEach((compareMarker) => {
+
+            primaryMarker.overlapMetadata.forEach((primaryOverlap) => {
+
+                compareMarker.overlapMetadata.forEach((compareOverlap) => {
+
+
+                    // console.log(turf.getType(primaryOverlap.turfPolgyon)); // should output 'Polygon'
+                    // console.log(turf.getType(compareOverlap.turfPolgyon)); // should output 'Polygon'
+
+                    const fullOverlap = turf.intersect(primaryOverlap.turfFullPolygon, compareOverlap.turfFullPolygon);
+                    let fullOverlapArea = fullOverlap ? turf.area(fullOverlap) : 0;
+
+                    const sectorOverlap = turf.intersect(primaryOverlap.turfPolgyon, compareOverlap.turfPolgyon);
+                    let sectorOverlapArea = sectorOverlap ? turf.area(sectorOverlap) : 0;
+
+                    console.log(compareMarker);
+
+                    const currentOverlapResult = {
+                        markerOneName: primaryMarker.title,
+                        segmentOneName: primaryOverlap.radius.label,
+                        markerTwoName: compareMarker.title,
+                        segmentTwoName: compareOverlap.radius.label,
+                        fullOverlap: fullOverlapArea,
+                        overlap: sectorOverlapArea,
+                        // fullOverlap: turf.intersect(primaryOverlap.turfFullPolygon, compareOverlap.turfFullPolygon),
+                        /*
+                        fullOverlap: turf.intersect(
+                            turf.featureCollection(primaryOverlap.turfFullPolygon,
+                                compareOverlap.turfFullPolygon
+                            )),
+                        overlap: turf.intersect(primaryOverlap.turfPolygon, compareOverlap.turfPolygon),*/
+                    };
+                    console.log(currentOverlapResult);
+                    overlapResults.push(currentOverlapResult);
+
+                });
+
+            });
+
+
+        });
+
+    });
+
+    return overlapResults;
+}
+
+function googlePolygonToTurf(polygon) {
+    // Get the path (array of LatLng objects)
+    const path = polygon.getPath();
+
+    // Convert to [lng, lat] coordinate array
+    const coordinates = [];
+    path.forEach((latLng) => {
+        coordinates.push([latLng.lng(), latLng.lat()]);
+    });
+
+    // Close the polygon (first and last points must match)
+    if (
+        coordinates.length > 0 &&
+        (coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
+            coordinates[0][1] !== coordinates[coordinates.length - 1][1])
+    ) {
+        coordinates.push([...coordinates[0]]);
+    }
+
+
+    const turfPolygon = turf.polygon([coordinates]);
+
+    return turfPolygon;
+
+
+    console.log(turfFeaturePolygon2);
+
+    const test2 = turf.intersect(turfFeaturePolygon2, turfFeaturePolygon2);
+    console.log(test2);
+    console.log(turf.area(test2));
+
+
+
+    const turfFeature = {
+        type: "Feature",
+        geometry: {
+            type: "Polygon",
+            coordinates: [coordinates],
+        },
+        properties: {},
+    };
+
+    const turfFeaturePolygon = turf.polygon(turfFeature.geometry.coordinates);
+    console.log(turfFeaturePolygon);
+
+    const test = turf.intersect(turf.featureCollection(turfFeaturePolygon.geometry.coordinates, turfFeaturePolygon.geometry.coordinates));
+    console.log(test);
+    console.log(turf.area(test));
+
+
+    // const turfPolygon = turf.polygon(outerArray);
+    // console.log(turfPolygon);
+    return turfFeature;
+
+    // Return Turf.js Polygon (GeoJSON format)
+    // return turfFeature
 }

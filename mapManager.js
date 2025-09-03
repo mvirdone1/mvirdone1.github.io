@@ -21,9 +21,9 @@ class MapManager {
     this.map.setCenter({ lat: lat, lng: lon });
   }
 
-  setZoomOnMarkerBounds() {
+  setZoomOnMarkerBounds(boundsMarkers = this.markers) {
     const bounds = new google.maps.LatLngBounds();
-    this.markers.forEach((marker) => {
+    boundsMarkers.forEach((marker) => {
       bounds.extend(marker.position);
     });
 

@@ -1,10 +1,10 @@
 // Take the list of radius segments in a given marker, and add the coverage wedges to the map
 function drawCoverageWedgesForMarker(marker) {
     // Remove existing polygons
-    if (marker.coveragePolygons) {
-        marker.coveragePolygons.forEach(p => p.setMap(null));
+    if (marker.segmentPoygons) {
+        marker.segmentPoygons.forEach(p => p.setMap(null));
     }
-    marker.coveragePolygons = [];
+    marker.segmentPoygons = [];
 
     const metadata = marker.coverageMetadata;
     if (!metadata || !metadata.radius || metadata.radius.length === 0) return;
@@ -14,9 +14,9 @@ function drawCoverageWedgesForMarker(marker) {
 
     // iterate over each of the radius in the marker metadata array
     marker.coverageMetadata.radius.forEach((radiusObj, idx) => {
-        const polygon = generateWedgePolygon(marker, innerRadius, radiusObj);
+        const polygon = generateGoogleMapsWedgePolygon(marker, innerRadius, radiusObj);
         if (polygon) {
-            marker.coveragePolygons.push(polygon);
+            marker.segmentPoygons.push(polygon);
             polygon.setMap(myMapManager.map);
         }
 
@@ -26,7 +26,7 @@ function drawCoverageWedgesForMarker(marker) {
 
 }
 
-function generateWedgePolygon(marker, innerRadiusKm, radiusObj) {
+function generateGoogleMapsWedgePolygon(marker, innerRadiusKm, radiusObj) {
     if (!marker || !radiusObj) {
         console.warn("Marker or radiusObj missing");
         return;
@@ -350,8 +350,8 @@ function computeCoveragePolygonOverlap(markers) {
         marker.overlapMetadata = [];
         marker.coverageMetadata.radius.forEach((currentRadiusObj, idx) => {
             // Build the new wedges
-            const polygon = generateWedgePolygon(marker, innerRadius, currentRadiusObj);
-            const fullPolygon = generateWedgePolygon(marker, 0, currentRadiusObj);
+            const polygon = generateGoogleMapsWedgePolygon(marker, innerRadius, currentRadiusObj);
+            const fullPolygon = generateGoogleMapsWedgePolygon(marker, 0, currentRadiusObj);
 
             const newOverlap = {
                 radius: currentRadiusObj,
@@ -448,4 +448,47 @@ function googlePolygonToTurf(polygon) {
     const turfPolygon = turf.polygon([coordinates]);
 
     return turfPolygon;
+}
+
+function turfToGooglePolygon(turfPolygon, options = {}) {
+    if (!turfPolygon || !turfPolygon.geometry) return null;
+
+    const { type, coordinates } = turfPolygon.geometry;
+
+    let paths = [];
+
+    if (type === "Polygon") {
+        // Turf Polygon: coordinates = [ [ [lng, lat], ... ] ] 
+        paths = coordinates.map(ring =>
+            ring.map(coord => ({ lat: coord[1], lng: coord[0] }))
+        );
+
+    } else if (type === "MultiPolygon") {
+        // Turf MultiPolygon: coordinates = [ [ [ [lng, lat], ... ] ], ... ]
+        paths = coordinates.map(polygon =>
+            polygon.map(ring =>
+                ring.map(coord => ({ lat: coord[1], lng: coord[0] }))
+            )
+        );
+
+    } else {
+        console.error("Unsupported geometry type:", type);
+        return null;
+    }
+
+    // console.log(paths);
+    return new google.maps.Polygon({
+        paths: paths,
+        ...options
+    });
+}
+
+
+function turfMultiUnion(polygons) {
+    if (!polygons || polygons.length === 0) return null;
+
+    return polygons.reduce((acc, curr) => {
+        if (!acc) return curr;
+        return turf.union(acc, curr);
+    }, null);
 }

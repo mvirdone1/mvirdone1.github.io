@@ -13,6 +13,12 @@ const coverageGlobals = {
   },
   newMarkerMetadata: {},
   steeringMarker: null,
+  coveragePolygons: [],
+};
+
+const coveragePolygonType = {
+  title: "",
+  polygon: null,
 };
 
 
@@ -97,6 +103,53 @@ function initMap() {
 
   });
 
+  document.getElementById("coveragePolygonsBtn").addEventListener("click", () => {
+    const modalContentDiv = myModal.getContentDiv();
+    modalContentDiv.innerHTML = ""; // Clear previous content
+
+    // Container that will hold map + sidebar
+    const container = document.createElement("div");
+    container.id = "modal-container";
+    modalContentDiv.appendChild(container);
+
+    // Map div
+    const mapDiv = document.createElement("div");
+    mapDiv.id = "modal-map";
+    container.appendChild(mapDiv);
+
+    // Sidebar div
+    const sidebarDiv = document.createElement("div");
+    sidebarDiv.id = "modal-sidebar";
+    sidebarDiv.innerHTML = "<h2>Coverage Polygons</h2>";
+    container.appendChild(sidebarDiv);
+
+    polygonMenu(coverageGlobals.coveragePolygons, myMapManager.getMarkers(), sidebarDiv);
+
+    const modalMapManager = new MapManager(mapDiv.id, { lat: 40.7128, lng: -74.006 }, 12);
+    // console.log(modalMapManager.map);
+    // google.maps.event.trigger(modalMapManager.map, "resize");
+    // modalMapManager.map.setCenter({ lat: -33.8688, lng: 151.2093 }); // Recenter the map after resizing
+
+    myModal.showModal();
+
+    // Allow browser to paint modal, then trigger resize
+    setTimeout(() => {
+      google.maps.event.trigger(modalMapManager.map, "resize");
+      /*
+      const existingMarkers = myMapManager.getMarkers();
+      if(existingMarkers.length > 0)
+      {
+        modalMapManager.setZoomOnMarkerBounds(myMapManager.getMarkers());
+      }
+        */
+
+      modalMapManager.map.setCenter(myMapManager.map.getCenter());
+      modalMapManager.map.setZoom(myMapManager.map.getZoom());
+
+    }, 200);
+
+  });
+
 
 
 
@@ -135,8 +188,8 @@ function refreshMarkerList() {
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", () => {
       // Remove polygons
-      if (mObj.coveragePolygons) {
-        mObj.coveragePolygons.forEach(p => p.setMap(null));
+      if (mObj.segmentPoygons) {
+        mObj.segmentPoygons.forEach(p => p.setMap(null));
       }
 
       // Remove from globals

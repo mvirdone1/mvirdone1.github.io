@@ -66,3 +66,10 @@ class ModalManager {
     }
 }
 
+
+class ModalMapMenu {
+    constructor(modalParentDiv) {
+        this.modalParentDiv = modalParentDiv;
+
+    }
+}

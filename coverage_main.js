@@ -18,6 +18,8 @@ const coverageGlobals = {
 
 const coveragePolygonType = {
   title: "",
+  color: null,
+  transparency: null,
   polygon: null,
 };
 
@@ -123,9 +125,12 @@ function initMap() {
     sidebarDiv.innerHTML = "<h2>Coverage Polygons</h2>";
     container.appendChild(sidebarDiv);
 
+    const modalMapManager = new MapManager(mapDiv.id, { lat: 40.7128, lng: -74.006 }, 12);
+
+
+
     polygonMenu(coverageGlobals.coveragePolygons, myMapManager.getMarkers(), sidebarDiv);
 
-    const modalMapManager = new MapManager(mapDiv.id, { lat: 40.7128, lng: -74.006 }, 12);
     // console.log(modalMapManager.map);
     // google.maps.event.trigger(modalMapManager.map, "resize");
     // modalMapManager.map.setCenter({ lat: -33.8688, lng: 151.2093 }); // Recenter the map after resizing

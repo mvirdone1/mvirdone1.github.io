@@ -1,10 +1,19 @@
 function polygonMenu(polygons, markers, parentElement) {
 
-    listPolygons(polygons, parentElement);
-    showAddPolygonMenu(markers, parentElement);
+    const polygonListDiv = document.createElement("div");
+    polygonListDiv.id = "polygon-list-div";
+    parentElement.appendChild(polygonListDiv);
+
+    listPolygons(polygons, polygonListDiv);
+
+    const polygonAddMenuDiv = document.createElement("div");
+    polygonAddMenuDiv.id = "polygon-add-menu-div";
+    parentElement.appendChild(polygonAddMenuDiv);
+
+    showAddPolygonMenu(markers, polygonAddMenuDiv);
 
     const polygonWorkshopDiv = document.createElement("div");
-    polygonWorkshopDiv.id = "polgon-workshop-div";
+    polygonWorkshopDiv.id = "polygon-workshop-div";
     parentElement.appendChild(polygonWorkshopDiv);
 
 
@@ -15,6 +24,8 @@ function polygonMenu(polygons, markers, parentElement) {
 function listPolygons(polygons, parentElement) {    // Create the <ul>
 
     if (polygons.length == 0) { return false; }
+
+    parentElement.innerHTML = "";
 
     const myList = document.createElement("ul");
     polygons.array.forEach((polygon, index) => {
@@ -113,13 +124,33 @@ function showUnionAutoMenu(markers) {
 
 
 
-    const menuDiv = document.getElementById("polgon-workshop-div");
+    const menuDiv = document.getElementById("polygon-workshop-div");
 
     menuDiv.innerHTML = "<p>Which segment name do you want to generate</p>"
 
-    const polygonToGenerateMenu = buildDropdown(menuOptions);
+    const polygonToGenerateMenu = buildDropdown(menuOptions, "poly-segments-select");
 
     menuDiv.appendChild(polygonToGenerateMenu);
+
+    menuDiv.appendChild(document.createElement("br"));
+    const nameLabel = addFormLabel("Polygon Name: ");
+    menuDiv.appendChild(nameLabel);
+    menuDiv.appendChild(addShortTextInput("New Name", "poly-form-name"));
+
+
+    menuDiv.appendChild(document.createElement("br"));
+    const colorLabel = addFormLabel("Polygon Color: ")
+    menuDiv.appendChild(colorLabel);
+    menuDiv.appendChild(addColorPicker("#0000C0", "poly-form-color"))
+
+
+    menuDiv.appendChild(document.createElement("br"));
+    const transparencyLabel = addFormLabel("Polygon Transparency: ")
+    const transparencyId = "poly-form-transparency";
+    menuDiv.appendChild(transparencyLabel);
+    menuDiv.appendChild(addPercentSliderBar(80, 0, 100, transparencyId));
+    menuDiv.appendChild(addPercentSliderDisplay(transparencyId));
+    updateSliderDisplay(transparencyId);
 
     // Create the "Add" button
     const generatePolygonButton = document.createElement("button");
@@ -127,7 +158,10 @@ function showUnionAutoMenu(markers) {
     generatePolygonButton.addEventListener("click", () => {
         const selected = polygonToGenerateMenu.value;
         const newTurfPolygon = generateUnionPolygonBySegmentLabel(markers, selected);
+        addNewSegmentPolygon(newTurfPolygon);
+        updatePolygonMap();
     });
+
 
     menuDiv.appendChild(document.createElement("br"));
     menuDiv.appendChild(generatePolygonButton);
@@ -136,6 +170,28 @@ function showUnionAutoMenu(markers) {
 
 
 }
+
+function addNewSegmentPolygon(newPolygon) {
+    coverageGlobals.coveragePolygons.push(
+        {
+            title: document.getElementById("poly-form-name").value,
+            color: document.getElementById("poly-form-color").value,
+            transparency: document.getElementById("poly-form-transparency").value,
+            polygon: newPolygon,
+        }
+    );
+
+}
+
+function updatePolygonMap(foo = "") {
+
+    const googleMapUnionPolygon = turfToGooglePolygon(turfUnionPolygon);
+    newPolygon.setOptions({
+        strokeColor: "#0000FF"
+    });
+
+}
+
 
 function generateUnionPolygonBySegmentLabel(markers, label) {
     // alert(label);
@@ -162,8 +218,9 @@ function generateUnionPolygonBySegmentLabel(markers, label) {
 
     console.log(turfUnionPolygon);
     console.log(turf.area(turfUnionPolygon));
-    const googleMapUnionPolygon = turfToGooglePolygon(turfUnionPolygon);
-    googleMapUnionPolygon.setMap(myMapManager.map);
+    return turfUnionPolygon;
+
+    // googleMapUnionPolygon.setMap(myMapManager.map);
 
 
 

@@ -9,6 +9,7 @@ const coverageGlobals = {
     sectorElevationHeight: 30,
     sectorElevationAngle: 20,
     sectorHeight: 5,
+    show: true,
     radius: [{ value: 5, color: [0, 0, 255], transparency: 0.5, label: "5 km" }],
   },
   newMarkerMetadata: {},
@@ -21,16 +22,31 @@ const coveragePolygonType = {
   color: null,
   transparency: null,
   polygon: null,
+  show: false,
 };
+
+// Using globals to the script rather than the window
+let myMapManager;
+let myModal;
+let myModalMapMenu;
+let myCoveragePolgyonManager;
 
 
 function initMap() {
-  // Initialize MapManager
-  const mapManager = new MapManager('map', { lat: 40.7128, lng: -74.006 }, 12);
-  window.myMapManager = mapManager; // Global variable
+  // Initialize MapManager, modal, and modalmapmanager classes
+  myMapManager = new MapManager('map', { lat: 40.7128, lng: -74.006 }, 12);
+  // myMapManager = mapManager; // Global variable
 
-  const myModal = new ModalManager();
-  window.myModal = myModal; // Global variable
+  myModal = new ModalManager();
+  // myModal = modalManager; // Global variable
+
+  myModalMapMenu = new ModalMapMenu(myModal.getContentDiv());
+  // myModalMapMenu = modalMapMenu;
+
+  // myCoveragePolgyonManager = new CoveragePolygonManager(coverageGlobals.coveragePolygons);
+
+  myCoveragePolgyonManager = new CoveragePolygonManager([]);
+
 
   // Button in your sidebar
   const addMarkerButton = document.getElementById('addMarkerButton');
@@ -106,30 +122,11 @@ function initMap() {
   });
 
   document.getElementById("coveragePolygonsBtn").addEventListener("click", () => {
-    const modalContentDiv = myModal.getContentDiv();
-    modalContentDiv.innerHTML = ""; // Clear previous content
+    // const modalContentDiv = myModal.getContentDiv();
+    // const myModalMapMenu = new ModalMapMenu(modalContentDiv);
 
-    // Container that will hold map + sidebar
-    const container = document.createElement("div");
-    container.id = "modal-container";
-    modalContentDiv.appendChild(container);
-
-    // Map div
-    const mapDiv = document.createElement("div");
-    mapDiv.id = "modal-map";
-    container.appendChild(mapDiv);
-
-    // Sidebar div
-    const sidebarDiv = document.createElement("div");
-    sidebarDiv.id = "modal-sidebar";
-    sidebarDiv.innerHTML = "<h2>Coverage Polygons</h2>";
-    container.appendChild(sidebarDiv);
-
-    const modalMapManager = new MapManager(mapDiv.id, { lat: 40.7128, lng: -74.006 }, 12);
-
-
-
-    polygonMenu(coverageGlobals.coveragePolygons, myMapManager.getMarkers(), sidebarDiv);
+    myCoveragePolgyonManager.initPolygonManager(myMapManager.getMarkers(), myModalMapMenu.sidebarDiv);
+    myCoveragePolgyonManager.polygonMenu();
 
     // console.log(modalMapManager.map);
     // google.maps.event.trigger(modalMapManager.map, "resize");
@@ -139,17 +136,10 @@ function initMap() {
 
     // Allow browser to paint modal, then trigger resize
     setTimeout(() => {
-      google.maps.event.trigger(modalMapManager.map, "resize");
-      /*
-      const existingMarkers = myMapManager.getMarkers();
-      if(existingMarkers.length > 0)
-      {
-        modalMapManager.setZoomOnMarkerBounds(myMapManager.getMarkers());
-      }
-        */
-
-      modalMapManager.map.setCenter(myMapManager.map.getCenter());
-      modalMapManager.map.setZoom(myMapManager.map.getZoom());
+      const modalMapManagerMap = myModalMapMenu.modalMapManager.map;
+      google.maps.event.trigger(modalMapManagerMap, "resize");
+      modalMapManagerMap.setCenter(myMapManager.map.getCenter());
+      modalMapManagerMap.setZoom(myMapManager.map.getZoom());
 
     }, 200);
 
@@ -225,7 +215,23 @@ function refreshMarkerList() {
     editBtn.style.marginLeft = "4px";
     editBtn.addEventListener("click", () => {
 
-      displayMarkerProperties(mObj)
+      displayMarkerProperties(mObj);
+
+
+    });
+
+    // Edit button
+    const showHideBtn = document.createElement("button");
+
+    showHideBtn.textContent = mObj.coverageMetadata.show ? "Hide" : "Show";
+
+    showHideBtn.style.marginLeft = "4px";
+    showHideBtn.addEventListener("click", () => {
+
+      let newValue = !mObj.coverageMetadata.show;
+      mObj.coverageMetadata.show = newValue;
+      refreshMarkerList();
+      drawCoverageWedgesForMarker(mObj);
 
 
     });
@@ -234,6 +240,8 @@ function refreshMarkerList() {
     item.appendChild(delBtn);
     item.appendChild(copyBtn);
     item.appendChild(editBtn);
+    item.appendChild(showHideBtn);
+
     list.appendChild(item);
   });
 }
@@ -382,7 +390,7 @@ function displayMarkerProperties(marker) {
   }
 
   // Delete radius
-  window.deleteRadius = function (idx) {
+  deleteRadius = function (idx) {
     metadata.radius.splice(idx, 1);
     displayMarkerProperties(marker);
   };

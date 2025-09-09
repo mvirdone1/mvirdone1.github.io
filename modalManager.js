@@ -1,5 +1,6 @@
 class ModalManager {
     constructor(modalWidth = "70%", modalContentDivId = "modalContentDiv") {
+        this.onHide = null;
 
         this.createModal(modalWidth, modalContentDivId);
     }
@@ -50,9 +51,17 @@ class ModalManager {
 
     }
 
+    setOnHideCallback(onHide) {
+        this.onHide = onHide;
+    }
+
     hideModal() {
         this.windowModalDiv.style.display = "none";
         // In the future, maybe we add a callback that is added in the constructor if needed
+
+        if (typeof this.onHide === "function") {
+            this.onHide(); // call the callback
+        }
     }
 
     showModal() {
@@ -67,9 +76,43 @@ class ModalManager {
 }
 
 
+// Create modal containing a map and a menu to the side in the modalContentDiv
 class ModalMapMenu {
-    constructor(modalParentDiv) {
-        this.modalParentDiv = modalParentDiv;
+    constructor(modalContentDiv) {
 
+        // Build the divs
+        this.modalParentDiv = modalContentDiv;
+        modalContentDiv.innerHTML = ""; // Clear previous content
+
+        // Container that will hold map + sidebar
+        const container = document.createElement("div");
+        container.id = "modal-container";
+        modalContentDiv.appendChild(container);
+
+        // Map div
+        const mapDiv = document.createElement("div");
+        mapDiv.id = "modal-map";
+        container.appendChild(mapDiv);
+
+        // Sidebar div
+        const sidebarDiv = document.createElement("div");
+        sidebarDiv.id = "modal-sidebar";
+        // sidebarDiv.innerHTML = "<h2>Coverage Polygons</h2>";
+        container.appendChild(sidebarDiv);
+        this.sidebarDiv = sidebarDiv;
+
+        // Create the map object
+        const modalMapManager = new MapManager(mapDiv.id, { lat: 40.7128, lng: -74.006 }, 12);
+        this.modalMapManager = modalMapManager;
+
+
+    }
+
+    getSidebar() {
+        return this.sidebarDiv;
+    }
+
+    getMap() {
+        return this.modalMapManager
     }
 }

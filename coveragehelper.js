@@ -17,7 +17,12 @@ function drawCoverageWedgesForMarker(marker) {
         const polygon = generateGoogleMapsWedgePolygon(marker, innerRadius, radiusObj);
         if (polygon) {
             marker.segmentPoygons.push(polygon);
-            polygon.setMap(myMapManager.map);
+
+            // Add the polygon to the map if the show attribute for the marker is set.
+            if (marker.coverageMetadata.show) {
+                polygon.setMap(myMapManager.map);
+            }
+
         }
 
         innerRadius = radiusObj.value;

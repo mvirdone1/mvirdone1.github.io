@@ -57,3 +57,30 @@
         opacity: 1;
     }
 }
+
+/***********************
+/ Content specifically for the modal map type
+/ Note this is using ID and not class type
+/ So you can only have one in a single DOM 
+/**********************/
+
+#modal-container {
+    display: flex;
+    /* Flexbox layout */
+    gap: 10px;
+    /* Space between columns */
+}
+
+#modal-map {
+    width: 500px;
+    height: 500px;
+    background: #ccc;
+    /* Just to see boundaries */
+}
+
+#modal-sidebar {
+    flex: 1;
+    /* Fill remaining space */
+    background: #f5f5f5;
+    padding: 10px;
+}

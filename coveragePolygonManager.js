@@ -280,8 +280,8 @@ class CoveragePolygonManager {
         const turfUnionPolygon = turfMultiUnion(turfPolygonsForUnion);
         // This is making stuff unhappy
 
-        console.log(turfUnionPolygon);
-        console.log(turf.area(turfUnionPolygon));
+        // console.log(turfUnionPolygon);
+        // console.log(turf.area(turfUnionPolygon));
         return turfUnionPolygon;
 
         // googleMapUnionPolygon.setMap(myMapManager.map);

@@ -82,6 +82,12 @@ class ModalMapMenu {
 
         // Build the divs
         this.modalParentDiv = modalContentDiv;
+        this.initModalMap();
+
+
+    }
+
+    initModalMap() {
         modalContentDiv.innerHTML = ""; // Clear previous content
 
         // Container that will hold map + sidebar

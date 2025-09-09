@@ -22,6 +22,13 @@ const coveragePolygonType = {
   color: null,
   transparency: null,
   polygon: null,
+
+  // Placeholder, not currently implemented
+  polygonSourceMetadata: {
+    segments: 0,
+    segmentNames: [],
+    parentMarkerNames: [],
+  },
   show: false,
 };
 
@@ -125,6 +132,8 @@ function initMap() {
     // const modalContentDiv = myModal.getContentDiv();
     // const myModalMapMenu = new ModalMapMenu(modalContentDiv);
 
+
+    myModalMapMenu.initModalMap();
     myCoveragePolgyonManager.initPolygonManager(myMapManager.getMarkers(), myModalMapMenu.sidebarDiv);
     myCoveragePolgyonManager.polygonMenu();
 

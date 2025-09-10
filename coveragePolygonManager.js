@@ -1,12 +1,17 @@
 class CoveragePolygonManager {
-    constructor(coveragePolygonsList = []) {
+    constructor(coveragePolygonsList, googleMapPolygonObjects, polygonChangeCallback) {
 
         // This should be a reference back to the array of polygons
         this.coveragePolygons = coveragePolygonsList;
+        this.googleMapPolygonObjects = googleMapPolygonObjects;
         this.menuParentElement = null;
         this.markers = null;
 
-
+        if (typeof polygonChangeCallback === "function") {
+            this.polygonChangeCallback = polygonChangeCallback
+        } else {
+            console.error("No valid callback provided");
+        }
 
     }
 
@@ -38,8 +43,11 @@ class CoveragePolygonManager {
 
 
         // Populate dynamic content
-        this.listPolygons(this.coveragePolygons, polygonListDiv);
+        this.listPolygons(polygonListDiv);
+        // this.updateModalMapPolygons();
         this.showAddPolygonMenu(this.markers, polygonAddMenuDiv);
+
+        this.polygonChangeCallback(this.coveragePolygons, this.googleMapPolygonObjects);
 
 
 
@@ -47,20 +55,20 @@ class CoveragePolygonManager {
     }
 
 
-    listPolygons(polygons, parentElement) {    // Create the <ul>
+    listPolygons(parentElement) {    // Create the <ul>
         parentElement.innerHTML = "";
 
         const myTitle = document.createElement("h4");
         myTitle.textContent = "Current Polygons:";
         parentElement.appendChild(myTitle);
 
-        if (polygons.length == 0) { return false; }
+        if (this.coveragePolygons.length == 0) { return false; }
 
 
 
 
         const myList = document.createElement("ul");
-        polygons.forEach((polygon, index) => {
+        this.coveragePolygons.forEach((polygon, index) => {
             // Example dat
             const myListItem = document.createElement("li");
             const button = document.createElement("button");
@@ -70,7 +78,7 @@ class CoveragePolygonManager {
 
             button.textContent = "Delete";
             button.addEventListener("click", () => {
-                this.removePolygon(polygons, index);
+                this.removePolygon(index);
             });
 
             myListItem.appendChild(button);
@@ -222,7 +230,7 @@ class CoveragePolygonManager {
         generatePolygonButton.addEventListener("click", () => {
             const selected = polygonToGenerateMenu.value;
             const newTurfPolygon = this.generateUnionPolygonBySegmentLabel(markers, selected);
-            this.addNewSegmentPolygon(newTurfPolygon);
+            this.addNewCoveragePolygon(newTurfPolygon);
             this.polygonMenu();
             // this.updatePolygonMap();
         });
@@ -234,16 +242,27 @@ class CoveragePolygonManager {
 
     }
 
-    addNewSegmentPolygon(newPolygon) {
-        this.coveragePolygons.push(
+    addNewCoveragePolygon(newPolygon) {
+
+        const newPolygonObject = {
+            title: document.getElementById("poly-form-name").value,
+            color: document.getElementById("poly-form-color").value,
+            transparency: document.getElementById("poly-form-transparency").value,
+            polygon: newPolygon,
+            show: true,
+        };
+
+
+        this.coveragePolygons.push(newPolygonObject);
+
+        this.googleMapPolygonObjects.push(turfToGooglePolygon(
+            newPolygon,
             {
-                title: document.getElementById("poly-form-name").value,
-                color: document.getElementById("poly-form-color").value,
-                transparency: document.getElementById("poly-form-transparency").value,
-                polygon: newPolygon,
-                show: true,
-            }
-        );
+                strokeColor: newPolygonObject.color,    // Line color
+                strokeOpacity: (Math.min(1, newPolygonObject.transparency + 0.2)) / 100,        // Line transparency (0.0–1.0)
+                fillColor: newPolygonObject.color,      // Fill color
+                fillOpacity: newPolygonObject.transparency / 100,
+            }));
 
     }
 
@@ -291,8 +310,13 @@ class CoveragePolygonManager {
     }
 
 
-    removePolygon(polygons, index) {
-        polygons.splice(index, 1); // Remove from the array
+    removePolygon(index) {
+
+
+        this.coveragePolygons.splice(index, 1);
+        this.googleMapPolygonObjects[index].setMap(null);
+        this.googleMapPolygonObjects.splice(index, 1);
+
         this.polygonMenu();
     }
 }

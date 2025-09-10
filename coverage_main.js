@@ -15,6 +15,7 @@ const coverageGlobals = {
   newMarkerMetadata: {},
   steeringMarker: null,
   coveragePolygons: [],
+  googleMapCoveragePolygonObjects: [],
 };
 
 const coveragePolygonType = {
@@ -52,7 +53,10 @@ function initMap() {
 
   // myCoveragePolgyonManager = new CoveragePolygonManager(coverageGlobals.coveragePolygons);
 
-  myCoveragePolgyonManager = new CoveragePolygonManager([]);
+  myCoveragePolgyonManager = new CoveragePolygonManager(
+    coverageGlobals.coveragePolygons,
+    coverageGlobals.googleMapCoveragePolygonObjects,
+    coveragePolgyonMapUpdate);
 
 
   // Button in your sidebar
@@ -774,4 +778,23 @@ function generateDistanceReportHTML(markers) {
 function closeDistanceReport() {
   document.getElementById("distanceReport").style.display = "none";
   document.getElementById("closeReportBtn").style.display = "none";
+}
+
+function coveragePolgyonMapUpdate(polygons, mapPolygons) {
+  console.log("Callback for coverage polgyon for map update")
+
+  //  console.log(polygons);
+
+  const modalMapInstance = myModalMapMenu.getMap().map;
+
+  polygons.forEach((poly, idx) => {
+    mapPolygons[idx].setMap(null);
+
+    if (poly.show) {
+      mapPolygons[idx].setMap(modalMapInstance);
+    }
+
+  });
+
+
 }

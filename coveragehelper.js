@@ -463,6 +463,7 @@ function turfToGooglePolygon(turfPolygon, options = {}) {
     const { type, coordinates } = turfPolygon.geometry;
 
     let paths = [];
+    const mapPolygons = [];
 
     if (type === "Polygon") {
         // Turf Polygon: coordinates = [ [ [lng, lat], ... ] ] 
@@ -470,13 +471,24 @@ function turfToGooglePolygon(turfPolygon, options = {}) {
             ring.map(coord => ({ lat: coord[1], lng: coord[0] }))
         );
 
+        mapPolygons.push(new google.maps.Polygon({
+            paths: paths,
+            ...options
+        }));
+
     } else if (type === "MultiPolygon") {
         // Turf MultiPolygon: coordinates = [ [ [ [lng, lat], ... ] ], ... ]
-        paths = coordinates.map(polygon =>
-            polygon.map(ring =>
+
+        coordinates.forEach((coords) => {
+            paths = coords.map(ring =>
                 ring.map(coord => ({ lat: coord[1], lng: coord[0] }))
-            )
-        );
+            );
+
+            mapPolygons.push(new google.maps.Polygon({
+                paths: paths,
+                ...options
+            }));
+        });
 
     } else {
         console.error("Unsupported geometry type:", type);
@@ -484,10 +496,7 @@ function turfToGooglePolygon(turfPolygon, options = {}) {
     }
 
     // console.log(paths);
-    return new google.maps.Polygon({
-        paths: paths,
-        ...options
-    });
+    return mapPolygons;
 }
 
 

@@ -15,7 +15,6 @@ const coverageGlobals = {
   newMarkerMetadata: {},
   steeringMarker: null,
   coveragePolygons: [],
-  googleMapCoveragePolygonObjects: [],
 };
 
 const coveragePolygonType = {
@@ -31,6 +30,8 @@ const coveragePolygonType = {
     parentMarkerNames: [],
   },
   show: false,
+  googleMapCoveragePolygonObjects: [],
+
 };
 
 // Using globals to the script rather than the window
@@ -55,7 +56,6 @@ function initMap() {
 
   myCoveragePolgyonManager = new CoveragePolygonManager(
     coverageGlobals.coveragePolygons,
-    coverageGlobals.googleMapCoveragePolygonObjects,
     coveragePolgyonMapUpdate);
 
 
@@ -234,6 +234,8 @@ function refreshMarkerList() {
     });
 
     // Edit button
+    // Decided not to implement this, limited value
+    /*
     const showHideBtn = document.createElement("button");
 
     showHideBtn.textContent = mObj.coverageMetadata.show ? "Hide" : "Show";
@@ -249,11 +251,13 @@ function refreshMarkerList() {
 
     });
 
+    */
+
     item.appendChild(label);
     item.appendChild(delBtn);
     item.appendChild(copyBtn);
     item.appendChild(editBtn);
-    item.appendChild(showHideBtn);
+    // item.appendChild(showHideBtn);
 
     list.appendChild(item);
   });
@@ -780,7 +784,7 @@ function closeDistanceReport() {
   document.getElementById("closeReportBtn").style.display = "none";
 }
 
-function coveragePolgyonMapUpdate(polygons, mapPolygons) {
+function coveragePolgyonMapUpdate(polygons) {
   console.log("Callback for coverage polgyon for map update")
 
   //  console.log(polygons);
@@ -788,11 +792,18 @@ function coveragePolgyonMapUpdate(polygons, mapPolygons) {
   const modalMapInstance = myModalMapMenu.getMap().map;
 
   polygons.forEach((poly, idx) => {
-    mapPolygons[idx].setMap(null);
 
-    if (poly.show) {
-      mapPolygons[idx].setMap(modalMapInstance);
-    }
+
+    poly.googleMapCoveragePolygonObjects.forEach((googleMapPoly) => {
+      googleMapPoly.setMap(null);
+
+      if (poly.show) {
+        googleMapPoly.setMap(modalMapInstance);
+        // mapPolygons[idx].setMap(modalMapInstance);
+      }
+    });
+
+
 
   });
 

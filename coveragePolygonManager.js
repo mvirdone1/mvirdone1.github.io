@@ -1,9 +1,8 @@
 class CoveragePolygonManager {
-    constructor(coveragePolygonsList, googleMapPolygonObjects, polygonChangeCallback) {
+    constructor(coveragePolygonsList, polygonChangeCallback) {
 
         // This should be a reference back to the array of polygons
         this.coveragePolygons = coveragePolygonsList;
-        this.googleMapPolygonObjects = googleMapPolygonObjects;
         this.menuParentElement = null;
         this.markers = null;
 
@@ -47,7 +46,7 @@ class CoveragePolygonManager {
         // this.updateModalMapPolygons();
         this.showAddPolygonMenu(this.markers, polygonAddMenuDiv);
 
-        this.polygonChangeCallback(this.coveragePolygons, this.googleMapPolygonObjects);
+        this.polygonChangeCallback(this.coveragePolygons);
 
 
 
@@ -195,19 +194,33 @@ class CoveragePolygonManager {
         });
 
 
-
         const menuDiv = document.getElementById("polygon-workshop-div");
 
         menuDiv.innerHTML = "<p>Select segment for new Polygon:</p>"
 
         const polygonToGenerateMenu = buildDropdown(menuOptions, "poly-segments-select");
 
+        polygonToGenerateMenu.addEventListener("change", () => {
+            // Get the selected key (value of the selected option)
+            const selectedKey = polygonToGenerateMenu.value;
+
+            console.log("Drop Down Changed!")
+
+            // Find the input element
+            const nameInput = document.getElementById("poly-form-name");
+
+            // If the input is blank, set it to the selected key + " polygon"
+            if (nameInput && !nameInput.value.trim()) {
+                nameInput.value = `${selectedKey} polygon`;
+            }
+        });
+
         menuDiv.appendChild(polygonToGenerateMenu);
 
         menuDiv.appendChild(document.createElement("br"));
         const nameLabel = addFormLabel("Polygon Name: ");
         menuDiv.appendChild(nameLabel);
-        menuDiv.appendChild(addShortTextInput("New Name", "poly-form-name"));
+        menuDiv.appendChild(addShortTextInput("", "poly-form-name"));
 
 
         menuDiv.appendChild(document.createElement("br"));
@@ -250,19 +263,23 @@ class CoveragePolygonManager {
             transparency: document.getElementById("poly-form-transparency").value,
             polygon: newPolygon,
             show: true,
+            googleMapCoveragePolygonObjects: [],
         };
+
+        newPolygonObject.googleMapCoveragePolygonObjects =
+            turfToGooglePolygon(
+                newPolygon,
+                {
+                    strokeColor: newPolygonObject.color,    // Line color
+                    strokeOpacity: (Math.min(1, newPolygonObject.transparency + 0.2)) / 100,        // Line transparency (0.0–1.0)
+                    fillColor: newPolygonObject.color,      // Fill color
+                    fillOpacity: newPolygonObject.transparency / 100,
+                });
 
 
         this.coveragePolygons.push(newPolygonObject);
 
-        this.googleMapPolygonObjects.push(turfToGooglePolygon(
-            newPolygon,
-            {
-                strokeColor: newPolygonObject.color,    // Line color
-                strokeOpacity: (Math.min(1, newPolygonObject.transparency + 0.2)) / 100,        // Line transparency (0.0–1.0)
-                fillColor: newPolygonObject.color,      // Fill color
-                fillOpacity: newPolygonObject.transparency / 100,
-            }));
+
 
     }
 
@@ -312,10 +329,11 @@ class CoveragePolygonManager {
 
     removePolygon(index) {
 
+        this.coveragePolygons[index].googleMapCoveragePolygonObjects.forEach(myMap => myMap.setMap(null));
 
         this.coveragePolygons.splice(index, 1);
-        this.googleMapPolygonObjects[index].setMap(null);
-        this.googleMapPolygonObjects.splice(index, 1);
+        //this.googleMapPolygonObjects[index].setMap(null);
+        // this.googleMapPolygonObjects.splice(index, 1);
 
         this.polygonMenu();
     }

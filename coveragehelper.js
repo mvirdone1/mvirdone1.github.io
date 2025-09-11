@@ -500,6 +500,30 @@ function turfToGooglePolygon(turfPolygon, options = {}) {
 }
 
 
+// Generate a polygon of all places where at least 2 polygons are overlapping
+function turfMultiSingleIntersect(polygons) {
+    const intersections = [];
+
+    // Loop through every unique pair of polygons
+    for (let i = 0; i < polygons.length; i++) {
+        for (let j = i + 1; j < polygons.length; j++) {
+            const intersection = turf.intersect(polygons[i], polygons[j]);
+            if (intersection) {
+                intersections.push(intersection);
+            }
+        }
+    }
+
+    // If no overlaps were found, return null
+    if (intersections.length === 0) {
+        return null;
+    }
+
+    // Use your turfMultiUnion function to merge intersections
+    return turfMultiUnion(intersections);
+}
+
+
 function turfMultiUnion(polygons) {
     if (!polygons || polygons.length === 0) return null;
 

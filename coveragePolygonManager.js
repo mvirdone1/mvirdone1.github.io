@@ -357,7 +357,11 @@ class CoveragePolygonManager {
 
     addNewCoveragePolygon(newPolygon) {
 
-
+        // See if the new polygon exists (upstream functions will return null for an empty polygon)
+        if (!newPolygon) {
+            alert("Generated polygon is empty");
+            return null;
+        }
 
         const newPolygonObject = {
             title: document.getElementById("poly-form-name").value,

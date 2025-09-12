@@ -1,7 +1,9 @@
 class ModalManager {
     constructor(modalWidth = "70%", modalContentDivId = "modalContentDiv") {
         this.onHide = null;
+        this.isShowing = false;
 
+        this.isMouseDownInside = false;
         this.createModal(modalWidth, modalContentDivId);
     }
 
@@ -41,13 +43,43 @@ class ModalManager {
             // windowModalDiv.style.display = "none";
         };
 
+
+
+
+        // Track click start
+        window.addEventListener("mousedown", (e) => {
+            this.isMouseDownInside = this.contentDiv.contains(e.target);
+        });
+
+        window.addEventListener("mouseup", (e) => {
+            this.isMouseDownInside = false; // user released inside modal
+        });
+
+
+        // Listen on the overlay or document
+        window.addEventListener("click", (e) => {
+            console.log("Fired the modal window listener");
+            // Only windowk started AND ended outside modal
+            if (!this.isMouseDownInside && !this.contentDiv.contains(e.target) && this.isShowing) {
+                console.log("Hide the modal");
+                this.hideModal();
+            }
+        });
+
+
+
+
+
+        /*
         // Close modal when clicking outside content
         window.onclick = (event) => {
+
             if (event.target === this.windowModalDiv) {
                 this.hideModal();
                 // windowModalDiv.style.display = "none";
             }
         };
+        */
 
     }
 
@@ -59,6 +91,8 @@ class ModalManager {
         this.windowModalDiv.style.display = "none";
         // In the future, maybe we add a callback that is added in the constructor if needed
 
+        this.isShowing = false;
+
         if (typeof this.onHide === "function") {
             this.onHide(); // call the callback
         }
@@ -66,6 +100,7 @@ class ModalManager {
 
     showModal() {
         this.windowModalDiv.style.display = "block";
+        this.isShowing = true;
         // In the future, maybe we add a callback that is added in the constructor if needed
 
     }

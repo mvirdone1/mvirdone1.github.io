@@ -288,11 +288,20 @@ function displayMarkerProperties(marker) {
 
   console.log("displayMarkerProperties called", marker.getTitle());
 
-  const titleDiv = document.getElementById('propertiesTitle');
-  titleDiv.innerHTML = `<h3>Item Properties For: ${marker.getTitle()}<h3>`;
+  const modalContentDiv = myModal.getContentDiv();
+  modalContentDiv.innerHTML = "";
 
-  const propertiesDiv = document.getElementById('propertiesContent');
+  //const titleDiv = document.getElementById('propertiesTitle');
+  const titleDiv = document.createElement("div");
+  titleDiv.innerHTML = `<h3>Item Properties For: ${marker.getTitle()}<h3>`;
+  modalContentDiv.appendChild(titleDiv);
+
+  // const propertiesDiv = document.getElementById('propertiesContent');
+  const propertiesDiv = document.createElement("div");
   const metadata = marker.coverageMetadata;
+  modalContentDiv.appendChild(propertiesDiv);
+
+  myModal.showModal();
 
   let html = "";
 

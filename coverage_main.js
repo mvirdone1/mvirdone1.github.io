@@ -1,5 +1,6 @@
 const coverageGlobals = {
   addingMarker: false,
+  activeInfoWindow: null,
   pendingName: null,
   defaultMarkerMetadata: {
     description: "",
@@ -78,10 +79,16 @@ function initMap() {
   });
 
   myMapManager.setMapClickListener((latLng) => {
+
+    if (coverageGlobals.activeInfoWindow) {
+      coverageGlobals.activeInfoWindow.close();
+      coverageGlobals.activeInfoWindow = null;
+    }
+
     if (!coverageGlobals.addingMarker) return;
 
     // Create the marker at the clicked location
-    const marker = myMapManager.addMarker({
+    const marker = newMarkerHelper({
       title: coverageGlobals.pendingMarkerName || 'New Marker',
       position: latLng,
       draggable: true,
@@ -509,6 +516,62 @@ function showHeadingHelper(parentMarker) {
   coverageGlobals.steeringMarker = steeringMarker;
 }
 
+function newMarkerHelper(params) {
+
+  const marker = myMapManager.addMarker({
+    title: params.title || 'missing title',
+    position: params.position,
+    draggable: params.draggable || false,
+    onDragEnd: (newPos, markerRef) => {
+      updateMarkerInfo(markerRef, newPos);
+    },
+    /*onClick: (markerRef) => {
+      console.log('Marker clicked:', markerRef.getTitle());
+      displayMarkerProperties(markerRef); // Show properties in sidebar
+    },*/
+  });
+
+  const infoWindow = new google.maps.InfoWindow();
+
+  marker.addListener("click", () => {
+
+    if (coverageGlobals.activeInfoWindow) {
+      coverageGlobals.activeInfoWindow.close();
+      coverageGlobals.activeInfoWindow = null;
+    }
+
+    // console.log(marker);
+
+    // console.log("Another click for marker");
+    // console.log('Marker clicked:', markerRef.getTitle());
+    // Create custom HTML content with a button
+    const content = `
+        <div>
+          <button id="markerButton">Edit</button>
+        </div>
+      `;
+
+    infoWindow.setContent(content);
+    infoWindow.open(map, marker);
+    coverageGlobals.activeInfoWindow = infoWindow;
+
+
+
+    // Wait until DOM is ready inside InfoWindow
+    google.maps.event.addListenerOnce(infoWindow, "domready", () => {
+      document.getElementById("markerButton").addEventListener("click", () => {
+        displayMarkerProperties(marker);
+        coverageGlobals.activeInfoWindow.close();
+
+
+        // alert("Button clicked!");
+      });
+    });
+  });
+
+  return marker;
+}
+
 function loadCoverageSettings(markers) {
   // const markers = loadCoverageSettingsJSON();
 
@@ -518,7 +581,7 @@ function loadCoverageSettings(markers) {
   if (markers && markers.length > 0) {
     markers.forEach(m => {
       console.log("Loaded marker:", m);
-      const marker = myMapManager.addMarker({
+      const marker = newMarkerHelper({
         title: m.title || 'Loaded Marker',
         position: m.position || { lat: 0, lng: 0 },
         draggable: true,

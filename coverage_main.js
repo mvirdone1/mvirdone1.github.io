@@ -80,9 +80,9 @@ function initMap() {
 
   myMapManager.setMapClickListener((latLng) => {
 
-    if (coverageGlobals.activeInfoWindow) {
-      coverageGlobals.activeInfoWindow.close();
-      coverageGlobals.activeInfoWindow = null;
+    // Clear out the steering marker if it exists
+    if (coverageGlobals.steeringMarker) {
+      coverageGlobals.steeringMarker.setMap(null);
     }
 
     if (!coverageGlobals.addingMarker) return;
@@ -268,6 +268,48 @@ function refreshMarkerList() {
 
     list.appendChild(item);
   });
+
+  const polyList = document.getElementById("polyList");
+  polyList.innerHTML = "";
+
+  coverageGlobals.coveragePolygons.forEach((polygon, idx) => {
+
+    const item = document.createElement("div");
+    item.className = "marker-entry";
+
+    // Marker title
+    const label = document.createElement("span");
+    label.textContent = polygon.title;
+    label.style.marginRight = "8px";
+
+    const showHideBtn = document.createElement("button");
+
+    showHideBtn.textContent = polygon.show ? "Hide" : "Show";
+
+    showHideBtn.style.marginLeft = "4px";
+    showHideBtn.addEventListener("click", () => {
+
+      let newValue = !polygon.show;
+      polygon.show = newValue;
+
+      polygon.googleMapCoveragePolygonObjects.forEach((mapPolygon) => {
+        mapPolygon.setOptions({ zIndex: 2 })
+        mapPolygon.setMap(newValue ? myMapManager.map : null);
+        refreshMarkerList()
+      });
+
+
+
+    });
+
+
+
+    item.appendChild(label);
+    item.appendChild(showHideBtn);
+
+    polyList.appendChild(item);
+  });
+
 }
 
 // Function to update marker info in sidebar
@@ -329,6 +371,7 @@ function displayMarkerProperties(marker) {
 
   // Build description
   html += `
+    <br>
     <label>Description:</label>
     <textarea id="descInput" rows="3">${metadata.description || ''}</textarea>
   `;
@@ -430,8 +473,9 @@ function displayMarkerProperties(marker) {
 
   // Update marker metadata
   document.getElementById('updateCancelButton').addEventListener('click', () => {
-    titleDiv.innerHTML = `<h3>Item Properties</h3>`;
-    propertiesDiv.innerHTML = "No Marker Selected";
+    myModal.hideModal();
+    // titleDiv.innerHTML = `<h3>Item Properties</h3>`;
+    // propertiesDiv.innerHTML = "No Marker Selected";
   });
 
   // Update marker metadata
@@ -458,8 +502,8 @@ function displayMarkerProperties(marker) {
     });
 
 
-    titleDiv.innerHTML = `<h3>Item Properties</h3>`;
-    propertiesDiv.innerHTML = "No Marker Selected";
+    // titleDiv.innerHTML = `<h3>Item Properties</h3>`;
+    // propertiesDiv.innerHTML = "No Marker Selected";
 
     // Clear out the old marker if it exists
     if (coverageGlobals.steeringMarker) {
@@ -468,6 +512,8 @@ function displayMarkerProperties(marker) {
 
     updateUI();
     drawCoverageWedgesForMarker(marker);
+    myModal.hideModal();
+
   });
 }
 
@@ -518,7 +564,7 @@ function showHeadingHelper(parentMarker) {
       const newLatLonDistResult = calculateLatLonDistance(newHeadingMarkerPos.lat, newHeadingMarkerPos.lng, sourceMarkerPos.lat(), sourceMarkerPos.lng());
       parentMarker.coverageMetadata.sectorAzimuthHeading = Math.round(newLatLonDistResult.heading);
       drawCoverageWedgesForMarker(parentMarker);
-      displayMarkerProperties(parentMarker);
+      // displayMarkerProperties(parentMarker);
     },
   });
 
@@ -542,7 +588,13 @@ function newMarkerHelper(params) {
 
   const infoWindow = new google.maps.InfoWindow();
 
+  marker.addListener("dblclick", () => {
+    displayMarkerProperties(marker);
+  });
+
   marker.addListener("click", () => {
+    showHeadingHelper(marker);
+    /*
 
     if (coverageGlobals.activeInfoWindow) {
       coverageGlobals.activeInfoWindow.close();
@@ -576,9 +628,11 @@ function newMarkerHelper(params) {
         // alert("Button clicked!");
       });
     });
+    */
   });
 
   return marker;
+
 }
 
 function loadCoverageSettings(markers) {
@@ -659,12 +713,12 @@ function generateKML() {
 
     /*
     console.log("Marker radius segments:", marker.coverageMetadata.radius);
-
-
+ 
+ 
     if (!Array.isArray(marker.radius)) {
       marker.radius = [marker.radius];
     }
-
+ 
     console.log("Marker radius segments:", marker.radius);
 */
 
@@ -879,5 +933,6 @@ function coveragePolgyonMapUpdate(polygons) {
 
   });
 
+  refreshMarkerList();
 
 }

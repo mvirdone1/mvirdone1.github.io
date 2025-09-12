@@ -255,7 +255,7 @@ function buildWedgeKML(params, pointsPerKm = 2) {
 }
 
 
-function saveCoverageSettingsJSON(markers) {
+function saveCoverageSettingsJSON(markers, polygons = null) {
     if (!markers || markers.length === 0) {
         alert("No markers to save.");
         return;
@@ -273,11 +273,27 @@ function saveCoverageSettingsJSON(markers) {
         };
     });
 
+
+
     // Create final object to save
     const dataToSave = {
         savedAt: new Date().toISOString(),
         markers: markerData
     };
+
+
+    if (polygons) {
+        polygonData = polygons.map(polygon => {
+            return {
+                title: polygon.title,
+                color: pologon.color,
+                transparency: polygon.transparency,
+                polygonSourceMetadata: polygon.polygonSourceMetadata,
+                show: show,
+            }
+        });
+    }
+
 
     // Convert to JSON string
     const jsonString = JSON.stringify(dataToSave, null, 2);

@@ -25,11 +25,10 @@ const coveragePolygonType = {
   polygon: null,
 
   // Placeholder, not currently implemented
-  polygonSourceMetadata: {
-    segments: 0,
-    segmentNames: [],
-    parentMarkerNames: [],
-  },
+  polygonSources: [{
+    marker: "",
+    label: "",
+  }],
   show: false,
   googleMapCoveragePolygonObjects: [],
 
@@ -153,6 +152,7 @@ function initMap() {
     // modalMapManager.map.setCenter({ lat: -33.8688, lng: 151.2093 }); // Recenter the map after resizing
 
     myModal.showModal();
+    myModal.setOnHideCallback(polygonDoneCallback)
 
     // Allow browser to paint modal, then trigger resize
     setTimeout(() => {
@@ -164,6 +164,12 @@ function initMap() {
     }, 200);
 
   });
+
+  function polygonDoneCallback() {
+    coverageGlobals.coveragePolygons.forEach((polygon) => {
+      polygon.show = false;
+    });
+  }
 
 
 

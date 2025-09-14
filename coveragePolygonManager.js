@@ -251,7 +251,7 @@ class CoveragePolygonManager {
         const transparencyLabel = addFormLabel("Polygon Transparency: ")
         const transparencyId = "poly-form-transparency";
         menuDiv.appendChild(transparencyLabel);
-        menuDiv.appendChild(addPercentSliderBar(80, 0, 100, transparencyId));
+        menuDiv.appendChild(addPercentSliderBar(50, 0, 100, transparencyId));
         menuDiv.appendChild(addPercentSliderDisplay(transparencyId));
         updateSliderDisplay(transparencyId);
 
@@ -265,7 +265,16 @@ class CoveragePolygonManager {
             // const newTurfPolygon = this.generateUnionPolygonBySegmentLabel(markers, selected);
             const newTurfPolygon = segmentPolygonCallback(markers, selected);
 
-            this.addNewCoveragePolygon(newTurfPolygon);
+            const newPolygonObject = {
+                title: document.getElementById("poly-form-name").value,
+                color: document.getElementById("poly-form-color").value,
+                transparency: document.getElementById("poly-form-transparency").value,
+                polygon: newTurfPolygon,
+                show: true,
+                googleMapCoveragePolygonObjects: [],
+            };
+
+            this.addNewCoveragePolygon(newPolygonObject);
             this.polygonMenu();
             // this.updatePolygonMap();
         });
@@ -343,7 +352,16 @@ class CoveragePolygonManager {
         generatePolygonButton.addEventListener("click", () => {
             const selected = polygonToGenerateMenu.value;
             const newTurfPolygon = this.generateUnionPolygonBySegmentLabel(markers, selected);
-            this.addNewCoveragePolygon(newTurfPolygon);
+            const newPolygonObject = {
+                title: document.getElementById("poly-form-name").value,
+                color: document.getElementById("poly-form-color").value,
+                transparency: document.getElementById("poly-form-transparency").value,
+                polygon: newTurfPolygon,
+                show: true,
+                googleMapCoveragePolygonObjects: [],
+            };
+
+            this.addNewCoveragePolygon(newPolygonObject);
             this.polygonMenu();
             // this.updatePolygonMap();
         });
@@ -355,14 +373,16 @@ class CoveragePolygonManager {
 
     }
 
-    addNewCoveragePolygon(newPolygon) {
+    addNewCoveragePolygon(newPolygonObject) {
 
+        const newPolygon = newPolygonObject.polygon;
         // See if the new polygon exists (upstream functions will return null for an empty polygon)
         if (!newPolygon) {
             alert("Generated polygon is empty");
             return null;
         }
 
+        /*
         const newPolygonObject = {
             title: document.getElementById("poly-form-name").value,
             color: document.getElementById("poly-form-color").value,
@@ -371,15 +391,16 @@ class CoveragePolygonManager {
             show: true,
             googleMapCoveragePolygonObjects: [],
         };
+        */
 
         newPolygonObject.googleMapCoveragePolygonObjects =
             turfToGooglePolygon(
                 newPolygon,
                 {
                     strokeColor: newPolygonObject.color,    // Line color
-                    strokeOpacity: (Math.min(1, newPolygonObject.transparency + 0.2)) / 100,        // Line transparency (0.0–1.0)
+                    strokeOpacity: 1 - ((Math.min(1, newPolygonObject.transparency + 0.2)) / 100),        // Line transparency (0.0–1.0)
                     fillColor: newPolygonObject.color,      // Fill color
-                    fillOpacity: newPolygonObject.transparency / 100,
+                    fillOpacity: 1 - (newPolygonObject.transparency / 100),
                 });
 
 

@@ -39,8 +39,7 @@ const coveragePolygonType = {
 // Using globals to the script rather than the window
 let myMapManager;
 let myModal;
-let myModalMapMenu;
-let myCoveragePolgyonManager;
+
 
 
 function initMap() {
@@ -51,14 +50,9 @@ function initMap() {
   myModal = new ModalManager();
   // myModal = modalManager; // Global variable
 
-  myModalMapMenu = new ModalMapMenu(myModal.getContentDiv());
-  // myModalMapMenu = modalMapMenu;
 
-  // myCoveragePolgyonManager = new CoveragePolygonManager(coverageGlobals.coveragePolygons);
 
-  myCoveragePolgyonManager = new CoveragePolygonManager(
-    coverageGlobals.coveragePolygons,
-    coveragePolgyonMapUpdate);
+
 
 
   // Button in your sidebar
@@ -145,25 +139,10 @@ function initMap() {
     // const myModalMapMenu = new ModalMapMenu(modalContentDiv);
 
 
-    myModalMapMenu.initModalMap();
-    myCoveragePolgyonManager.initPolygonManager(myMapManager.getMarkers(), myModalMapMenu.sidebarDiv);
-    // myCoveragePolgyonManager.polygonMenu();
-
-    // console.log(modalMapManager.map);
-    // google.maps.event.trigger(modalMapManager.map, "resize");
-    // modalMapManager.map.setCenter({ lat: -33.8688, lng: 151.2093 }); // Recenter the map after resizing
-
     myModal.showModal();
     myModal.setOnHideCallback(polygonDoneCallback)
 
-    // Allow browser to paint modal, then trigger resize
-    setTimeout(() => {
-      const modalMapManagerMap = myModalMapMenu.modalMapManager.map;
-      google.maps.event.trigger(modalMapManagerMap, "resize");
-      modalMapManagerMap.setCenter(myMapManager.map.getCenter());
-      modalMapManagerMap.setZoom(myMapManager.map.getZoom());
 
-    }, 200);
 
   });
 
@@ -248,31 +227,12 @@ function refreshMarkerList() {
 
     });
 
-    // Edit button
-    // Decided not to implement this, limited value
-    /*
-    const showHideBtn = document.createElement("button");
 
-    showHideBtn.textContent = mObj.coverageMetadata.show ? "Hide" : "Show";
-
-    showHideBtn.style.marginLeft = "4px";
-    showHideBtn.addEventListener("click", () => {
-
-      let newValue = !mObj.coverageMetadata.show;
-      mObj.coverageMetadata.show = newValue;
-      refreshMarkerList();
-      drawCoverageWedgesForMarker(mObj);
-
-
-    });
-
-    */
 
     item.appendChild(label);
     item.appendChild(delBtn);
     item.appendChild(copyBtn);
     item.appendChild(editBtn);
-    // item.appendChild(showHideBtn);
 
     list.appendChild(item);
   });
@@ -906,8 +866,6 @@ function generateAreaReport(markers) {
 // Generate the distance matrix
 function generateDistanceReportHTML(markers) {
 
-
-
   let html = "<h3>Distance Matrix (km)</h3>\n";
   html += "<table border='1' cellpadding='5'><tr><th></th>";
   markers.forEach(m => {
@@ -950,29 +908,4 @@ function closeDistanceReport() {
   document.getElementById("closeReportBtn").style.display = "none";
 }
 
-function coveragePolgyonMapUpdate(polygons) {
-  console.log("Callback for coverage polgyon for map update")
 
-  //  console.log(polygons);
-
-  const modalMapInstance = myModalMapMenu.getMap().map;
-
-  polygons.forEach((poly, idx) => {
-
-
-    poly.googleMapCoveragePolygonObjects.forEach((googleMapPoly) => {
-      googleMapPoly.setMap(null);
-
-      if (poly.show) {
-        googleMapPoly.setMap(modalMapInstance);
-        // mapPolygons[idx].setMap(modalMapInstance);
-      }
-    });
-
-
-
-  });
-
-  refreshMarkerList();
-
-}

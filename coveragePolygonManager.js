@@ -113,46 +113,71 @@ class CoveragePolygonManager {
         });
 
         newSegmentCoveragePolygons.forEach((polygon) => {
-            polygon.unionCoveragePolygon = this.buildPolygonFromLabels(markers, polygon.label, polygon.parentMarkers[0], "Union", turfMultiUnion);
-            polygon.intersectCoveragePolygon = this.buildPolygonFromLabels(markers, polygon.label, polygon.parentMarkers[0], "Union", turfMultiSingleIntersect);
+
+
+            const parentRadiusExample = polygon.parentMarkers[0].coverageMetadata.radius.find(rad => rad.label === polygon.label);
+            const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
+
+
+            const newCoveragePolygon =
+            {
+                title: null,
+                color: boldColor(...newColor),
+                transparency: 0.4,
+                polygon: null,
+                sourceLabel: polygon.label,
+                show: false,
+                googleMapCoveragePolygonObjects: [],
+
+            };
+
+            polygon.unionCoveragePolygon = this.buildPolygonFromLabels(
+                markers,
+                polygon.label,
+                "Union",
+                structuredClone(newCoveragePolygon),
+                turfMultiUnion);
+
+            polygon.intersectCoveragePolygon = this.buildPolygonFromLabels(
+                markers,
+                polygon.label,
+                "Intersect",
+                structuredClone(newCoveragePolygon),
+                turfMultiSingleIntersect);
+
 
         });
 
         return newSegmentCoveragePolygons;
     }
 
-    static buildPolygonFromLabels(markers, label, parentMarker, coverageType, turfCallback) {
+    static updatePolygon(markers, label, parentMarker, coverageType) {
+
+    }
+
+    static buildPolygonFromLabels(markers, label, coverageType, newCoveragePolygon, turfCallback) {
         const polygonsForProcessing = CoveragePolygonManager.getTurfPolygonsFromMarkers(markers, label);
 
-        const parentRadiusExample = parentMarker.coverageMetadata.radius.find(rad => rad.label === label);
 
-        const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
 
 
         const turfPolygon = turfCallback(polygonsForProcessing);
 
         if (!turfPolygon) { return null; }
 
-        const newCoveragePolygon =
-        {
-            title: label + " " + coverageType,
-            color: boldColor(...newColor),
-            transparency: 0.4,
-            polygon: turfPolygon,
-            sourceLabel: label,
-            show: false,
-            googleMapCoveragePolygonObjects: [],
+        newCoveragePolygon.polygon = turfPolygon;
+        newCoveragePolygon.title = label + " " + coverageType,
 
-        };
 
-        newCoveragePolygon.googleMapCoveragePolygonObjects = turfToGooglePolygon(
-            turfPolygon,
-            {
-                strokeColor: rgbToHex(...newCoveragePolygon.color),    // Line color
-                strokeOpacity: 1 - ((Math.min(1, newCoveragePolygon.transparency + 0.2))),        // Line transparency (0.0–1.0)
-                fillColor: rgbToHex(...newCoveragePolygon.color),      // Fill color
-                fillOpacity: 1 - (newCoveragePolygon.transparency),
-            });
+
+            newCoveragePolygon.googleMapCoveragePolygonObjects = turfToGooglePolygon(
+                turfPolygon,
+                {
+                    strokeColor: rgbToHex(...newCoveragePolygon.color),    // Line color
+                    strokeOpacity: 1 - ((Math.min(1, newCoveragePolygon.transparency + 0.2))),        // Line transparency (0.0–1.0)
+                    fillColor: rgbToHex(...newCoveragePolygon.color),      // Fill color
+                    fillOpacity: 1 - (newCoveragePolygon.transparency),
+                });
 
         return newCoveragePolygon;
     }
@@ -513,14 +538,6 @@ class CoveragePolygonManager {
 
     }
 
-    updatePolygonMap(foo = "") {
-
-        const googleMapUnionPolygon = turfToGooglePolygon(turfUnionPolygon);
-        newPolygon.setOptions({
-            strokeColor: "#0000FF"
-        });
-
-    }
 
     static getTurfPolygonsFromMarkers(markers, label) {
         // console.log("creating polygons for processing");

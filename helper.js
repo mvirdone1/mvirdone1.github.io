@@ -399,6 +399,17 @@ function rgbArrayToString(rgbArray) {
   return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
 }
 
+function boldColor(r, g, b, factor = 1.2) {
+  function clamp(val) {
+    return Math.min(255, Math.max(0, Math.round(val)));
+  }
+  return [
+    clamp(128 + factor * (r - 128)),
+    clamp(128 + factor * (g - 128)),
+    clamp(128 + factor * (b - 128)),
+  ];
+}
+
 // Helper functions
 function rgbToHex(r, g, b) {
   return "#" + ((1 << 24) + (r << 16) + (g << 8) + b)

@@ -15,7 +15,14 @@ const coverageGlobals = {
   },
   newMarkerMetadata: {},
   steeringMarker: null,
-  coveragePolygons: [],
+  segmentCoveragePolygons: [],
+};
+
+const segmentCoveragePolygonType = {
+  label: null,
+  parentMarkers: [],
+  unionCoveragePolygon: null,
+  intersectCoveragePolygon: null,
 };
 
 const coveragePolygonType = {
@@ -23,12 +30,7 @@ const coveragePolygonType = {
   color: null,
   transparency: null,
   polygon: null,
-
-  // Placeholder, not currently implemented
-  polygonSources: [{
-    marker: "",
-    label: "",
-  }],
+  sourceLabel: null,
   show: false,
   googleMapCoveragePolygonObjects: [],
 
@@ -145,7 +147,7 @@ function initMap() {
 
     myModalMapMenu.initModalMap();
     myCoveragePolgyonManager.initPolygonManager(myMapManager.getMarkers(), myModalMapMenu.sidebarDiv);
-    myCoveragePolgyonManager.polygonMenu();
+    // myCoveragePolgyonManager.polygonMenu();
 
     // console.log(modalMapManager.map);
     // google.maps.event.trigger(modalMapManager.map, "resize");
@@ -278,43 +280,72 @@ function refreshMarkerList() {
   const polyList = document.getElementById("polyList");
   polyList.innerHTML = "";
 
-  coverageGlobals.coveragePolygons.forEach((polygon, idx) => {
+  const myPolygonTable = new buildTableDom();
 
+  const tableHeadings = ["Label", "Union", "Intersect"];
+
+  myPolygonTable.addRow();
+  myPolygonTable.addRowItemsList(tableHeadings, true);
+
+
+  coverageGlobals.segmentCoveragePolygons.forEach((polygon, idx) => {
+
+    // Add the label in the first row
+    myPolygonTable.addRow();
+    myPolygonTable.addRowItem(polygon.label);
+
+    const keyNames = ["unionCoveragePolygon", "intersectCoveragePolygon"];
+
+    keyNames.forEach((objKey) => {
+      const cellReference = myPolygonTable.addRowItem("");
+
+      const coveragePolygonObject = polygon[objKey]
+      if (coveragePolygonObject) {
+        console.log("Key is not null");
+        const showHideBtn = document.createElement("button");
+
+        showHideBtn.textContent = coveragePolygonObject.show ? "Hide" : "Show";
+
+        showHideBtn.style.marginLeft = "4px";
+        showHideBtn.addEventListener("click", () => {
+
+          let newValue = !coveragePolygonObject.show;
+          coveragePolygonObject.show = newValue;
+
+          coveragePolygonObject.googleMapCoveragePolygonObjects.forEach((mapPolygon) => {
+            console.log(mapPolygon);
+            mapPolygon.setOptions({ zIndex: 2 })
+            mapPolygon.setMap(newValue ? myMapManager.map : null);
+            refreshMarkerList()
+          });
+
+        });
+
+        cellReference.appendChild(showHideBtn);
+
+      }
+    })
+
+
+    /*
     const item = document.createElement("div");
     item.className = "marker-entry";
 
     // Marker title
     const label = document.createElement("span");
-    label.textContent = polygon.title;
+    label.textContent = polygon.label;
     label.style.marginRight = "8px";
 
-    const showHideBtn = document.createElement("button");
-
-    showHideBtn.textContent = polygon.show ? "Hide" : "Show";
-
-    showHideBtn.style.marginLeft = "4px";
-    showHideBtn.addEventListener("click", () => {
-
-      let newValue = !polygon.show;
-      polygon.show = newValue;
-
-      polygon.googleMapCoveragePolygonObjects.forEach((mapPolygon) => {
-        mapPolygon.setOptions({ zIndex: 2 })
-        mapPolygon.setMap(newValue ? myMapManager.map : null);
-        refreshMarkerList()
-      });
-
-
-
-    });
-
-
-
-    item.appendChild(label);
+    // item.appendChild(label);
     item.appendChild(showHideBtn);
+    */
 
-    polyList.appendChild(item);
+
   });
+
+  console.log(myPolygonTable.getTable());
+  polyList.appendChild(myPolygonTable.getTable());
+
 
 }
 
@@ -674,6 +705,9 @@ function loadCoverageSettings(markers) {
       updateMarkerInfo(marker, m.position);
     });
   }
+
+  coverageGlobals.segmentCoveragePolygons = CoveragePolygonManager.buildPolygonList(myMapManager.getMarkers());
+  console.log(coverageGlobals.segmentCoveragePolygons);
 
   updateUI();
   myMapManager.setZoomOnMarkerBounds();

@@ -112,3 +112,40 @@ function updateHeaderArrows(headers, columnIndex, sortDirection) {
     header.textContent = text;
   });
 }
+
+class buildTableDom {
+  constructor(tableId) {
+
+    this.table = document.createElement("table");
+    this.table.setAttribute("border", "1");
+    this.currentRow = null;
+    if (tableId) { this.table.id = tableId }
+
+  }
+
+  addRow() {
+    this.currentRow = document.createElement("tr");
+    this.table.appendChild(this.currentRow)
+
+    return this.currentRow;
+  }
+
+  addRowItemsList(list, isHeader = false) {
+    list.forEach((item) => {
+      this.addRowItem(item, isHeader);
+    });
+  }
+
+  addRowItem(item, isHeader) {
+    const itemType = isHeader ? "th" : "td";
+    const newRowItem = document.createElement(itemType);
+    newRowItem.textContent = item;
+    this.currentRow.appendChild(newRowItem);
+    return newRowItem;
+  }
+
+  getTable() {
+    return this.table;
+  }
+
+}

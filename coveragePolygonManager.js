@@ -19,7 +19,7 @@ class CoveragePolygonManager {
         this.menuParentElement = parentElement;
     }
 
-    polygonMenu() {
+    polygonMenuOld() {
 
         // Clear out the whole menu sidebar to start
         this.menuParentElement.innerHTML = "";
@@ -48,11 +48,114 @@ class CoveragePolygonManager {
 
         this.polygonChangeCallback(this.coveragePolygons);
 
+    }
+
+    static polygonMenu(coveragePolygons, menuParentElement) {
+
+        // Clear out the whole menu sidebar to start
+        menuParentElement.innerHTML = "";
+        console.log(coveragePolygons);
+
+        // Build the overall layout
+        const polygonListDiv = document.createElement("div");
+        polygonListDiv.id = "polygon-list-div";
+        this.menuParentElement.appendChild(polygonListDiv);
 
 
+        const polygonAddMenuDiv = document.createElement("div");
+        polygonAddMenuDiv.id = "polygon-add-menu-div";
+        this.menuParentElement.appendChild(polygonAddMenuDiv);
+
+
+        const polygonWorkshopDiv = document.createElement("div");
+        polygonWorkshopDiv.id = "polygon-workshop-div";
+        this.menuParentElement.appendChild(polygonWorkshopDiv);
+
+
+        // Populate dynamic content
+        this.listPolygons(polygonListDiv);
+        // this.updateModalMapPolygons();
+        this.showAddPolygonMenu(this.markers, polygonAddMenuDiv);
+
+        this.polygonChangeCallback(coveragePolygons);
 
     }
 
+
+    static buildPolygonList(markers) {
+        const newSegmentCoveragePolygons = [];
+
+
+        // Iterate over every marker
+        markers.forEach((marker) => {
+            // Iterate over every radius (segment) in the marker to get their label
+            marker.coverageMetadata.radius.forEach((currentSegment) => {
+
+
+                // See if the label exists anywhere in our current array of polygons (cataloged by label)
+                const foundLabelPolygon = newSegmentCoveragePolygons.find(polygon => polygon.label === currentSegment.label)
+
+                // If it exists, add the marker to the polygon's parent markers
+                if (foundLabelPolygon) {
+                    foundLabelPolygon.parentMarkers.push(marker);
+                }
+                else {
+                    newSegmentCoveragePolygons.push(
+                        {
+                            label: currentSegment.label,
+                            parentMarkers: [marker],
+                            unionCoveragePolygon: null,
+                            intersectCoveragePolygon: null,
+                        }
+                    );
+                }
+            });
+        });
+
+        newSegmentCoveragePolygons.forEach((polygon) => {
+            polygon.unionCoveragePolygon = this.buildPolygonFromLabels(markers, polygon.label, polygon.parentMarkers[0], "Union", turfMultiUnion);
+            polygon.intersectCoveragePolygon = this.buildPolygonFromLabels(markers, polygon.label, polygon.parentMarkers[0], "Union", turfMultiSingleIntersect);
+
+        });
+
+        return newSegmentCoveragePolygons;
+    }
+
+    static buildPolygonFromLabels(markers, label, parentMarker, coverageType, turfCallback) {
+        const polygonsForProcessing = CoveragePolygonManager.getTurfPolygonsFromMarkers(markers, label);
+
+        const parentRadiusExample = parentMarker.coverageMetadata.radius.find(rad => rad.label === label);
+
+        const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
+
+
+        const turfPolygon = turfCallback(polygonsForProcessing);
+
+        if (!turfPolygon) { return null; }
+
+        const newCoveragePolygon =
+        {
+            title: label + " " + coverageType,
+            color: boldColor(...newColor),
+            transparency: 0.4,
+            polygon: turfPolygon,
+            sourceLabel: label,
+            show: false,
+            googleMapCoveragePolygonObjects: [],
+
+        };
+
+        newCoveragePolygon.googleMapCoveragePolygonObjects = turfToGooglePolygon(
+            turfPolygon,
+            {
+                strokeColor: rgbToHex(...newCoveragePolygon.color),    // Line color
+                strokeOpacity: 1 - ((Math.min(1, newCoveragePolygon.transparency + 0.2))),        // Line transparency (0.0–1.0)
+                fillColor: rgbToHex(...newCoveragePolygon.color),      // Fill color
+                fillOpacity: 1 - (newCoveragePolygon.transparency),
+            });
+
+        return newCoveragePolygon;
+    }
 
     listPolygons(parentElement) {    // Create the <ul>
         parentElement.innerHTML = "";
@@ -178,7 +281,7 @@ class CoveragePolygonManager {
         return null;
     }
 
-    getAllMarkerSegementLabels(markers) {
+    static getAllMarkerSegementLabels(markers) {
         const sameNamedSegments = [];
 
         markers.forEach((marker) => {
@@ -191,13 +294,13 @@ class CoveragePolygonManager {
                 }
             });
         });
+
+
         return sameNamedSegments;
     }
 
 
     showGenericAutoMenu(markers, title, minSegments, segmentPolygonCallback) {
-
-
 
         const sameNamedSegments = this.getAllMarkerSegementLabels(markers);
 
@@ -397,9 +500,9 @@ class CoveragePolygonManager {
             turfToGooglePolygon(
                 newPolygon,
                 {
-                    strokeColor: newPolygonObject.color,    // Line color
+                    strokeColor: rgbToHex(newPolygonObject.color),    // Line color
                     strokeOpacity: 1 - ((Math.min(1, newPolygonObject.transparency + 0.2)) / 100),        // Line transparency (0.0–1.0)
-                    fillColor: newPolygonObject.color,      // Fill color
+                    fillColor: rgbToHex(newPolygonObject.color),      // Fill color
                     fillOpacity: 1 - (newPolygonObject.transparency / 100),
                 });
 
@@ -419,10 +522,11 @@ class CoveragePolygonManager {
 
     }
 
-    getTurfPolygonsFromMarkers(markers, label) {
-        console.log("creating polygons for processing");
+    static getTurfPolygonsFromMarkers(markers, label) {
+        // console.log("creating polygons for processing");
         const turfPolygonsForProcessing = [];
 
+        // console.log(markers);
         markers.forEach((marker) => {
             marker.coverageMetadata.radius.forEach((currentSegment) => {
 

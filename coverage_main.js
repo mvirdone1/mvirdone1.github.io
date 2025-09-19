@@ -36,6 +36,20 @@ const coveragePolygonType = {
 
 };
 
+const DEFAULT_TABLE_ATTRIBUTES = [{
+  border: "1px solid black",
+  borderCollapse: "collapse",
+},
+{
+  border: "1px solid black",
+},
+{
+  border: "1px solid black",
+  padding: "4px",
+  textAlign: "center",
+  verticalAlign: "middle",
+}]
+
 // Using globals to the script rather than the window
 let myMapManager;
 let myModal;
@@ -161,6 +175,10 @@ function initMap() {
     saveCoverageSettingsJSON(myMapManager.getMarkers() || []); // assumes markers are in global `markers` array
   });
 
+  document.getElementById("generateKML").addEventListener("click", () => { generateKML(); });
+
+  document.getElementById("loadSettingsBtn").addEventListener("click", () => { loadCoverageSettingsJSON(loadCoverageSettings); });
+
 }
 
 function updateUI() {
@@ -175,7 +193,7 @@ function refreshMarkerList() {
   if (!list) return;
 
   list.innerHTML = ""; // clear existing
-  const myMarkerTable = new BuildTableDom();
+  const myMarkerTable = new TableDomObject();
 
 
   myMapManager.getMarkers().forEach((mObj, idx) => {
@@ -258,7 +276,7 @@ function refreshMarkerList() {
   const polyList = document.getElementById("polyList");
   polyList.innerHTML = "";
 
-  const myPolygonTable = new BuildTableDom("polygon-table",
+  const myPolygonTable = new TableDomObject("polygon-table",
     {
       border: "1px solid black",
       borderCollapse: "collapse",
@@ -714,6 +732,8 @@ function loadCoverageSettings(markers) {
   myMapManager.setZoomOnMarkerBounds();
 }
 
+
+
 function generateKML() {
   const markers = myMapManager.getMarkers();
   if (!markers || markers.length === 0) {
@@ -828,46 +848,47 @@ function generateOverlapReport() {
 
 function generateOverlapReportHTML(overlapResults) {
   let html = "<h3>Overlap (sq km)</h3>\n";
-  html += "<table border='1' cellpadding='5'><tr>";
+
+  const myCoverageOverlapTable = new TableDomObject("coverage-overlap-report-table", ...DEFAULT_TABLE_ATTRIBUTES);
+
 
   titles = ["Object 1", "Sector 1", "Object 2", "Sector 2", "Overlap of Full", "Overlap of Partial"];
-  titles.forEach(title => {
-    html += `<th>${title}</th>`;
-  });
-  html += "</tr>\n";
+  myCoverageOverlapTable.addRow();
+  myCoverageOverlapTable.addRowItemsList(titles, true);
+
 
   overlapResults.forEach((currentResult) => {
     if (currentResult.overlap > 0 || currentResult.fullOverlap > 0) {
-      html += "<tr>"
-      html += `<td>${currentResult.markerOneName}</td>`;
-      html += `<td>${currentResult.segmentOneName}</td>`;
-      html += `<td>${currentResult.markerTwoName}</td>`;
-      html += `<td>${currentResult.segmentTwoName}</td>`;
-      html += `<td>${roundDecimal(currentResult.fullOverlap / 1e6, 1)}</td>`;
-      html += `<td>${roundDecimal(currentResult.overlap / 1e6, 1)}</td>`;
-      html += "</tr>\n";
 
+      const rowContent = [];
+      rowContent.push(currentResult.markerOneName);
+      rowContent.push(currentResult.segmentOneName);
+      rowContent.push(currentResult.markerTwoName);
+      rowContent.push(currentResult.segmentTwoName);
+      rowContent.push(roundDecimal(currentResult.fullOverlap / 1e6, 1));
+      rowContent.push(roundDecimal(currentResult.overlap / 1e6, 1));
+
+      myCoverageOverlapTable.addRow();
+      myCoverageOverlapTable.addRowItemsList(rowContent);
 
     }
 
   });
 
-  html += "</table>";
-  return html;
-
+  return html + myCoverageOverlapTable.getTable().outerHTML;
 }
 
 
 // Function that iterates over each of the marker and radius and calculates the area of each wedge
 function generateAreaReport(markers) {
-  let html = "<h3>Area</h3>\n";
-  html += "<table border='1' cellpadding='5'><tr>";
+  let headingHTML = "<h3>Area (sq km)</h3>\n";
 
+  const myAreaReportTable = new TableDomObject("area-report-table", ...DEFAULT_TABLE_ATTRIBUTES);
   titles = ["Marker", "Radius Title", "Sector Width (deg)", "Radius Range (km)", "Full Area (sq km)", "Sector Area (sq km)"];
-  titles.forEach(title => {
-    html += `<th>${title}</th>`;
-  });
-  html += "</tr>";
+
+
+  myAreaReportTable.addRow();
+  myAreaReportTable.addRowItemsList(titles, true);
 
 
   markers.forEach(marker => {
@@ -893,32 +914,40 @@ function generateAreaReport(markers) {
       results.push(fullArea.toFixed(1));
       results.push(area.toFixed(1));
 
-      html += "<tr>";
-      results.forEach(res => {
-        html += `<td>${res}</td>`;
-      });
-      html += "</tr>";
+      myAreaReportTable.addRow();
+      myAreaReportTable.addRowItemsList(results, false);
+
+
     });
   });
-  html += "</table>";
-  return html;
+  // return html;
+  return headingHTML + myAreaReportTable.getTable().outerHTML;
 }
 
 // Generate the distance matrix
 function generateDistanceReportHTML(markers) {
 
-  let html = "<h3>Distance Matrix (km)</h3>\n";
-  html += "<table border='1' cellpadding='5'><tr><th></th>";
+  let headingHtml = "<h3>Distance Matrix (km)</h3>\n";
+
+  const myDistanceReportTable = new TableDomObject("distance-report-table", ...DEFAULT_TABLE_ATTRIBUTES);
+
+  headings = [];
+  headings.push("");
+
   markers.forEach(m => {
-    html += `<th>${m.title}</th>`;
+    headings.push(m.title);
   });
-  html += "</tr>";
+
+  myDistanceReportTable.addRow();
+  myDistanceReportTable.addRowItemsList(headings, true);
 
   markers.forEach((m1, i) => {
-    html += `<tr><th>${m1.title}</th>`;
+    myDistanceReportTable.addRow();
+    myDistanceReportTable.addRowItem(m1.title);
     markers.forEach((m2, j) => {
       if (i === j || i < j) {
-        html += "<td>-</td>"; // diagonal
+        myDistanceReportTable.addRowItem("-");
+
       } else {
 
 
@@ -928,15 +957,14 @@ function generateDistanceReportHTML(markers) {
         );
 
         console.log(`Distance from ${m1.title} to ${m2.title}:`, d);
-        html += `<td>${d.km.toFixed(1)}</td>`;
+        myDistanceReportTable.addRowItem(d.km.toFixed(1));
+
       }
     });
-    html += "</tr>";
   });
-  html += "</table>";
 
 
-  return html;
+  return headingHtml + myDistanceReportTable.getTable().outerHTML;
 
   // distanceReportElement.innerHTML = html;
   // document.getElementById("distanceReport").style.display = "block";

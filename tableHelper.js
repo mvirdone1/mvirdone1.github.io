@@ -114,7 +114,7 @@ function updateHeaderArrows(headers, columnIndex, sortDirection) {
 }
 
 
-class BuildTableDom {
+class TableDomObject {
   constructor(tableId = null, tableStyle = {}, rowStyle = {}, cellStyle = {}) {
     this.tableStyle = tableStyle;
     this.rowStyle = rowStyle;

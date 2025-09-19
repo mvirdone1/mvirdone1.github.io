@@ -474,7 +474,7 @@ function googlePolygonToTurf(polygon) {
 function turfToGooglePolygon(turfPolygon, options = {}) {
     if (!turfPolygon || !turfPolygon.geometry) return null;
 
-    console.log(turfPolygon.geometry);
+    // console.log(turfPolygon.geometry);
 
     const { type, coordinates } = turfPolygon.geometry;
 

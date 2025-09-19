@@ -194,6 +194,7 @@ function refreshMarkerList() {
         mObj.segmentPoygons.forEach(p => p.setMap(null));
       }
 
+      updateMarkerInfo(mObj, { lat: 0, lng: 0 });
       // Remove from globals
       myMapManager.deleteMarker(idx);
       refreshMarkerList();
@@ -260,8 +261,7 @@ function refreshMarkerList() {
       const cellReference = myPolygonTable.addRowItem("");
 
       const coveragePolygonObject = polygon[objKey]
-      if (coveragePolygonObject) {
-        console.log("Key is not null");
+      if (coveragePolygonObject.polygon) {
         const showHideBtn = document.createElement("button");
 
         showHideBtn.textContent = coveragePolygonObject.show ? "Hide" : "Show";
@@ -273,7 +273,6 @@ function refreshMarkerList() {
           coveragePolygonObject.show = newValue;
 
           coveragePolygonObject.googleMapCoveragePolygonObjects.forEach((mapPolygon) => {
-            console.log(mapPolygon);
             mapPolygon.setOptions({ zIndex: 2 })
             mapPolygon.setMap(newValue ? myMapManager.map : null);
             refreshMarkerList()
@@ -303,7 +302,6 @@ function refreshMarkerList() {
 
   });
 
-  console.log(myPolygonTable.getTable());
   polyList.appendChild(myPolygonTable.getTable());
 
 
@@ -315,6 +313,18 @@ function updateMarkerInfo(marker, newPos) {
   drawCoverageWedgesForMarker(marker);
   showHeadingHelper(marker);
 
+  marker.coverageMetadata.radius.forEach((rad) => {
+
+    CoveragePolygonManager.updatePolygons(
+      coverageGlobals.segmentCoveragePolygons,
+      myMapManager.getMarkers(),
+      marker,
+      rad.label);
+
+  });
+
+  CoveragePolygonManager.refreshPolgyonMapShowHide(coverageGlobals.segmentCoveragePolygons, myMapManager.map);
+  updateUI();
 
 }
 
@@ -507,8 +517,7 @@ function displayMarkerProperties(marker) {
       coverageGlobals.steeringMarker.setMap(null);
     }
 
-    updateUI();
-    drawCoverageWedgesForMarker(marker);
+    updateMarkerInfo(marker, { lat: newLat, lng: newLng });
     myModal.hideModal();
 
   });
@@ -561,6 +570,7 @@ function showHeadingHelper(parentMarker) {
       const newLatLonDistResult = calculateLatLonDistance(newHeadingMarkerPos.lat, newHeadingMarkerPos.lng, sourceMarkerPos.lat(), sourceMarkerPos.lng());
       parentMarker.coverageMetadata.sectorAzimuthHeading = Math.round(newLatLonDistResult.heading);
       drawCoverageWedgesForMarker(parentMarker);
+      updateMarkerInfo(parentMarker, sourceMarkerPos);
       // displayMarkerProperties(parentMarker);
     },
   });

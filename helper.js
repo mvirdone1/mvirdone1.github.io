@@ -399,14 +399,14 @@ function rgbArrayToString(rgbArray) {
   return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
 }
 
-function boldColor(r, g, b, factor = 1.2) {
-  function clamp(val) {
-    return Math.min(255, Math.max(0, Math.round(val)));
+function boldRGBColor(r, g, b, factor = 0.3) {
+  function boldChannel(val, factor) {
+    return Math.max(0, Math.round(val - (val * factor)));
   }
   return [
-    clamp(128 + factor * (r - 128)),
-    clamp(128 + factor * (g - 128)),
-    clamp(128 + factor * (b - 128)),
+    boldChannel(r, factor),
+    boldChannel(g, factor),
+    boldChannel(b, factor),
   ];
 }
 

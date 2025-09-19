@@ -114,72 +114,145 @@ class CoveragePolygonManager {
 
         newSegmentCoveragePolygons.forEach((polygon) => {
 
-
-            const parentRadiusExample = polygon.parentMarkers[0].coverageMetadata.radius.find(rad => rad.label === polygon.label);
-            const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
-
-
-            const newCoveragePolygon =
-            {
-                title: null,
-                color: boldColor(...newColor),
-                transparency: 0.4,
-                polygon: null,
-                sourceLabel: polygon.label,
-                show: false,
-                googleMapCoveragePolygonObjects: [],
-
-            };
-
-            polygon.unionCoveragePolygon = this.buildPolygonFromLabels(
-                markers,
-                polygon.label,
-                "Union",
-                structuredClone(newCoveragePolygon),
-                turfMultiUnion);
-
-            polygon.intersectCoveragePolygon = this.buildPolygonFromLabels(
-                markers,
-                polygon.label,
-                "Intersect",
-                structuredClone(newCoveragePolygon),
-                turfMultiSingleIntersect);
-
+            // Note the polygon object is modified within this function
+            this.makeNewCoveragePolygons(polygon, markers)
 
         });
 
         return newSegmentCoveragePolygons;
     }
 
-    static updatePolygon(markers, label, parentMarker, coverageType) {
+    static makeNewCoveragePolygons(polygon, markers) {
+        const parentRadiusExample = polygon.parentMarkers[0].coverageMetadata.radius.find(rad => rad.label === polygon.label);
+        const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
 
+
+        const newCoveragePolygon =
+        {
+            title: null,
+            color: boldRGBColor(...newColor),
+            transparency: 0.4,
+            polygon: null,
+            sourceLabel: polygon.label,
+            show: false,
+            googleMapCoveragePolygonObjects: [],
+
+        };
+
+        newCoveragePolygon.title = polygon.label + " " + "Union";
+
+        polygon.unionCoveragePolygon = this.buildPolygonFromLabels(
+            markers,
+            polygon.label,
+            structuredClone(newCoveragePolygon),
+            turfMultiUnion);
+
+        newCoveragePolygon.title = polygon.label + " " + "Intersect";
+        // Make the color different for intersect
+        newCoveragePolygon.color = boldRGBColor(...newCoveragePolygon.color);
+
+
+        polygon.intersectCoveragePolygon = this.buildPolygonFromLabels(
+            markers,
+            polygon.label,
+            structuredClone(newCoveragePolygon),
+            turfMultiSingleIntersect);
     }
 
-    static buildPolygonFromLabels(markers, label, coverageType, newCoveragePolygon, turfCallback) {
+    static updatePolygons(segmentCoveragePolygons, markers, updateMarker, updateLabel) {
+
+
+        // Find an element in the polygons with the right label
+        let foundLabelPolygon = segmentCoveragePolygons.find(polygon => polygon.label === updateLabel);
+
+        // if we don't have the label anywhere in the polygons
+        if (!foundLabelPolygon) {
+            segmentCoveragePolygons.push(
+                {
+                    label: updateLabel,
+                    parentMarkers: [updateMarker],
+                    unionCoveragePolygon: null,
+                    intersectCoveragePolygon: null,
+                }
+            );
+
+            // Get the instance guy we just created
+            foundLabelPolygon = segmentCoveragePolygons[segmentCoveragePolygons.length - 1];
+            this.makeNewCoveragePolygons(foundLabelPolygon, markers);
+        }
+        else {
+
+            this.clearMapPolygonsForUpdate(foundLabelPolygon.unionCoveragePolygon);
+
+            foundLabelPolygon.unionCoveragePolygon = this.buildPolygonFromLabels(
+                markers,
+                updateLabel,
+                foundLabelPolygon.unionCoveragePolygon,
+                turfMultiUnion);
+
+
+            this.clearMapPolygonsForUpdate(foundLabelPolygon.intersectCoveragePolygon);
+
+            foundLabelPolygon.intersectCoveragePolygon = this.buildPolygonFromLabels(
+                markers,
+                updateLabel,
+                foundLabelPolygon.intersectCoveragePolygon,
+                turfMultiSingleIntersect);
+        }
+    }
+
+
+    static buildPolygonFromLabels(markers, label, newCoveragePolygon, turfCallback) {
         const polygonsForProcessing = CoveragePolygonManager.getTurfPolygonsFromMarkers(markers, label);
 
 
-
-
         const turfPolygon = turfCallback(polygonsForProcessing);
-
-        if (!turfPolygon) { return null; }
-
         newCoveragePolygon.polygon = turfPolygon;
-        newCoveragePolygon.title = label + " " + coverageType,
 
 
+        if (!turfPolygon) { return newCoveragePolygon }
+        // console.log(newCoveragePolygon);
 
-            newCoveragePolygon.googleMapCoveragePolygonObjects = turfToGooglePolygon(
-                turfPolygon,
-                {
-                    strokeColor: rgbToHex(...newCoveragePolygon.color),    // Line color
-                    strokeOpacity: 1 - ((Math.min(1, newCoveragePolygon.transparency + 0.2))),        // Line transparency (0.0–1.0)
-                    fillColor: rgbToHex(...newCoveragePolygon.color),      // Fill color
-                    fillOpacity: 1 - (newCoveragePolygon.transparency),
-                });
+
+        newCoveragePolygon.googleMapCoveragePolygonObjects = turfToGooglePolygon(
+            turfPolygon,
+            {
+                strokeColor: rgbToHex(...newCoveragePolygon.color),    // Line color
+                strokeOpacity: 1 - ((Math.max(0, newCoveragePolygon.transparency - 0.2))),        // Line transparency (0.0–1.0)
+                fillColor: rgbToHex(...newCoveragePolygon.color),      // Fill color
+                fillOpacity: 1 - (newCoveragePolygon.transparency),
+            });
 
         return newCoveragePolygon;
+    }
+
+    static clearMapPolygonsForUpdate(coveragePolygon) {
+        // remove the items from the map
+        coveragePolygon.googleMapCoveragePolygonObjects.forEach((currentMapPolygon) => {
+            currentMapPolygon.setMap(null);
+        });
+
+        // delete all the items in the list since they will be re-generated
+        coveragePolygon.googleMapCoveragePolygonObjects = [];
+    }
+
+    static refreshPolgyonMapShowHide(segmentCoveragePolygons, googleMapInstance) {
+        segmentCoveragePolygons.forEach((polygon) => {
+
+            const keyNames = ["unionCoveragePolygon", "intersectCoveragePolygon"];
+
+            keyNames.forEach((objKey) => {
+
+                const coveragePolygonObject = polygon[objKey]
+                if (coveragePolygonObject.polygon) {
+                    coveragePolygonObject.googleMapCoveragePolygonObjects.forEach((mapPolygon) => {
+                        mapPolygon.setOptions({ zIndex: 2 })
+                        mapPolygon.setMap(coveragePolygonObject.show ? googleMapInstance : null);
+                    });
+                }
+            });
+
+        });
     }
 
     listPolygons(parentElement) {    // Create the <ul>

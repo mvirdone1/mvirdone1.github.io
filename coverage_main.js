@@ -175,19 +175,25 @@ function refreshMarkerList() {
   if (!list) return;
 
   list.innerHTML = ""; // clear existing
+  const myMarkerTable = new BuildTableDom();
+
 
   myMapManager.getMarkers().forEach((mObj, idx) => {
+
+    myMarkerTable.addRow();
     const item = document.createElement("div");
     item.className = "marker-entry";
 
     // Marker title
-    const label = document.createElement("span");
-    label.textContent = mObj.getTitle();
-    label.style.marginRight = "8px";
+    const labelObj = document.createElement("span");
+    labelObj.textContent = mObj.getTitle();
+    labelObj.style.marginRight = "8px";
 
     // Delete button
     const delBtn = document.createElement("button");
     delBtn.textContent = "Delete";
+    delBtn.style.display = "inline-block";
+
     delBtn.addEventListener("click", () => {
       // Remove polygons
       if (mObj.segmentPoygons) {
@@ -202,6 +208,7 @@ function refreshMarkerList() {
 
     // Copy button
     const copyBtn = document.createElement("button");
+    copyBtn.style.display = "inline-block";
     copyBtn.textContent = "Copy";
     copyBtn.style.marginLeft = "4px";
     copyBtn.addEventListener("click", () => {
@@ -219,6 +226,7 @@ function refreshMarkerList() {
 
     // Edit button
     const editBtn = document.createElement("button");
+    editBtn.style.display = "inline-block";
     editBtn.textContent = "Edit";
     editBtn.style.marginLeft = "4px";
     editBtn.addEventListener("click", () => {
@@ -228,20 +236,43 @@ function refreshMarkerList() {
 
     });
 
+    myMarkerTable.addRowItem().appendChild(labelObj);
 
+    const buttonCell = myMarkerTable.addRowItem();
+    buttonCell.appendChild(delBtn);
+    buttonCell.appendChild(copyBtn);
+    buttonCell.appendChild(editBtn);
 
-    item.appendChild(label);
-    item.appendChild(delBtn);
-    item.appendChild(copyBtn);
-    item.appendChild(editBtn);
-
-    list.appendChild(item);
+    /*
+     item.appendChild(label);
+     item.appendChild(delBtn);
+     item.appendChild(copyBtn);
+     item.appendChild(editBtn);
+ 
+      list.appendChild(item);
+      */
   });
+
+  list.appendChild(myMarkerTable.getTable());
 
   const polyList = document.getElementById("polyList");
   polyList.innerHTML = "";
 
-  const myPolygonTable = new buildTableDom();
+  const myPolygonTable = new BuildTableDom("polygon-table",
+    {
+      border: "1px solid black",
+      borderCollapse: "collapse",
+    },
+    {
+      border: "1px solid black",
+    },
+    {
+      border: "1px solid black",
+      padding: "4px",
+      textAlign: "center",
+      verticalAlign: "middle",
+    }
+  );
 
   const tableHeadings = ["Label", "Union", "Intersect"];
 

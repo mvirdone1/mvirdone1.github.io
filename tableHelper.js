@@ -113,19 +113,36 @@ function updateHeaderArrows(headers, columnIndex, sortDirection) {
   });
 }
 
-class buildTableDom {
-  constructor(tableId) {
 
+class BuildTableDom {
+  constructor(tableId = null, tableStyle = {}, rowStyle = {}, cellStyle = {}) {
+    this.tableStyle = tableStyle;
+    this.rowStyle = rowStyle;
+    this.cellStyle = cellStyle;
+
+    // Create table
     this.table = document.createElement("table");
-    this.table.setAttribute("border", "1");
-    this.currentRow = null;
-    if (tableId) { this.table.id = tableId }
+    this.applyStyles(this.table, this.tableStyle);
+    // this.table.setAttribute("border", "1");
+    if (tableId) {
+      this.table.id = tableId;
+    }
 
+    // Apply table styles
+    Object.assign(this.table.style, this.tableStyle);
+
+    this.currentRow = null;
+  }
+
+  // Helper: Apply styles to any element
+  applyStyles(el, styles) {
+    Object.assign(el.style, styles);
   }
 
   addRow() {
     this.currentRow = document.createElement("tr");
-    this.table.appendChild(this.currentRow)
+    this.applyStyles(this.currentRow, this.rowStyle);
+    this.table.appendChild(this.currentRow);
 
     return this.currentRow;
   }
@@ -136,16 +153,21 @@ class buildTableDom {
     });
   }
 
-  addRowItem(item, isHeader) {
+  addRowItem(itemText = null, isHeader = false) {
     const itemType = isHeader ? "th" : "td";
     const newRowItem = document.createElement(itemType);
-    newRowItem.textContent = item;
+
+    if (itemText) {
+      newRowItem.textContent = itemText;
+    }
+
+    this.applyStyles(newRowItem, this.cellStyle);
     this.currentRow.appendChild(newRowItem);
+
     return newRowItem;
   }
 
   getTable() {
     return this.table;
   }
-
 }

@@ -82,41 +82,37 @@ class CoveragePolygonManager {
     }
 
 
-    static buildPolygonList(markers) {
+    static buildPolygonList(markers, oldPolygons = []) {
         const newSegmentCoveragePolygons = [];
 
-
-        // Iterate over every marker
+        // Step 1. Collect unique labels from markers
         markers.forEach((marker) => {
-            // Iterate over every radius (segment) in the marker to get their label
             marker.coverageMetadata.radius.forEach((currentSegment) => {
-
-
-                // See if the label exists anywhere in our current array of polygons (cataloged by label)
-                const foundLabelPolygon = newSegmentCoveragePolygons.find(polygon => polygon.label === currentSegment.label)
-
-                // If doesn't exist, create a new polygon
-                if (!foundLabelPolygon) {
-                    newSegmentCoveragePolygons.push(
-                        {
-                            label: currentSegment.label,
-                            unionCoveragePolygon: null,
-                            intersectCoveragePolygon: null,
-                        }
-                    );
+                if (!newSegmentCoveragePolygons.find(p => p.label === currentSegment.label)) {
+                    newSegmentCoveragePolygons.push({
+                        label: currentSegment.label,
+                        unionCoveragePolygon: null,
+                        intersectCoveragePolygon: null,
+                    });
                 }
             });
         });
 
+        // Step 2. Rebuild each polygon, but preserve visibility from oldPolygons
         newSegmentCoveragePolygons.forEach((polygon) => {
+            const oldPolygon = oldPolygons.find(p => p.label === polygon.label);
 
-            // Note the polygon object is modified within this function
-            this.makeNewCoveragePolygons(polygon, markers)
+            this.makeNewCoveragePolygons(polygon, markers);
 
+            if (oldPolygon) {
+                polygon.unionCoveragePolygon.show = oldPolygon.unionCoveragePolygon?.show ?? false;
+                polygon.intersectCoveragePolygon.show = oldPolygon.intersectCoveragePolygon?.show ?? false;
+            }
         });
 
         return newSegmentCoveragePolygons;
     }
+
 
     static makeNewCoveragePolygons(polygon, markers) {
 
@@ -236,6 +232,12 @@ class CoveragePolygonManager {
         return newCoveragePolygon;
     }
 
+    static clearAllMapPolygons(coveragePolygons) {
+        coveragePolygons.forEach((coveragePolygon) => {
+            this.clearMapPolygonsForUpdate(coveragePolygon.unionCoveragePolygon);
+            this.clearMapPolygonsForUpdate(coveragePolygon.intersectCoveragePolygon);
+        })
+    }
 
     static clearMapPolygonsForUpdate(coveragePolygon) {
         // remove the items from the map

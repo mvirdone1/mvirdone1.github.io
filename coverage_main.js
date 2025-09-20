@@ -361,14 +361,13 @@ function updateMarkerInfo(marker, newPos) {
   drawCoverageWedgesForMarker(marker);
   showHeadingHelper(marker);
 
-  marker.coverageMetadata.radius.forEach((rad) => {
+  CoveragePolygonManager.clearAllMapPolygons(coverageGlobals.segmentCoveragePolygons);
 
-    CoveragePolygonManager.updatePolygons(
-      coverageGlobals.segmentCoveragePolygons,
-      myMapManager.getMarkers(),
-      rad.label);
-
-  });
+  coverageGlobals.segmentCoveragePolygons = CoveragePolygonManager.buildPolygonList(myMapManager.getMarkers(), coverageGlobals.segmentCoveragePolygons);
+  CoveragePolygonManager.refreshPolgyonMapShowHide(
+    coverageGlobals.segmentCoveragePolygons,
+    myMapManager.map
+  );
 
 
 
@@ -738,8 +737,8 @@ function loadCoverageSettings(markers) {
     });
   }
 
-  coverageGlobals.segmentCoveragePolygons = CoveragePolygonManager.buildPolygonList(myMapManager.getMarkers());
-  console.log(coverageGlobals.segmentCoveragePolygons);
+  // coverageGlobals.segmentCoveragePolygons = CoveragePolygonManager.buildPolygonList(myMapManager.getMarkers());
+  // console.log(coverageGlobals.segmentCoveragePolygons);
 
   updateUI();
   myMapManager.setZoomOnMarkerBounds();

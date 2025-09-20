@@ -20,7 +20,6 @@ const coverageGlobals = {
 
 const segmentCoveragePolygonType = {
   label: null,
-  parentMarkers: [],
   unionCoveragePolygon: null,
   intersectCoveragePolygon: null,
 };
@@ -367,10 +366,11 @@ function updateMarkerInfo(marker, newPos) {
     CoveragePolygonManager.updatePolygons(
       coverageGlobals.segmentCoveragePolygons,
       myMapManager.getMarkers(),
-      marker,
       rad.label);
 
   });
+
+
 
   CoveragePolygonManager.refreshPolgyonMapShowHide(coverageGlobals.segmentCoveragePolygons, myMapManager.map);
   updateUI();
@@ -586,10 +586,23 @@ function showHeadingHelper(parentMarker) {
 
   console.log("showHeadingHelper called for marker:", parentMarker.getTitle());
 
-  const sourceMarkerPos = parentMarker.getPosition();
+  /*const sourceMarkerPos = parentMarker.getPosition();
   const heading = parentMarker.coverageMetadata.sectorAzimuthHeading || 0;
   const behindHeading = (heading + 180) % 360;
   const newMarkerDist = 4; // km - I tried betewen 3 and 5 km, but this works best
+  */
+
+
+  const map = parentMarker.getMap(); // <— clean reference to map
+  const sourceMarkerPos = parentMarker.getPosition();
+  const heading = parentMarker.coverageMetadata.sectorAzimuthHeading || 0;
+  const behindHeading = (heading + 180) % 360;
+
+  const zoom = map.getZoom();
+  const latRad = sourceMarkerPos.lat() * Math.PI / 180;
+  const metersPerPixel = 156543.03392 * Math.cos(latRad) / Math.pow(2, zoom);
+  const pixelOffset = 100;
+  const newMarkerDist = (metersPerPixel * pixelOffset) / 1000; // km
 
   // new marker position
   const headingMarkerPos = azElR_to_LLA(sourceMarkerPos.lat(), sourceMarkerPos.lng(), 0, behindHeading, 0, newMarkerDist);

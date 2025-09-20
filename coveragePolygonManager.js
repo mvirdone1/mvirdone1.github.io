@@ -95,15 +95,11 @@ class CoveragePolygonManager {
                 // See if the label exists anywhere in our current array of polygons (cataloged by label)
                 const foundLabelPolygon = newSegmentCoveragePolygons.find(polygon => polygon.label === currentSegment.label)
 
-                // If it exists, add the marker to the polygon's parent markers
-                if (foundLabelPolygon) {
-                    foundLabelPolygon.parentMarkers.push(marker);
-                }
-                else {
+                // If doesn't exist, create a new polygon
+                if (!foundLabelPolygon) {
                     newSegmentCoveragePolygons.push(
                         {
                             label: currentSegment.label,
-                            parentMarkers: [marker],
                             unionCoveragePolygon: null,
                             intersectCoveragePolygon: null,
                         }
@@ -123,8 +119,23 @@ class CoveragePolygonManager {
     }
 
     static makeNewCoveragePolygons(polygon, markers) {
-        const parentRadiusExample = polygon.parentMarkers[0].coverageMetadata.radius.find(rad => rad.label === polygon.label);
-        const newColor = parentRadiusExample ? parentRadiusExample.color : [getRandomColor(), getRandomColor(), getRandomColor()];
+
+        let newColor = [getRandomColor(), getRandomColor(), getRandomColor()];
+
+        markers.some(marker => {
+            const parentRadiusExample = marker.coverageMetadata.radius.find(
+                rad => rad.label === polygon.label
+            );
+
+            if (parentRadiusExample) {
+                newColor = parentRadiusExample.color;
+                return true; // stop iterating (like break)
+            }
+
+            return false; // keep going
+        });
+
+
 
 
         const newCoveragePolygon =
@@ -159,18 +170,17 @@ class CoveragePolygonManager {
             turfMultiSingleIntersect);
     }
 
-    static updatePolygons(segmentCoveragePolygons, markers, updateMarker, updateLabel) {
+    static updatePolygons(segmentCoveragePolygons, markers, updateLabel) {
 
 
         // Find an element in the polygons with the right label
         let foundLabelPolygon = segmentCoveragePolygons.find(polygon => polygon.label === updateLabel);
 
-        // if we don't have the label anywhere in the polygons
+        // if we don't have the radius label anywhere in the polygons push a new one
         if (!foundLabelPolygon) {
             segmentCoveragePolygons.push(
                 {
                     label: updateLabel,
-                    parentMarkers: [updateMarker],
                     unionCoveragePolygon: null,
                     intersectCoveragePolygon: null,
                 }
@@ -225,6 +235,7 @@ class CoveragePolygonManager {
 
         return newCoveragePolygon;
     }
+
 
     static clearMapPolygonsForUpdate(coveragePolygon) {
         // remove the items from the map

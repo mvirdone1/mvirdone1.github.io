@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="icon" type="image/png" href="mv-favicon.png">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="coverage_main.css">
+
+    <title>NU Condition Map</title>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <!-- Report Modal
+  <div id="reportModal" class="modal">
+    <div class="modal-content">
+      <span id="closeReportBtn" class="close">&times;</span>
+      <div id="distanceReport"></div>
+    </div>
+  </div>
+  -->
+
+    <!-- MapManager and main script -->
+    <script async src="mapManager.js"></script>
+    <script src="nu_trails.json.js"></script>
+    <script src="nu.js"></script>
+    <script src="helper.js"></script>
+    <script src="formHelper.js"></script>
+    <script src="tableHelper.js"></script>
+
+
+
+
+    <script defer>
+        // Call the following functions to setup the google maps API by getting a production or test key
+        // Then source additional script to do the API initialization and callback
+        initMapKey("initMap");
+        //initializeMap("initMapManager");
+    </script>
+
+
+</body>
+
+</html>

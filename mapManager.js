@@ -152,6 +152,10 @@ class MapManager {
       marker.setMap(this.map);
     });
   }
+
+  getMap() {
+    return this.map;
+  }
 }
 
 var globalCallbackName = "";
@@ -186,3 +190,5 @@ function initMapKey(callbackName) {
 function getGMapCallbackName() {
   return globalCallbackName;
 }
+
+

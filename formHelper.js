@@ -1,3 +1,63 @@
+function buildDynamicSlider(sliderId, minLabelText, maxLabelText, sliderCallback) {
+
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = 0;
+    slider.max = 1000; // high resolution steps
+    slider.value = 0;
+    slider.style.width = "100%";
+    slider.id = sliderId;
+
+    // Listener for manual slider changes
+    slider.addEventListener("input", () => {
+        sliderCallback(slider);
+
+    });
+
+    slider.addEventListener("input", () => {
+        sliderCallback(slider);
+
+    });
+
+
+    // Create container for slider + labels
+    const sliderContainer = document.createElement("div");
+    sliderContainer.style.margin = "10px 0";
+
+    // Label row
+    const labelRow = document.createElement("div");
+    labelRow.style.display = "flex";
+    labelRow.style.justifyContent = "space-between";
+    labelRow.style.fontSize = "0.8em";
+
+    // Min/Max labels
+    const minLabel = document.createElement("span");
+    minLabel.textContent = minLabelText;
+
+    const maxLabel = document.createElement("span");
+    maxLabel.textContent = maxLabelText;
+
+    labelRow.appendChild(minLabel);
+    labelRow.appendChild(maxLabel);
+
+    // Floating “current time” label
+    const currentTimeLabel = document.createElement("div");
+    currentTimeLabel.style.textAlign = "center";
+    currentTimeLabel.style.marginTop = "4px";
+    currentTimeLabel.style.fontWeight = "bold";
+
+
+    sliderContainer.appendChild(labelRow);
+    sliderContainer.appendChild(slider);
+    sliderContainer.appendChild(currentTimeLabel);
+
+    return sliderContainer;
+
+
+
+}
+
+
 function buildDropdown(options, id = "") {
     /*
         // Dropdown options

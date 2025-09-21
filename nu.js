@@ -59,24 +59,27 @@ function initMap() {
     myMapManager = new MapManager('map', { lat: 41.850, lng: -111.697 }, 12);
 
 
-    /*
-        globalMapInformation.forEach((trail) => {
-        addTrailFromGeoJSON(trail.jsonFile, myMapManager.getMap(), trail.lineParams);
-
-    });
-    */
-
     for (const [name, trail] of Object.entries(globalMapInformation)) {
         console.log("Drawing:", name);
         trail.mapLine = addTrailFromGeoJSON(trail.jsonFile, myMapManager.getMap(), trail.lineParams);
+
+
+        trail.mapLine.addListener("click", (event) => {
+            // console.log("Polyline clicked at:", event.latLng.toString());
+
+            const info = new google.maps.InfoWindow({
+                content: "You clicked the trail!",
+                position: event.latLng
+            });
+            info.open(myMapManager.getMap());
+        });
+
     }
 
 
 
-    // const nuAPIAddress = "https://script.google.com/a/macros/nordicunited.org/s/AKfycbzTAd8UUFP_0DFH-wRuHd0AkJ4WJ3EliR09LqgYxA/dev?kind=json";
 
     const nuAPIAddress = "https://script.google.com/macros/s/AKfycbylOM41twbS0JzthyqQWnRkX0rhlaK3o5IwlvT2ysvgG_h9hlSDx9RNP0_QfRyuPpg/exec?kind=json";
-    // fetchTrailData(nuAPIAddress, processReceivedTrailConditions);
     fetchTrailData(nuAPIAddress, runDemo);
 
 
@@ -147,12 +150,7 @@ function runDemo() {
 
     };
 
-
-
-
     document.getElementById("sidebar").appendChild(startStopBtn);
-
-
     document.getElementById("sidebar").appendChild(buildDynamicSlider(
         "time-slider",
         formatDate(demoInfo.minDate),
@@ -405,6 +403,8 @@ function addTrailFromGeoJSON(geoJSON, map, options = {}) {
     const polyline = new google.maps.Polyline(polyConfig);
 
     // Click listener
+
+    /*
     polyline.addListener("click", (event) => {
         console.log("Polyline clicked at:", event.latLng.toString());
 
@@ -414,6 +414,7 @@ function addTrailFromGeoJSON(geoJSON, map, options = {}) {
         });
         info.open(map);
     });
+    */
 
     return polyline;
 }
@@ -421,38 +422,8 @@ function addTrailFromGeoJSON(geoJSON, map, options = {}) {
 
 
 
-async function addTrailFromGeoJSON2(fileName, map) {
-    try {
-        const response = await fetch(fileName);
-        if (!response.ok) throw new Error("Failed to load " + fileName);
 
-        const geojson = await response.json();
-
-        // Grab the first (and only) LineString
-        const coords = geojson.features[0].geometry.coordinates;
-
-        // Convert [lon, lat] → {lat, lng}
-        const path = coords.map(c => ({ lat: c[1], lng: c[0] }));
-
-        // Create polyline
-        const polyline = new google.maps.Polyline({
-            path,
-            geodesic: true,
-            strokeColor: "#00AAFF",
-            strokeOpacity: 1.0,
-            strokeWeight: 3
-        });
-
-        polyline.setMap(map);
-        return polyline;
-
-    } catch (err) {
-        console.error("Error loading trail:", err);
-    }
-}
-
-
-
+/*
 function demoMode() {
     const container = document.getElementById("container");
     container.style.display = "flex";
@@ -471,3 +442,4 @@ function demoMode() {
     mapDiv.style.flex = "8"; // 80%
     mapDiv.style.height = "100%";
 }
+    */

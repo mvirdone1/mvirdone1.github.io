@@ -268,6 +268,57 @@ class CoveragePolygonManager {
         });
     }
 
+    static generateCoverageReport(coveragePolygons) {
+
+        console.log("Generating Coverage Report");
+
+        const myPolygonTable = new TableDomObject("polygon-table",
+            {
+                border: "1px solid black",
+                borderCollapse: "collapse",
+            },
+            {
+                border: "1px solid black",
+            },
+            {
+                border: "1px solid black",
+                padding: "4px",
+                textAlign: "center",
+                verticalAlign: "middle",
+            }
+        );
+
+        const tableHeadings = ["Segment Label", "Union Area (sq km)", "Intersect Area (sq km)"];
+
+        myPolygonTable.addRow();
+        myPolygonTable.addRowItemsList(tableHeadings, true);
+
+
+        coveragePolygons.forEach((polygon, idx) => {
+
+            // Add the label in the first row
+            myPolygonTable.addRow();
+            myPolygonTable.addRowItem(polygon.label);
+
+            const keyNames = ["unionCoveragePolygon", "intersectCoveragePolygon"];
+
+            keyNames.forEach((objKey) => {
+                const cellReference = myPolygonTable.addRowItem("");
+
+                const coveragePolygonObject = polygon[objKey]
+                if (coveragePolygonObject.polygon) {
+
+                    cellReference.innerHTML = (turf.area(coveragePolygonObject.polygon) / (1000 * 1000)).toFixed(1);
+                }
+            });
+        });
+
+        return myPolygonTable.getTable().outerHTML;
+
+    }
+
+
+
     listPolygons(parentElement) {    // Create the <ul>
         parentElement.innerHTML = "";
 

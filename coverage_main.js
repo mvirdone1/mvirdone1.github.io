@@ -148,14 +148,13 @@ function initMap() {
   });
 
   document.getElementById("coveragePolygonsBtn").addEventListener("click", () => {
-    // const modalContentDiv = myModal.getContentDiv();
-    // const myModalMapMenu = new ModalMapMenu(modalContentDiv);
 
+    const modalContentDiv = myModal.getContentDiv();
+    modalContentDiv.innerHTML = ""; // Clear previous content
+    modalContentDiv.innerHTML = "<h2>Coverage Analysis</h2>";
+    modalContentDiv.innerHTML += CoveragePolygonManager.generateCoverageReport(coverageGlobals.segmentCoveragePolygons);
 
     myModal.showModal();
-    myModal.setOnHideCallback(polygonDoneCallback)
-
-
 
   });
 
@@ -331,23 +330,7 @@ function refreshMarkerList() {
         cellReference.appendChild(showHideBtn);
 
       }
-    })
-
-
-    /*
-    const item = document.createElement("div");
-    item.className = "marker-entry";
-
-    // Marker title
-    const label = document.createElement("span");
-    label.textContent = polygon.label;
-    label.style.marginRight = "8px";
-
-    // item.appendChild(label);
-    item.appendChild(showHideBtn);
-    */
-
-
+    });
   });
 
   polyList.appendChild(myPolygonTable.getTable());
@@ -662,41 +645,7 @@ function newMarkerHelper(params) {
 
   marker.addListener("click", () => {
     showHeadingHelper(marker);
-    /*
 
-    if (coverageGlobals.activeInfoWindow) {
-      coverageGlobals.activeInfoWindow.close();
-      coverageGlobals.activeInfoWindow = null;
-    }
-
-    // console.log(marker);
-
-    // console.log("Another click for marker");
-    // console.log('Marker clicked:', markerRef.getTitle());
-    // Create custom HTML content with a button
-    const content = `
-        <div>
-          <button id="markerButton">Edit</button>
-        </div>
-      `;
-
-    infoWindow.setContent(content);
-    infoWindow.open(map, marker);
-    coverageGlobals.activeInfoWindow = infoWindow;
-
-
-
-    // Wait until DOM is ready inside InfoWindow
-    google.maps.event.addListenerOnce(infoWindow, "domready", () => {
-      document.getElementById("markerButton").addEventListener("click", () => {
-        displayMarkerProperties(marker);
-        coverageGlobals.activeInfoWindow.close();
-
-
-        // alert("Button clicked!");
-      });
-    });
-    */
   });
 
   return marker;
@@ -744,8 +693,6 @@ function loadCoverageSettings(markers) {
   myMapManager.setZoomOnMarkerBounds();
 }
 
-
-
 function generateKML() {
   const markers = myMapManager.getMarkers();
   if (!markers || markers.length === 0) {
@@ -753,18 +700,24 @@ function generateKML() {
     return;
   }
 
+  const now = new Date();
+  const pad = num => num.toString().padStart(2, "0");
+  const nameBase =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}`;
 
-  let kmlString = "";
+  const filename = nameBase + "_coverage.kml"
 
-  kmlString += `<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n<Document>\n`;
+
+  const myKmlManager = new KMLManager(nameBase + " coverage");
 
 
   markers.forEach(marker => {
     console.log("Generating KML for marker:", marker.getTitle());
     // console print the length of the kml string
-    console.log("Current KML length:", kmlString.length);
+    console.log("Current KML tree depth:", myKmlManager.folderStack.length);
 
-    kmlString += `<Folder><name>${marker.getTitle()}</name>\n`;
+    myKmlManager.openFolder(marker.getTitle());
 
     const params = {
       lat: marker.getPosition().lat(),
@@ -784,18 +737,11 @@ function generateKML() {
 
     const radiusData = marker.coverageMetadata.radius || [];
 
-    /*
-    console.log("Marker radius segments:", marker.coverageMetadata.radius);
- 
- 
-    if (!Array.isArray(marker.radius)) {
-      marker.radius = [marker.radius];
-    }
- 
-    console.log("Marker radius segments:", marker.radius);
-*/
 
     radiusData.forEach((r, idx) => {
+
+      myKmlManager.openFolder(r.label);
+
       console.log("Processing radius segment:", idx, r);
       params.rMin = idx === 0 ? 0 : radiusData[idx - 1].value;
       params.rMax = r.value;
@@ -811,22 +757,21 @@ function generateKML() {
       const numAzPoints = Math.max(2, Math.ceil(outerArcLengthKm * pointsPerKm));
       params.azSteps = numAzPoints;*/
 
-      kmlString += buildWedgeKML(params);
+      myKmlManager.addToFolder(myKmlManager.buildWedgeKMLObject(params));
+      myKmlManager.closeFolder();
+
     });
 
-    kmlString += `</Folder>\n`;
+    myKmlManager.closeFolder();
+    // kmlString += `</Folder>\n`;
 
 
   });
 
-  kmlString += `</Document></kml>`;
+  kmlString = myKmlManager.buildKMLDocument();
 
 
-  const now = new Date();
-  const pad = num => num.toString().padStart(2, "0");
-  const filename =
-    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-` +
-    `${pad(now.getHours())}${pad(now.getMinutes())}_coverage.kml`;
+
 
   // Trigger download
   const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });

@@ -67,8 +67,8 @@ class KMLManager {
 
     buildKMLString(contentObject, depth = 0) {
 
-        console.log(contentObject.header);
-        console.log(depth);
+        // console.log(contentObject.header);
+        // console.log(depth);
 
         let kmlString = "";
         const baseSpaces = depth * 2;
@@ -103,11 +103,17 @@ class KMLManager {
         return kmlString;
     }
 
-    polygonKmlObject(coords) {
+    polygonKmlObject(coords, is3d = true) {
+
+        let altitudeMode = "<altitudeMode>relativeToGround</altitudeMode>";
+
+        if (!is3d) {
+            altitudeMode = "<altitudeMode>clampToGround</altitudeMode>";
+        }
 
         const contentObject =
         {
-            header: `<Polygon><altitudeMode>relativeToGround</altitudeMode><outerBoundaryIs><LinearRing><coordinates>\n`,
+            header: `<Polygon>${altitudeMode}<outerBoundaryIs><LinearRing><coordinates>\n`,
             footer: `</coordinates></LinearRing></outerBoundaryIs></Polygon>`,
             contents: "",
         }
@@ -125,6 +131,62 @@ class KMLManager {
         contentString += `${f.lon.toFixed(5)},${f.lat.toFixed(5)},${f.alt.toFixed(5)}\n`;
         contentObject.contents = contentString
         return contentObject;
+    }
+
+    buildKMLSliceObject(params, pointsPerKm = 2) {
+        const { lat, lon, alt, azCtr, azBw, elCtr, elBw, rMin, rMax, name, color } = params;
+
+        const azMin = azCtr - azBw / 2;
+        const azMax = azCtr + azBw / 2;
+        const elMin = 0; // Force 2d on the ground
+
+        // const alpha = Math.round(255 * (1 - (params.trans / 100)));
+        // const kmlColor = colorToKmlHex(color);
+        const kmlColor = color;
+
+        const outerArcLengthKm = rMax * azBw * Math.PI / 180;
+        const azSteps = Math.max(4, Math.ceil(outerArcLengthKm * pointsPerKm));
+
+
+        const contentObject =
+        {
+            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`,
+            footer: `</Placemark>\n`,
+            contents: [],
+        }
+
+
+
+        const sliceSize = (azMax - azMin) / azSteps;
+
+        // Bottom side (el = elMin)
+        {
+            const elRef = elMin;
+            const pts = [];
+            pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMin));
+
+            pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMax));
+            for (let i = 1; i <= azSteps; i++) {
+                const az = azMin + sliceSize * i;
+                pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMax));
+            }
+
+            pts.push(azElR_to_LLA(lat, lon, alt, azMax, elRef, rMin));
+            for (let i = azSteps - 1; i >= 1; i--) {
+                const az = azMin + sliceSize * i;
+                pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMin));
+            }
+
+            // manually close
+            pts.push(pts[0]);
+
+            contentObject.contents = [this.polygonKmlObject(pts, false)];
+            this.currentFolder.contents.push(structuredClone(contentObject));
+        }
+
+        return contentObject;
+
+
     }
 
     // --- Build one wedge as 5 faces ---
@@ -153,7 +215,7 @@ class KMLManager {
 
 
 
-        const sliceSize = (azMax - azMin) / azSteps
+        const sliceSize = (azMax - azMin) / azSteps;
 
         // Left side (az=azMin)
         {

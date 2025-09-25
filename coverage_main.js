@@ -158,14 +158,6 @@ function initMap() {
 
   });
 
-  function polygonDoneCallback() {
-    coverageGlobals.coveragePolygons.forEach((polygon) => {
-      polygon.show = false;
-    });
-  }
-
-
-
 
   // Add an event listener to the save button
   // This function lives in the coveragehelper.js file
@@ -173,7 +165,18 @@ function initMap() {
     saveCoverageSettingsJSON(myMapManager.getMarkers() || []); // assumes markers are in global `markers` array
   });
 
-  document.getElementById("generateKML").addEventListener("click", () => { generateKML(); });
+  document.getElementById("generateKML").addEventListener("click", () => {
+    //  generateKML(); 
+
+    const modalContentDiv = myModal.getContentDiv();
+    modalContentDiv.innerHTML = ""; // Clear previous content
+    modalContentDiv.innerHTML = "<h2>KML Export</h2>";
+    modalContentDiv.append(generateKMLForm());
+
+    myModal.showModal();
+
+
+  });
 
   document.getElementById("loadSettingsBtn").addEventListener("click", () => { loadCoverageSettingsJSON(loadCoverageSettings); });
 
@@ -693,31 +696,16 @@ function loadCoverageSettings(markers) {
   myMapManager.setZoomOnMarkerBounds();
 }
 
-function generateKML() {
+function generateMarkerKML(kmlManager, is3d = true) {
+
   const markers = myMapManager.getMarkers();
-  if (!markers || markers.length === 0) {
-    alert("No markers to generate KML.");
-    return;
-  }
-
-  const now = new Date();
-  const pad = num => num.toString().padStart(2, "0");
-  const nameBase =
-    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-` +
-    `${pad(now.getHours())}${pad(now.getMinutes())}`;
-
-  const filename = nameBase + "_coverage.kml"
-
-
-  const myKmlManager = new KMLManager(nameBase + " coverage");
-
 
   markers.forEach(marker => {
     console.log("Generating KML for marker:", marker.getTitle());
     // console print the length of the kml string
-    console.log("Current KML tree depth:", myKmlManager.folderStack.length);
+    console.log("Current KML tree depth:", kmlManager.folderStack.length);
 
-    myKmlManager.openFolder(marker.getTitle());
+    kmlManager.openFolder(marker.getTitle());
 
     const params = {
       lat: marker.getPosition().lat(),
@@ -740,9 +728,9 @@ function generateKML() {
 
     radiusData.forEach((r, idx) => {
 
-      myKmlManager.openFolder(r.label);
+      kmlManager.openFolder(r.label);
 
-      console.log("Processing radius segment:", idx, r);
+      // console.log("Processing radius segment:", idx, r);
       params.rMin = idx === 0 ? 0 : radiusData[idx - 1].value;
       params.rMax = r.value;
       params.color = rgbaToKmlColor(r.color, r.transparency);
@@ -752,38 +740,24 @@ function generateKML() {
       // params.name = `${marker.getTitle()} - ${r.label}`;
       params.name = `${r.label}`;
 
-      /*const pointsPerKm = 2; // Adjust for more/less detail
-      const outerArcLengthKm = r.rMax * params.azBw * Math.PI / 180;
-      const numAzPoints = Math.max(2, Math.ceil(outerArcLengthKm * pointsPerKm));
-      params.azSteps = numAzPoints;*/
 
-      myKmlManager.addToFolder(myKmlManager.buildWedgeKMLObject(params));
-      myKmlManager.closeFolder();
+      if (is3d) {
+        kmlManager.addToFolder(kmlManager.buildWedgeKMLObject(params));
+      }
+      else {
+        kmlManager.addToFolder(kmlManager.buildKMLSliceObject(params));
+      }
+      kmlManager.closeFolder();
 
     });
 
-    myKmlManager.closeFolder();
+    kmlManager.closeFolder();
     // kmlString += `</Folder>\n`;
 
 
   });
 
-  kmlString = myKmlManager.buildKMLDocument();
 
-
-
-
-  // Trigger download
-  const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }
 
 function generateMarkerReport() {
@@ -934,4 +908,144 @@ function closeDistanceReport() {
   document.getElementById("closeReportBtn").style.display = "none";
 }
 
+function generateKMLForm() {
+  const formContents = document.createElement("div");
+  formContents.id = "kml-form-contents";
 
+  const kmlSelectTypes = [
+    {
+      name: "2D Marker Coverage",
+      checked: false,
+      callback: generateMarkerKML2d,
+      formId: null,
+    },
+    {
+      name: "3D Marker Coverage",
+      checked: true,
+      callback: generateMarkerKML3d,
+      formId: null,
+    },
+    {
+      name: "2D Total Polygon (Union)",
+      checked: true,
+      callback: generatePolygonKMLUnion,
+      formId: null,
+    },
+    {
+      name: "2D Overlap Polygon(Intersect)",
+      checked: true,
+      callback: generatePolygonKMLIntersect,
+      formId: null,
+    },
+
+  ];
+
+  const myFormTable = new TableDomObject("kml-form-table");
+  myFormTable.addRow();
+  myFormTable.addRowItemsList(["KML Type", "Export?"], true);
+
+  kmlSelectTypes.forEach((kmlType) => {
+    // const selectDiv = document.createElement("div");
+    myFormTable.addRow();
+
+    // selectDiv.id = divify(kmlType.name + "-div");
+
+    const myLabel = addFormLabel(kmlType.name);
+
+    const myInput = buildRadioButtonOrCheckbox(kmlType.name, "kml-options", "checkbox", kmlType.checked);
+
+    myLabel.setAttribute("for", myInput.id);
+    kmlType.formId = myInput.id;
+
+    myFormTable.addRowItem().appendChild(myLabel);
+    myFormTable.addRowItem().appendChild(myInput);
+
+  });
+
+
+  formContents.appendChild(myFormTable.getTable());
+
+  const exportButton = document.createElement("button");
+  exportButton.textContent = "Generate KML File";
+  exportButton.id = "modal-make-kml-file-btn";
+
+  exportButton.addEventListener("click", () => {
+    buildKMLFiles(kmlSelectTypes);
+    myModal.hideModal();
+  });
+
+  formContents.appendChild(exportButton);
+
+  return formContents;
+}
+
+function buildKMLFiles(kmlSelectTypes) {
+  const markers = myMapManager.getMarkers();
+  if (!markers || markers.length === 0) {
+    alert("No markers to generate KML.");
+    return;
+  }
+
+  const now = new Date();
+  const pad = num => num.toString().padStart(2, "0");
+  const nameBase =
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+  const filename = nameBase + "_coverage.kml"
+
+
+  const myKmlManager = new KMLManager(nameBase + " coverage");
+
+
+  kmlSelectTypes.forEach((kmlType) => {
+
+    if (document.getElementById(kmlType.formId).checked) {
+      console.log("Building KML for " + kmlType.name);
+      myKmlManager.openFolder(kmlType.name);
+      kmlType.callback(myKmlManager);
+      myKmlManager.closeFolder();
+
+    }
+
+
+  });
+
+  // generateKML(myKmlManager);
+
+  const kmlString = myKmlManager.buildKMLDocument();
+
+
+
+
+  // Trigger download
+  const blob = new Blob([kmlString], { type: 'application/vnd.google-earth.kml+xml' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+function generateMarkerKML2d(kmlManager) {
+  generateMarkerKML(kmlManager, false);
+
+}
+
+function generateMarkerKML3d(kmlManager) {
+  generateMarkerKML(kmlManager, true);
+
+}
+
+function generatePolygonKMLUnion(kmlManager) {
+
+}
+
+function generatePolygonKMLIntersect(kmlManager) {
+
+}

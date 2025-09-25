@@ -58,6 +58,25 @@ function buildDynamicSlider(sliderId, minLabelText, maxLabelText, sliderCallback
 }
 
 
+function buildRadioButtonOrCheckbox(option, name, type, selected = false) {
+    // Type should be "radio" or "checkbox"
+    // const myFormLabel = addFormLabel(option);
+    const myInput = document.createElement("input");
+    myInput.type = type;
+    myInput.checked = selected;
+    myInput.id = divify(name + "-" + option);
+    myInput.name = name;
+    myInput.value = option;
+    return myInput;
+
+    // myFormLabel.setAttribute("for", myInput.id);
+    // myFormLabel.appendChild(myInput);
+
+    // console.log("Checked?", selected, myInput.checked);
+
+    // return myFormLabel;
+}
+
 function buildDropdown(options, id = "") {
     /*
         // Dropdown options

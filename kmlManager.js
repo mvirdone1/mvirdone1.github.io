@@ -113,11 +113,30 @@ class KMLManager {
 
         const contentObject =
         {
-            header: `<Polygon>${altitudeMode}<outerBoundaryIs><LinearRing><coordinates>\n`,
-            footer: `</coordinates></LinearRing></outerBoundaryIs></Polygon>`,
-            contents: "",
+            header: `<Polygon>${altitudeMode}\n`,
+            footer: `</Polygon>`,
+            contents: [],
         }
 
+        contentObject.contents.push(this.kmlBoundary(coords));
+
+        return contentObject;
+
+    }
+
+    kmlBoundary(coords, isInnerBoundary = false) {
+        let boundaryString = "outerBoundaryIs";
+
+        if (isInnerBoundary) {
+            boundaryString = "innerBoundaryIs"
+        }
+
+        const contentObject =
+        {
+            header: `<${boundaryString}><LinearRing><coordinates>\n`,
+            footer: `</coordinates></LinearRing></${boundaryString}>`,
+            contents: "",
+        }
 
         let contentString = "";
         coords.forEach(c => {
@@ -129,8 +148,9 @@ class KMLManager {
         // Explicit closure
         const f = coords[0];
         contentString += `${f.lon.toFixed(5)},${f.lat.toFixed(5)},${f.alt.toFixed(5)}\n`;
-        contentObject.contents = contentString
+        contentObject.contents = contentString;
         return contentObject;
+
     }
 
     buildKMLSliceObject(params, pointsPerKm = 2) {
@@ -150,8 +170,8 @@ class KMLManager {
 
         const contentObject =
         {
-            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`,
-            footer: `</Placemark>\n`,
+            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style><MultiGeometry>\n`,
+            footer: `</MultiGeometry></Placemark>\n`,
             contents: [],
         }
 
@@ -180,7 +200,8 @@ class KMLManager {
             // manually close
             pts.push(pts[0]);
 
-            contentObject.contents = [this.polygonKmlObject(pts, false)];
+            const polygonObject = this.polygonKmlObject(pts, false);
+            contentObject.contents.push(polygonObject);
             this.currentFolder.contents.push(structuredClone(contentObject));
         }
 
@@ -208,8 +229,8 @@ class KMLManager {
 
         const contentObject =
         {
-            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style>\n`,
-            footer: `</Placemark>\n`,
+            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style><MultiGeometry>\n`,
+            footer: `</MultiGeometry></Placemark>\n`,
             contents: [],
         }
 
@@ -293,6 +314,132 @@ class KMLManager {
 
 
         return contentObject;
+    }
+
+    processPolygonCoordinates(convertedPolygon, contentObject) {
+        let isOuter = true;
+        convertedPolygon.forEach((pts) => {
+            if (isOuter) {
+                contentObject.contents.push(this.polygonKmlObject(pts, false));
+                isOuter = false;
+            }
+            else {
+                // This is wonky and here's why:
+                // this.polygonKmlObject creates the wrapper polygon and also the line collection for the outer line
+                // But then if there's more than one polygon for the turf polygon, we need to add one or more inner lines
+                // But we need to append it to the previously created object.
+                contentObject.contents.at(-1).contents.push(this.kmlBoundary(pts, true));
+            }
+
+        });
+
+    }
+
+    buildKMLFromTurfPolygon(coveragePolygon) {
+
+        console.log("Building KML for " + coveragePolygon.title);
+        // const alpha = Math.round(255 * (1 - (params.trans / 100)));
+
+        const kmlColor = colorToKmlHex(rgbToHex(...coveragePolygon.color), Math.round(255 * (1 - (coveragePolygon.transparency))));
+        //const kmlColor = color;
+
+        // https://stackoverflow.com/questions/5080839/drawing-holes-in-polygons-with-kml-in-google-maps-or-earth-doesnt-work-somebod
+
+        const contentObject =
+        {
+            header: `<Placemark> <Style><PolyStyle><color>${kmlColor}</color><fill>1</fill><outline>0</outline></PolyStyle></Style><MultiGeometry>\n`,
+            footer: `</MultiGeometry></Placemark>\n`,
+            contents: [],
+        }
+
+        const { type, coordinates } = coveragePolygon.polygon.geometry;
+
+        let paths = [];
+        const mapPolygons = [];
+
+        console.log(type);
+        console.log(coordinates);
+
+
+
+        if (type === "Polygon") {
+            // console.log("Type is polygon")
+            // console.log(coordinates)
+
+            // processCoordinates(coordinates);
+            /*
+                return {
+                    lat: lat0 + dLat,
+                    lon: lon0 + dLon,
+                    alt: alt0 + dUp
+                };
+    
+            */
+
+            // Turf Polygon: coordinates = [ [ [lng, lat], ... ] ] 
+            const convertedPolygon = coordinates.map(ring =>
+                ring.map(coord => ({ lat: coord[1], lon: coord[0], alt: 0 }))
+            );
+
+            this.processPolygonCoordinates(convertedPolygon, contentObject);
+
+
+
+
+
+        } else if (type === "MultiPolygon") {
+
+            console.log("Type is multipolygon")
+            console.log(coordinates)
+
+            // Turf MultiPolygon: coordinates = [ [ [ [lng, lat], ... ] ], ... ]
+
+            coordinates.forEach((coords) => {
+                const convertedPolygon = coords.map(ring =>
+                    ring.map(coord => ({ lat: coord[1], lon: coord[0], alt: 0 }))
+                );
+
+                this.processPolygonCoordinates(convertedPolygon, contentObject);
+            });
+
+
+        } else {
+            console.error("Unsupported geometry type:", type);
+            return null;
+        }
+
+        /*
+        const sliceSize = (azMax - azMin) / azSteps;
+    
+        // Bottom side (el = elMin)
+        {
+            const elRef = elMin;
+            const pts = [];
+            pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMin));
+    
+            pts.push(azElR_to_LLA(lat, lon, alt, azMin, elRef, rMax));
+            for (let i = 1; i <= azSteps; i++) {
+                const az = azMin + sliceSize * i;
+                pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMax));
+            }
+    
+            pts.push(azElR_to_LLA(lat, lon, alt, azMax, elRef, rMin));
+            for (let i = azSteps - 1; i >= 1; i--) {
+                const az = azMin + sliceSize * i;
+                pts.push(azElR_to_LLA(lat, lon, alt, az, elRef, rMin));
+            }
+    
+            // manually close
+            pts.push(pts[0]);
+    
+            contentObject.contents = [this.polygonKmlObject(pts, false)];
+            this.currentFolder.contents.push(structuredClone(contentObject));
+        }
+            */
+
+        return contentObject;
+
+
     }
 
 }

@@ -1043,9 +1043,64 @@ function generateMarkerKML3d(kmlManager) {
 }
 
 function generatePolygonKMLUnion(kmlManager) {
-
+  generateCoverageKML(kmlManager, false);
 }
 
 function generatePolygonKMLIntersect(kmlManager) {
+  generateCoverageKML(kmlManager, true);
+}
+
+function generateCoverageKML(kmlManager, isIntersect = false) {
+
+
+  const coverageTypes =
+    [
+      {
+        typeLabel: "Union",
+        typeKey: "unionCoveragePolygon",
+      },
+      {
+        typeLabel: "Intersect",
+        typeKey: "intersectCoveragePolygon",
+      },
+    ];
+
+  const currentType = isIntersect
+    ? coverageTypes[1]   // Intersect
+    : coverageTypes[0];  // Union
+
+  console.log(currentType);
+
+  kmlObjects = [];
+
+
+  // Iterate over the coverage polygons to build the collection of KML
+  coverageGlobals.segmentCoveragePolygons.forEach((currentPolygon) => {
+
+    const selectedPolygon = currentPolygon[currentType.typeKey];
+
+    // If the polygon is null, do nothing
+    if (!selectedPolygon.polygon) {
+      return;
+    }
+
+    kmlObjects.push(
+      {
+        label: currentPolygon.label,
+        kml: kmlManager.buildKMLFromTurfPolygon(selectedPolygon),
+      });
+
+  });
+
+  // only add the list to the parent KML object if the length is greater than zero
+  if (kmlObjects.length > 0) {
+
+    kmlObjects.forEach((currentItem) => {
+      kmlManager.openFolder(currentItem.label);
+      kmlManager.addToFolder(currentItem.kml);
+      kmlManager.closeFolder();
+    })
+
+  }
 
 }

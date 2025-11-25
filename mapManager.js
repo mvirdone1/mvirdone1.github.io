@@ -156,6 +156,30 @@ class MapManager {
   getMap() {
     return this.map;
   }
+
+  getMapCorners() {
+    const bounds = this.map.getBounds();
+    if (!bounds) {
+      console.warn("Map bounds not available yet (map may not be fully rendered).");
+      return null;
+    }
+
+    const ne = bounds.getNorthEast(); // top-right
+    const sw = bounds.getSouthWest(); // bottom-left
+
+    return {
+      north: ne.lat(),
+      east: ne.lng(),
+      south: sw.lat(),
+      west: sw.lng(),
+      corners: {
+        nw: { lat: ne.lat(), lng: sw.lng() },
+        ne: { lat: ne.lat(), lng: ne.lng() },
+        sw: { lat: sw.lat(), lng: sw.lng() },
+        se: { lat: sw.lat(), lng: ne.lng() }
+      }
+    };
+  }
 }
 
 var globalCallbackName = "";

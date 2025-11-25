@@ -12,7 +12,7 @@ var mapsApiUrl =
   getGoogleMapsApiKey() +
   "&callback=" +
   getGMapCallbackName() +
-  "&libraries=geometry,places";
+  "&libraries=geometry,places,visualization";
 
 // getGMapCallbackName is sourced from mapManager.js
 

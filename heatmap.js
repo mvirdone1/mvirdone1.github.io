@@ -1,6 +1,7 @@
 // Using globals to the script rather than the window
 let myMapManager;
 let myModal;
+let myStravaManager;
 
 function initMap() {
     // Initialize MapManager, modal, and modalmapmanager classes
@@ -9,6 +10,9 @@ function initMap() {
 
     myModal = new ModalManager();
     // myModal = modalManager; // Global variable
+
+    const databaseServerUrl = "http://127.0.0.1:3000"
+    myStravaManager = new StravaManager(databaseServerUrl);
 
 
     myMapManager.setMapClickListener((latLng) => {
@@ -34,7 +38,7 @@ function initMap() {
         const modalContentDiv = myModal.getContentDiv();
         modalContentDiv.innerHTML = ""; // Clear previous content
         modalContentDiv.innerHTML = "<h2>Map Analysis</h2>";
-        getMapActivities(myMapManager.getMapCorners());
+        myStravaManager.getMapActivities(myMapManager.getMapCorners());
         //modalContentDiv.innerHTML += generateMarkerReport();
         myModal.showModal();
 

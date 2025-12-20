@@ -2,28 +2,32 @@
 <html lang="en">
 
 <head>
-    <link rel="icon" type="image/png" href="mv-favicon.png">
-    <meta charset="UTF-8">
-    <title>Activity Heatmap</title>
-    <link rel="stylesheet" href="coverage_main.css">
-    <link rel="stylesheet" href="modal.css">
+  <link rel="icon" type="image/png" href="mv-favicon.png">
+  <meta charset="UTF-8">
+  <title>Activity Heatmap</title>
+  <link rel="stylesheet" href="coverage_main.css">
+  <link rel="stylesheet" href="modal.css">
 
 </head>
 
 <body>
-    <div id="container">
-        <div id="sidebar">
+  <div id="container">
+    <div id="sidebar">
 
 
-            <h3>Heatmap</h3>
-            <button id="buildMap">Build Heatmap</button>
+      <h3>Heatmap</h3>
+      <button id="mapSettings">Heatmap Settings</button>
+      </br>
+      <button id="buildMap">Build Heatmap</button>
+      </br>
+      <button id="analyzeMap">Analyze Tracks</button>
 
 
-        </div>
-        <div id="map"></div>
     </div>
+    <div id="map"></div>
+  </div>
 
-    <!-- Report Modal
+  <!-- Report Modal
   <div id="reportModal" class="modal">
     <div class="modal-content">
       <span id="closeReportBtn" class="close">&times;</span>
@@ -32,23 +36,23 @@
   </div>
   -->
 
-    <!-- MapManager and main script -->
-    <script src="mapManager.js"></script>
-    <script src="heatmap.js"></script>
-    <script src="helper.js"></script>
-    <script src="modalManager.js"></script>
-    <script src="formHelper.js"></script>
-    <script src="tableHelper.js"></script>
+  <!-- MapManager and main script -->
+  <script src="mapManager.js"></script>
+  <script src="heatmap.js"></script>
+  <script src="helper.js"></script>
+  <script src="modalManager.js"></script>
+  <script src="formHelper.js"></script>
+  <script src="tableHelper.js"></script>
 
 
 
 
-    <script defer>
-        // Call the following functions to setup the google maps API by getting a production or test key
-        // Then source additional script to do the API initialization and callback
-        initMapKey("initMap");
-        //initializeMap("initMapManager");
-    </script>
+  <script defer>
+    // Call the following functions to setup the google maps API by getting a production or test key
+    // Then source additional script to do the API initialization and callback
+    initMapKey("initMap");
+    //initializeMap("initMapManager");
+  </script>
 
 
 </body>

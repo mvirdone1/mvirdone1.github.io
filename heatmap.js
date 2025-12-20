@@ -11,10 +11,6 @@ function initMap() {
     // myModal = modalManager; // Global variable
 
 
-
-
-
-
     myMapManager.setMapClickListener((latLng) => {
         console.log(myMapManager.getMapCorners());
 
@@ -34,15 +30,29 @@ function initMap() {
 
 
     // Open modal when generating report
-    document.getElementById("generateReportBtn").addEventListener("click", () => {
+    document.getElementById("mapSettings").addEventListener("click", () => {
         const modalContentDiv = myModal.getContentDiv();
         modalContentDiv.innerHTML = ""; // Clear previous content
-        modalContentDiv.innerHTML = "<h2>Scenario Analysis</h2>";
-        modalContentDiv.innerHTML += generateMarkerReport();
-        modalContentDiv.innerHTML += generateOverlapReport();
+        modalContentDiv.innerHTML = "<h2>Map Analysis</h2>";
+        getMapActivities(myMapManager.getMapCorners());
+        //modalContentDiv.innerHTML += generateMarkerReport();
         myModal.showModal();
 
     });
+
+
+    // Open modal when generating report
+    document.getElementById("analyzeMap").addEventListener("click", () => {
+        const modalContentDiv = myModal.getContentDiv();
+        modalContentDiv.innerHTML = ""; // Clear previous content
+        modalContentDiv.innerHTML = "<h2>Map Analysis</h2>";
+        //modalContentDiv.innerHTML += generateMarkerReport();
+        myModal.showModal();
+
+    });
+
+
+    /*
 
     document.getElementById("coveragePolygonsBtn").addEventListener("click", () => {
 
@@ -54,6 +64,84 @@ function initMap() {
         myModal.showModal();
 
     });
+    */
+
+
+
+
+    const darkMapStyle = [
+        { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+
+        {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#38414e" }]
+        },
+        {
+            featureType: "road",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#212a37" }]
+        },
+        {
+            featureType: "road",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#9ca5b3" }]
+        },
+
+        {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#17263c" }]
+        }
+    ];
+
+    myMapManager.getMap().setOptions({
+        styles: darkMapStyle
+    });
+
+}
+
+async function getMapActivities(mapBounds) {
+
+    let north = mapBounds.north;
+    let south = mapBounds.south;
+    let east = mapBounds.east;
+    let west = mapBounds.west;
+
+    console.log("Checking server...");
+
+    const sqlQuery = "SELECT a.Activity_Date, a.Activity_Name, a.Activity_Type \
+            FROM activities a \
+            JOIN bounds b ON a.activity_id = b.activity_id WHERE \
+            (min_lat BETWEEN ? AND ? OR max_lat BETWEEN ? AND ?) AND \
+            (min_lon BETWEEN ? AND ? OR max_lon BETWEEN ? AND ?)";
+
+    const params = [south, north, south, north, west, east, west, east];
+
+    const response = await fetch("http://127.0.0.1:3000/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({
+            sql: sqlQuery,
+            params: params,
+        }),
+
+
+    });
+
+    const data = await response.json();
+    console.log("Server responded:", data);
+
+    // return 0;
+
+    const points = [];
+    data.forEach((row) => {
+        console.log(row.Activity_Date + " - " + row.Activity_Name + " - " + row.Activity_Type)
+    });
+
 }
 
 

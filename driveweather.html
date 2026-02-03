@@ -1,52 +1,65 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
 
-    <link rel="icon" type="image/png" href="mv-favicon.png" />
-    <title>Drive Forecast Tool</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PSCJ5HPPLV"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-    <!-- <script src="driveweather.js"></script>-->
-    <script src="helper.js"></script>
-    <script src="mapManager.js"></script>
-    <script src="driveweather.js"></script>
+    gtag('config', 'G-PSCJ5HPPLV');
+  </script>
+  <meta charset="UTF-8" />
 
-    <link
-      rel="stylesheet"
-      href="https://forecast.weather.gov/build/app.b5803bc3.css"
-    />
+  <link rel="icon" type="image/png" href="mv-favicon.png" />
+  <title>Drive Forecast Tool</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
-    <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
+  <!-- <script src="driveweather.js"></script>-->
+  <script src="helper.js"></script>
+  <script src="mapManager.js"></script>
+  <script src="driveweather.js"></script>
 
-    <style>
-      canvas {
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-      }
-      #map {
-        height: 400px;
-        width: 600px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map-div">
-      <div id="map" style="width: 75%; height: 400px"></div>
+  <link rel="stylesheet" href="https://forecast.weather.gov/build/app.b5803bc3.css" />
 
-      <br />
-      <a id="drive-link" href=""><h3>Link For This Map</h3></a>
-    </div>
-    <div id="dynamic-div"></div>
+  <!-- https://stackoverflow.com/questions/3272071/can-an-iframe-only-show-a-certain-part-of-the-page -->
 
-    <script defer>
-      // Call the following functions to setup the google maps API by getting a production or test key
-      // Then source additional script to do the API initialization and callback
-      initMapKey("driveWeatherInit");
-      //initializeMap("initMapManager");
-    </script>
-  </body>
+  <style>
+    canvas {
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+
+    #map {
+      height: 400px;
+      width: 600px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="map-div">
+    <div id="map" style="width: 75%; height: 400px"></div>
+
+    <br />
+    <a id="drive-link" href="">
+      <h3>Link For This Map</h3>
+    </a>
+  </div>
+  <div id="dynamic-div"></div>
+
+  <script defer>
+    // Call the following functions to setup the google maps API by getting a production or test key
+    // Then source additional script to do the API initialization and callback
+    initMapKey("driveWeatherInit");
+    //initializeMap("initMapManager");
+  </script>
+</body>
+
 </html>

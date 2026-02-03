@@ -46,11 +46,13 @@ function initMap() {
 
 
     // Open modal when generating report
-    document.getElementById("analyzeMap").addEventListener("click", () => {
+    document.getElementById("analyzeMap").addEventListener("click", async () => {
         const modalContentDiv = myModal.getContentDiv();
         modalContentDiv.innerHTML = ""; // Clear previous content
-        modalContentDiv.innerHTML = "<h2>Map Analysis</h2>";
-        //modalContentDiv.innerHTML += generateMarkerReport();
+        modalContentDiv.innerHTML = "<h2>Track Analysis</h2>";
+        const activities = await myStravaManager.getMapActivities(myMapManager.getMapCorners());
+
+        modalContentDiv.innerHTML += formatActivities(activities);
         myModal.showModal();
 
     });
@@ -107,6 +109,29 @@ function initMap() {
 
 }
 
+function formatActivities(activities) {
+    let innerHTML = "";
+    innerHTML += "<ul>\n";
+    activities.forEach((activity) => {
+        innerHTML += "<li> Item <ul>\n";
+
+        for (const [key, value] of Object.entries(activity)) {
+
+            innerHTML += "<li>";
+            innerHTML += key + "=" + value + "\n";
+            innerHTML += "</li>\n";
+        }
+
+        innerHTML += "</ul></li>\n";
+
+
+    });
+
+    innerHTML += "</ul>\n";
+    return innerHTML;
+
+}
+
 async function getMapActivities(mapBounds) {
 
     let north = mapBounds.north;
@@ -116,7 +141,7 @@ async function getMapActivities(mapBounds) {
 
     console.log("Checking server...");
 
-    const sqlQuery = "SELECT a.Activity_Date, a.Activity_Name, a.Activity_Type \
+    const sqlQuery = "SELECT * \
             FROM activities a \
             JOIN bounds b ON a.activity_id = b.activity_id WHERE \
             (min_lat BETWEEN ? AND ? OR max_lat BETWEEN ? AND ?) AND \

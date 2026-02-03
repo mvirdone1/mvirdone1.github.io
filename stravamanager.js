@@ -11,10 +11,14 @@ class StravaManager {
         let east = mapBounds.east;
         let west = mapBounds.west;
 
-        const sqlQuery = `SELECT 
+        const sqlQuery = `SELECT
+                a.Activity_ID, 
                 a.Activity_Date, 
                 a.Activity_Name, 
-                a.Activity_Type 
+                a.Activity_Type,
+                a.Elapsed_Time,
+                a.Distance,
+                a.Elevation_Gain 
             FROM activities a 
             JOIN bounds b ON a.activity_id = b.activity_id WHERE \
             (min_lat BETWEEN ? AND ? OR max_lat BETWEEN ? AND ?) AND \
@@ -22,34 +26,27 @@ class StravaManager {
 
         const params = [south, north, south, north, west, east, west, east];
 
-        /*
-        const response = await fetch("http://127.0.0.1:3000/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-
-            body: JSON.stringify({
-                sql: sqlQuery,
-                params: params,
-            }),
-
-
-        });
-
-        const data = await response.json();
-
-        */
-
-
         const data = await this.databaseQuery(sqlQuery, params);
 
 
         // return 0;
 
+        /*data.forEach((row) => {
+            console.log(row.Activity_ID + " - " + row.Activity_Date + " - " + row.Activity_Name + " - " + row.Activity_Type)
+        });
+        
+
         data.forEach((row) => {
-            console.log(row.Activity_Date + " - " + row.Activity_Name + " - " + row.Activity_Type)
+            let consoleEntry = ""
+            for (const [key, value] of Object.entries(row)) {
+                consoleEntry += key + "=" + value + "\n";
+            }
+            console.log(consoleEntry);
         });
 
-        return 0;
+        */
+
+        return data;
 
     }
 

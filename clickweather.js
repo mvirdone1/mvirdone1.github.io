@@ -79,10 +79,14 @@ function parseURL() {
   // Create all the charts and data based on what was in the URL
   clickWeatherClickListener(position, false, stations);
 
+  var hideDiv = "bbbnbbb"
+
   // Update visibility of elements based on URL
   if (urlParams.get("hideDiv")) {
-    setAllToggleDivOnURLString(urlParams.get("hideDiv").toLowerCase());
+    hideDiv = urlParams.get("hideDiv").toLowerCase()
   }
+
+  setAllToggleDivOnURLString(hideDiv);
 }
 
 function updateLinkURL() {
@@ -406,8 +410,28 @@ function clickWeatherClickListener(
     updateLinkURL
   );
 
-  // This function does all the addition of everything except the weather plots
+  // This function adds the weather plots to the show/hide div element
   displayWeatherGovHourlyForecast(ForecastElement);
+
+  // Create the div for the forecasts from weather.gov
+  const longRangeForecastElement = createToggleChildElements(
+    "dynamic-div",
+    "Extended Forecast Charts",
+    updateLinkURL
+  );
+
+  const forecastIFrame = document.createElement("iframe");
+
+  var frameLat = document.getElementById("lat").value;
+  var frameLon = document.getElementById("lon").value;
+
+  // forecastIFrame.src = "https://google.com"; // Set the source URL
+  forecastIFrame.src = "https://spotwx.com/products/grib_index.php?model=ecmwf_aifs_single&lat=" + frameLat + "&lon=" + frameLon + "&tz=America/Denver&label=";
+  forecastIFrame.width = "100%";
+  forecastIFrame.height = "500px";
+  // forecastIFrame.frameBorder = "0"; // Remove the default border
+
+  longRangeForecastElement.appendChild(forecastIFrame);
 
   myMapManager.setMapCenter(position.lat, position.lng);
 

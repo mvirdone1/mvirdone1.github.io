@@ -429,6 +429,7 @@ function clickWeatherClickListener(
   forecastIFrame.src = "https://spotwx.com/products/grib_index.php?model=ecmwf_aifs_single&lat=" + frameLat + "&lon=" + frameLon + "&tz=America/Denver&label=";
   forecastIFrame.width = "100%";
   forecastIFrame.height = "500px";
+  forecastIFrame.loading = 'lazy';
   // forecastIFrame.frameBorder = "0"; // Remove the default border
 
   longRangeForecastElement.appendChild(forecastIFrame);

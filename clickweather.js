@@ -422,8 +422,8 @@ function clickWeatherClickListener(
 
   const forecastIFrame = document.createElement("iframe");
 
-  var frameLat = document.getElementById("lat").value;
-  var frameLon = document.getElementById("lon").value;
+  var frameLat = position.lat.toFixed(4);
+  var frameLon = position.lng.toFixed(4);
 
   // forecastIFrame.src = "https://google.com"; // Set the source URL
   forecastIFrame.src = "https://spotwx.com/products/grib_index.php?model=ecmwf_aifs_single&lat=" + frameLat + "&lon=" + frameLon + "&tz=America/Denver&label=";

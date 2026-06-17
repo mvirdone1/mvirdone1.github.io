@@ -56,7 +56,9 @@ class WeatherGovManager {
                     y: p.value
                 }))
             };
+
         });
+
     }
 
     refreshChart(chart) {
@@ -78,7 +80,6 @@ class WeatherGovManager {
                     responsive: true,
 
                     parsing: false,
-
                     normalized: true,
 
                     interaction: {
@@ -90,7 +91,22 @@ class WeatherGovManager {
                         x: {
                             type: "time",
                             time: {
-                                unit: "hour"
+                                unit: "hour",
+
+                                displayFormats: {
+                                    hour: "MMM d, HH:mm"
+                                },
+
+                                tooltipFormat: "MMM d, h:mm a"
+                            },
+
+                            ticks: {
+                                stepSize: 3,
+
+                                autoSkip: true,
+
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     },
@@ -111,7 +127,14 @@ class WeatherGovManager {
 
         }
 
-        console.log("Updated datasets:", datasets.length, datasets[0]?.data?.length);
+        console.log(
+            "Updated chart:",
+            chart.chartTitle,
+            "locations:",
+            datasets.length,
+            "points/sample:",
+            datasets[0]?.data?.length
+        );
     }
 
     refreshAllCharts() {
@@ -128,6 +151,7 @@ class WeatherGovManager {
             time: new Date(period.startTime).getTime(),
             value: period.temperature
         }));
+
     }
 
     parsePrecipitationProbability(jsonData) {
@@ -136,6 +160,7 @@ class WeatherGovManager {
             time: new Date(period.startTime).getTime(),
             value: period.probabilityOfPrecipitation?.value ?? null
         }));
+
     }
 
     parseWindSpeed(jsonData) {
@@ -144,6 +169,7 @@ class WeatherGovManager {
             time: new Date(period.startTime).getTime(),
             value: parseFloat(period.windSpeed) || null
         }));
+
     }
 }
 
@@ -167,7 +193,8 @@ async function getForecastHourlyUrl(lat, lon) {
 
 async function getForecastHourlyData(lat, lon) {
 
-    const hourlyUrl = await getForecastHourlyUrl(lat, lon);
+    const hourlyUrl =
+        await getForecastHourlyUrl(lat, lon);
 
     const response = await fetch(hourlyUrl);
 

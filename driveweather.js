@@ -35,7 +35,7 @@ function updateDriveList() {
     const lat = roundDecimal(marker.getPosition().lat(), numDecimals);
     const lon = roundDecimal(marker.getPosition().lng(), numDecimals);
 
-    getWeatherOverview(lat, lon, idx);
+    getWeatherOverview(lat, lon, idx, marker.title);
     linkURL = linkURL + lat + "," + lon + ";";
 
   })
@@ -53,7 +53,7 @@ function deleteLocation(deleteIdx) {
   updateDriveList();
 }
 
-function getWeatherOverview(lat, lon, idx) {
+function getWeatherOverview(lat, lon, idx, title) {
   var localURL =
     "https://forecast.weather.gov/MapClick.php?lat=" + lat + "&lon=" + lon;
 
@@ -65,7 +65,9 @@ function getWeatherOverview(lat, lon, idx) {
     localURL +
     '"><h1> Location ' +
     printIdx +
-    "</h1></a>"
+    " (" +
+    title +
+    ")</h1></a>"
   );
 
   var deleteButton = $(
@@ -120,20 +122,47 @@ function driveWeatherInit() {
   // Make this a global variable 
   window.myMapManager = myMapManager;
 
+  // Create a weather manager and make it a global variable
+  myWeatherManager = new WeatherGovManager();
+  window.myWeatherManager = myWeatherManager;
+  initForecastCharts(myWeatherManager);
+
+
+
   // Add a click event listener to the map
-  myMapManager.setMapClickListener((position) => {
+  myMapManager.setMapClickListener(async (position) => {
     console.log(`Map clicked at: ${position.lat}, ${position.lng}`);
     // myMapManager.addMarker(position, "");
 
+    const locationString = await getLocationStringFromLatLon(position.lat, position.lng)
+    const weatherLocationInstance = await myWeatherManager.addLocation(locationString, position.lat, position.lng);
+
+
     myMapManager.addMarker({
       position: position,
-      title: "",
+      title: locationString,
       draggable: true,
-      onDragEnd: ({ lat, lng, marker }) => {
+      weatherLocationInstance: weatherLocationInstance,
+
+      onDragEnd: async ({ lat, lng }, marker) => {
         // Refresh the drive list
+        const locationString = await getLocationStringFromLatLon(lat, lng);
+        marker.setTitle(locationString);
+
+        weatherLocationInstance.name = locationString;
+        weatherLocationInstance.lat = lat;
+        weatherLocationInstance.lon = lng;
+        weatherLocationInstance.forecast = await getForecastHourlyData(lat, lng);
+        myWeatherManager.refreshAllCharts();
+
+
         updateDriveList();
       }
+
+
     });
+
+
 
     //appendLatLon(lat, lon);
     updateDriveList();
@@ -171,6 +200,62 @@ function driveWeatherInit() {
   }, 1000);
 }
 
+function initForecastCharts(myWeatherManager) {
+  const ForecastElement = createToggleChildElements(
+    "chart-div",
+    "Forecast Charts",
+  );
+
+  const charts = [
+    {
+      canvasId: "tempChart",
+      chartTitle: "Temperature",
+      parser: myWeatherManager
+        .parseTemperature
+        .bind(myWeatherManager)
+    },
+    {
+      canvasId: "popChart",
+      chartTitle: "Precipitation %",
+      parser: myWeatherManager
+        .parsePrecipitationProbability
+        .bind(myWeatherManager)
+    },
+
+  ]
+
+  charts.forEach(chart => {
+
+
+    const myDiv = document.createElement("div");
+    myDiv.style.width = 800 + "px";
+    myDiv.style.height = 600 + "px";
+
+    //myDiv.style.height = 600 + "px";
+    myDiv.style.backgroundColor = "white";
+    myDiv.id = chart.canvasId + "-canvas-div"
+
+    myDiv.innerHTML = "<h2>" + chart.chartTitle + "</h2>\n";
+    const myCanvas = document.createElement("canvas");
+    myCanvas.id = chart.canvasId;
+
+
+    myDiv.appendChild(myCanvas);
+    ForecastElement.appendChild(myDiv);
+
+    myWeatherManager.addChartType(
+      chart.canvasId,
+      chart.chartTitle,
+      chart.parser
+    );
+
+  });
+
+
+
+
+}
+
 
 function reverseList() {
   const markers = myMapManager.getMarkers();
@@ -197,14 +282,3 @@ function updateWeatherImages() {
   }
 }
 
-function liveWeatherInit() {
-  // Call displayTemperatureData function on page load to display temperature data for Logan, UT (KLGU)
-  // window.onload = function () {
-  // Initialize the map
-  // initMap();
-
-  var locationObjects = initLocationObjects();
-  createDropDownMenu(locationObjects);
-
-  // handleDropDownChange(-1);
-}

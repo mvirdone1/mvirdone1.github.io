@@ -15,15 +15,28 @@
 
   <link rel="icon" type="image/png" href="mv-favicon.png" />
   <title>Drive Forecast Tool</title>
+  <!--
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
   <script
     src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 
   <!-- <script src="driveweather.js"></script>-->
   <script src="helper.js"></script>
   <script src="mapManager.js"></script>
   <script src="driveweather.js"></script>
+
+  <!-- Scripts for new weather chart and location names -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="mapHelper.js"></script>
+  <script src="weatherGovManager.js"></script>
+
+  <!-- Script and CSS for toggle div for weather charts -->
+  <script src="toggleDiv.js"></script>
+  <link rel="stylesheet" href="toggleDiv.css">
+
 
   <link rel="stylesheet" href="https://forecast.weather.gov/build/app.b5803bc3.css" />
 
@@ -53,7 +66,7 @@
     </a>
   </div>
   <div id="dynamic-div"></div>
-
+  <div id="chart-div"></div>
   <script defer>
     // Call the following functions to setup the google maps API by getting a production or test key
     // Then source additional script to do the API initialization and callback

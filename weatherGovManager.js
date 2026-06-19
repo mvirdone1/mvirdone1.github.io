@@ -1,3 +1,74 @@
+//
+// Day separator plugin (ADD ONCE globally)
+//
+
+const daySeparatorPlugin = {
+    id: "daySeparators",
+
+    afterDatasetsDraw(chart) {
+
+        const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+
+        const datasets = chart.data.datasets;
+        if (!datasets || datasets.length === 0) return;
+
+        const data = datasets[0].data;
+        if (!data || data.length === 0) return;
+
+        ctx.save();
+
+        let lastDay = null;
+
+        for (let i = 0; i < data.length; i++) {
+
+            const point = data[i];
+            const date = new Date(point.x);
+            const day = date.getDate();
+
+            if (lastDay === null) {
+                lastDay = day;
+                continue;
+            }
+
+            if (day !== lastDay) {
+
+                const xPos = x.getPixelForValue(point.x);
+
+                // vertical separator
+                ctx.strokeStyle = "rgba(0,0,0,0.15)";
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+
+                ctx.beginPath();
+                ctx.moveTo(xPos, top);
+                ctx.lineTo(xPos, bottom);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+
+                // weekday label
+                const weekday = date.toLocaleDateString("en-US", {
+                    weekday: "short"
+                });
+
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.font = "12px sans-serif";
+                ctx.fillText(weekday, xPos + 4, top + 12);
+
+                lastDay = day;
+            }
+        }
+
+        ctx.restore();
+    }
+};
+
+Chart.register(daySeparatorPlugin);
+
+//
+// Weather Manager
+//
+
 class WeatherGovManager {
 
     constructor() {
@@ -17,21 +88,44 @@ class WeatherGovManager {
     }
 
     async addLocation(name, lat, lon) {
+        console.log("adding weather at " + name);
+        console.log(this.charts);
+
 
         const forecast =
             await getForecastHourlyData(lat, lon);
 
-        this.locations.push({
+        const locationObject = {
             name,
             lat,
             lon,
             forecast
-        });
+        };
+
+        this.locations.push(locationObject);
+
+        this.refreshAllCharts();
+        return locationObject;
+
+    }
+
+    getLocations() {
+        return this.locations;
+    }
+
+    setLocations(locations) {
+        this.locations = locations;
+        this.refreshAllCharts();
+    }
+
+    removeLocationByIndex(idx) {
+        this.locations =
+            this.locations.splice(idx, 1);
 
         this.refreshAllCharts();
     }
 
-    removeLocation(name) {
+    removeLocationByName(name) {
 
         this.locations =
             this.locations.filter(loc => loc.name !== name);
@@ -62,6 +156,10 @@ class WeatherGovManager {
     }
 
     refreshChart(chart) {
+        console.log("Refreshing Chart");
+        console.log(chart.canvasId);
+
+        console.log("Refreshing: " + chart.chartTitle);
 
         const datasets = this.buildDatasets(chart);
 
@@ -91,22 +189,24 @@ class WeatherGovManager {
                         x: {
                             type: "time",
                             time: {
-                                unit: "hour",
-
-                                displayFormats: {
-                                    hour: "MMM d, HH:mm"
-                                },
-
-                                tooltipFormat: "MMM d, h:mm a"
+                                unit: "hour"
                             },
 
                             ticks: {
-                                stepSize: 3,
-
+                                stepSize: 6,
                                 autoSkip: true,
-
                                 maxRotation: 45,
-                                minRotation: 45
+                                minRotation: 45,
+
+                                callback: function (value) {
+
+                                    const date = new Date(value);
+
+                                    const h = date.getHours().toString().padStart(2, "0");
+                                    const m = date.getMinutes().toString().padStart(2, "0");
+
+                                    return `${h}:${m}`;
+                                }
                             }
                         }
                     },

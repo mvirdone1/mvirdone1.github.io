@@ -103,7 +103,7 @@ async function addMarkerFromURL(locString) {
 
   myMapManager.addMarker({
     position: position,
-    title: "",
+    title: locationString,
     draggable: true,
     onDragEnd: async ({ lat, lng }, marker) => {
       // Refresh the drive list
@@ -124,7 +124,28 @@ async function addMarkerFromURL(locString) {
 
 }
 
-function getDriveURLParameters(driveString) {
+async function getDriveURLParameters(driveString) {
+
+  const locations =
+    driveString
+      .split(";")
+      .filter(loc =>
+        loc.includes(",")
+      );
+
+  await Promise.all(
+    locations.map(loc =>
+      addMarkerFromURL(loc)
+    )
+  );
+
+  myMapManager.setZoomOnMarkerBounds();
+  updateDriveList();
+
+
+}
+
+function getDriveURLParametersOld(driveString) {
   // Take the list of lat,lon;lat,lon;lat,lon and add to the mapmanager using addmarker
   console.log("Drive String:", driveString);
 

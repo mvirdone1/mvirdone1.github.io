@@ -93,6 +93,37 @@ function getWeatherOverview(lat, lon, idx, title) {
   myDiv.load(localURL + " #seven-day-forecast");
 }
 
+async function addMarkerFromURL(locString) {
+
+  const position = { lat: parseFloat(locString.split(",")[0]), lng: parseFloat(locString.split(",")[1]) }
+
+  const locationString = await getLocationStringFromLatLon(position.lat, position.lng)
+  const weatherLocationInstance = await myWeatherManager.addLocation(locationString, position.lat, position.lng);
+
+
+  myMapManager.addMarker({
+    position: position,
+    title: "",
+    draggable: true,
+    onDragEnd: async ({ lat, lng }, marker) => {
+      // Refresh the drive list
+      const locationString = await getLocationStringFromLatLon(lat, lng);
+      marker.setTitle(locationString);
+
+      weatherLocationInstance.name = locationString;
+      weatherLocationInstance.lat = lat;
+      weatherLocationInstance.lon = lng;
+      weatherLocationInstance.forecast = await getForecastHourlyData(lat, lng);
+      myWeatherManager.refreshAllCharts();
+
+
+      updateDriveList();
+    },
+    label: (myMapManager.getMarkers().length + 1).toString()
+  });
+
+}
+
 function getDriveURLParameters(driveString) {
   // Take the list of lat,lon;lat,lon;lat,lon and add to the mapmanager using addmarker
   console.log("Drive String:", driveString);
@@ -100,18 +131,13 @@ function getDriveURLParameters(driveString) {
   driveString.split(";").forEach((loc) => {
     console.log("Location:", loc);
     if (loc.includes(",")) {
-      myMapManager.addMarker({
-        position: { lat: parseFloat(loc.split(",")[0]), lng: parseFloat(loc.split(",")[1]) },
-        title: "",
-        draggable: true,
-        onDragEnd: ({ lat, lng, marker }) => {
-          // Refresh the drive list
-          updateDriveList();
-        },
-        label: (myMapManager.getMarkers().length + 1).toString()
-      });
+      addMarkerFromURL(loc);
     }
   });
+
+  updateDriveList();
+  myMapManager.setZoomOnMarkerBounds();
+
 }
 
 function driveWeatherInit() {

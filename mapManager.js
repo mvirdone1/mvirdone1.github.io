@@ -153,6 +153,15 @@ class MapManager {
     });
   }
 
+  sortMarkersByLabelAlphabetically() {
+    // 1. Sort using localeCompare to properly handle numerical strings (e.g., "10" vs "2")
+    this.markers.sort((a, b) => {
+      return a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    return this.markers;
+  }
+
   getMap() {
     return this.map;
   }

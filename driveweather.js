@@ -93,18 +93,21 @@ function getWeatherOverview(lat, lon, idx, title) {
   myDiv.load(localURL + " #seven-day-forecast");
 }
 
-async function addMarkerFromURL(locString) {
+async function addMarkerFromURL(locString, index) {
 
   const position = { lat: parseFloat(locString.split(",")[0]), lng: parseFloat(locString.split(",")[1]) }
 
   const locationString = await getLocationStringFromLatLon(position.lat, position.lng)
   const weatherLocationInstance = await myWeatherManager.addLocation(locationString, position.lat, position.lng);
 
+  console.log("Loading URL index: " + index);
 
   myMapManager.addMarker({
     position: position,
     title: locationString,
     draggable: true,
+    label: (index + 1).toString(),
+    // label: (myMapManager.getMarkers().length + 1).toString()
     onDragEnd: async ({ lat, lng }, marker) => {
       // Refresh the drive list
       const locationString = await getLocationStringFromLatLon(lat, lng);
@@ -119,7 +122,7 @@ async function addMarkerFromURL(locString) {
 
       updateDriveList();
     },
-    label: (myMapManager.getMarkers().length + 1).toString()
+
   });
 
 }
@@ -133,26 +136,31 @@ async function getDriveURLParameters(driveString) {
         loc.includes(",")
       );
 
+  // The problem I'm finding is that these dont' return in order because of all the async calls
+  // Adding the index to the label helps, but I will need to sort the actual marker list
+  // so that the plots show up in the right order, and not just the order of the API returns
   await Promise.all(
-    locations.map(loc =>
-      addMarkerFromURL(loc)
+    locations.map((loc, index) =>
+      addMarkerFromURL(loc, index)
     )
   );
 
   myMapManager.setZoomOnMarkerBounds();
+  myMapManager.sortMarkersByLabelAlphabetically();
   updateDriveList();
 
 
 }
 
+/*
 function getDriveURLParametersOld(driveString) {
   // Take the list of lat,lon;lat,lon;lat,lon and add to the mapmanager using addmarker
   console.log("Drive String:", driveString);
 
-  driveString.split(";").forEach((loc) => {
+  driveString.split(";").forEach((loc, index) => {
     console.log("Location:", loc);
     if (loc.includes(",")) {
-      addMarkerFromURL(loc);
+      addMarkerFromURL(loc, index);
     }
   });
 
@@ -160,6 +168,7 @@ function getDriveURLParametersOld(driveString) {
   myMapManager.setZoomOnMarkerBounds();
 
 }
+  */
 
 function driveWeatherInit() {
   // Usage example

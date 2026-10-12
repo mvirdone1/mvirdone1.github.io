@@ -70,6 +70,19 @@ function getWeatherOverview(lat, lon, idx, title) {
     ")</h1></a>"
   );
 
+  var clickWeatherURL =
+    "https://mvirdone1.github.io/clickweather.html?lat=" + lat + "&lon=" + lon;
+
+  $("#dynamic-div").append(
+    '<a target="_blank" href="' +
+    clickWeatherURL +
+    '"><h3> Location ' +
+    printIdx +
+    " Clickweather (" +
+    title +
+    ")</h3></a>"
+  );
+
   var deleteButton = $(
     '<button id="deleteButton-' +
     idx +
